@@ -1,6 +1,6 @@
 # Canal de Denuncias - Sistema de Gestión de Denuncias
 
-Un sistema web profesional para la gestión de denuncias corporativas con proceso para la autenticación de dos factores para administradores y interfaz pública para usuarios.
+Un sistema web para la gestión de denuncias con proceso para la autenticación de dos factores para administradores y interfaz pública para usuarios.
 
 ## Características Principales
 
@@ -12,8 +12,7 @@ Un sistema web profesional para la gestión de denuncias corporativas con proces
 - **Interfaz Responsive**: Diseño adaptable a dispositivos móviles y desktop
 
 ### Para Administradores
-- **Autenticación Segura**: Login con verificación de dos factores (2FA) por SMS
-- **Dashboard Completo**: Vista general con estadísticas y filtros avanzados
+- - **Dashboard Completo**: Vista general con estadísticas y filtros avanzados
 - **Gestión de Denuncias**: Actualización de estados y respuestas
 - **Historial de Cambios**: Registro completo de todas las modificaciones
 - **Exportación de Datos**: Funcionalidad para exportar reportes en CSV
@@ -285,4 +284,4 @@ Las contribuciones son bienvenidas. Por favor:
 
 ---
 
-**Desarrollado con ❤️ por Mayro Mtz para mejorar la transparencia y comunicación organizacional**
+**Desarrollado por Mayro Mtz para mejorar la transparencia y comunicación organizacional**
