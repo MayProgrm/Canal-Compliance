@@ -1,0 +1,1403 @@
+{% extends 'denuncias/base_public.html' %}
+{% load static %}
+
+{% block title %}Guía de uso - Biblioteca GSI{% endblock %}
+
+{% block extra_head %}
+<style>
+:root { --sticky-header-offset: 120px; }
+
+.guide-hero {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  color: white;
+  padding: 2.5rem 0;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.guide-hero-content h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.guide-hero-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.guide-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+
+.guide-nav {
+  position: sticky;
+  top: 2rem;
+  height: fit-content;
+}
+
+.guide-nav-menu {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  padding: 1.2rem;
+}
+
+.nav-section {
+  margin-bottom: 1.5rem;
+}
+
+.nav-section:last-child {
+  margin-bottom: 0;
+}
+
+.nav-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.6rem;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links li {
+  margin-bottom: 0.5rem;
+}
+
+.nav-link {
+  display: block;
+  color: var(--text-dark);
+  text-decoration: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+}
+
+.nav-link:hover {
+  background: #f8fafc;
+  color: var(--primary-color);
+}
+
+.nav-link.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.guide-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+html { scroll-padding-top: var(--sticky-header-offset); }
+.guide-section { scroll-margin-top: calc(var(--sticky-header-offset) + 14px); }
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  background: var(--primary-color);
+  color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(5,24,56,.12);
+  padding: 1.2rem 1.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.6rem;
+  color: #ffffff;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.section-header p {
+  color: rgba(255,255,255,0.9);
+  font-size: 0.95rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.guide-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.guide-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.guide-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.card-icon {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.guide-card h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.guide-card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.rights-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.right-item {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
+}
+
+.right-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.right-content h3 {
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.right-content p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Commitments */
+.commitments {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.commitment {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
+}
+
+.commitment-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.commitment-number {
+  background: var(--primary-color);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.commitment-header h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin: 0;
+  font-weight: 600;
+}
+
+.commitment p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Before Reporting */
+.before-reporting {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.consideration h3 {
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.reportable-items,
+.non-reportable-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+  .reportable-item,
+  .non-reportable-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem;
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  }
+
+.item-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+  .alternative-contact {
+    background: #ffffff;
+    padding: 1.2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+    font-size: 0.95rem;
+  }
+
+/* Reporting Process */
+.reporting-process {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.process-step {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  padding: 1.2rem;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.step-number {
+  background: var(--primary-color);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.step-content h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.step-content p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.choice-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.choice-option {
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-list li {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.evidence-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.evidence-type {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.folio-reminder {
+  background: #fef3c7;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* CTA Section */
+.cta-section {
+  text-align: center;
+  background: #ffffff;
+  padding: 3rem;
+  border-radius: 16px;
+  margin-top: 3rem;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-section h3 {
+  font-size: 1.8rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.cta-section p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--primary-color);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cta-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Post-Report Timeline */
+.post-report-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.post-report-timeline::before {
+  content: '';
+  position: absolute;
+  left: 25px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 3rem;
+  display: flex;
+  gap: 2rem;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  padding: 1.2rem;
+}
+
+.timeline-marker {
+  background: var(--primary-color);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.timeline-content h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.timeline-content p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.timeline-detail {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+/* Tracking Info */
+.tracking-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.tracking-method {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
+  text-align: center;
+}
+
+.resource-icon {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.tracking-method h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.tracking-method p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.tracking-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: gap 0.3s ease;
+}
+
+.tracking-link:hover {
+  gap: 0.75rem;
+}
+
+.update-types {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.update-type {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Status Explanation */
+.status-explanation {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.status-explanation h3 {
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.status-badge.recibida {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.en-revision {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-badge.en-investigacion {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.resuelta {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.archivada {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-description {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Documents Grid */
+.documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.2rem;
+}
+
+.document-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+
+.document-card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.document-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.8rem;
+  display: block;
+}
+
+.document-card h3 {
+  font-size: 1.05rem;
+  color: var(--text-dark);
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.document-card p {
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.document-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.doc-version,
+.doc-size {
+  background: #f3f4f6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+.document-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.document-link:hover {
+  gap: 0.5rem;
+}
+
+/* Glossary */
+.glossary {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.glossary-term {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.glossary-term h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.glossary-term p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* FAQ CTA */
+.faq-cta {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 1.8rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.faq-cta-content h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.faq-cta-content p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.4;
+}
+
+.faq-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-color);
+  color: white;
+  padding: 0.7rem 1.4rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.faq-cta-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .guide-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .guide-nav {
+    position: static;
+    order: 2;
+  }
+  
+  .guide-content {
+    order: 1;
+  }
+  
+  .guide-nav-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .nav-section {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .guide-hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .guide-hero-subtitle {
+    font-size: 0.95rem;
+  }
+  
+  .guide-container {
+    padding: 0 0.8rem;
+  }
+  
+  .guide-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .rights-grid,
+  .commitments,
+  .before-reporting,
+  .reporting-process,
+  .post-report-timeline,
+  .tracking-info,
+  .documents-grid,
+  .glossary {
+    gap: 1.5rem;
+  }
+  
+  .right-item,
+  .timeline-item,
+  .tracking-method {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .post-report-timeline {
+    padding-left: 0;
+  }
+  
+  .post-report-timeline::before {
+    display: none;
+  }
+  
+  .timeline-marker {
+    margin: 0 auto 1rem;
+  }
+  
+  .timeline-content {
+    text-align: center;
+  }
+  
+  .cta-section,
+  .faq-cta {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .guide-hero {
+    padding: 2rem 0;
+  }
+  
+  .guide-hero-content h1 {
+    font-size: 1.6rem;
+  }
+  
+  .section-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .guide-card,
+  .right-item,
+  .commitment,
+  .step-content,
+  .timeline-content,
+  .tracking-method,
+  .document-card,
+  .glossary-term {
+    padding: 1.2rem;
+  }
+  
+  .process-step {
+    gap: 0.8rem;
+  }
+  
+  .step-number,
+  .timeline-marker {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+}
+
+.guide-section h3 + p,
+.guide-section h4 + p {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 8px 22px rgba(5,24,56,.06);
+}
+
+/* Missing Info Grid & Card Styles */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.info-card h4 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background-color: #eff6ff;
+  color: var(--primary-color);
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.info-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 2;
+}
+
+/* Timeline Styles */
+.timeline {
+  position: relative;
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timeline-duration {
+  display: inline-block;
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  background: #eff6ff;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="guide-hero">
+  <div class="container">
+    <div class="guide-hero-content">
+      <h1>Guía de uso</h1>
+      <p class="guide-hero-subtitle">Manual para entender el proceso, derechos, obligaciones y recursos disponibles.</p>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+</div>
+
+<div class="guide-container">
+  <div class="guide-nav">
+    <nav class="guide-nav-menu">
+      <div class="nav-section">
+        <h3 class="nav-section-title">Información general</h3>
+        <ul class="nav-links">
+          <li><a href="#introduccion" class="nav-link">Introducción al canal</a></li>
+          <li><a href="#derechos" class="nav-link">Tus derechos</a></li>
+          <li><a href="#compromisos" class="nav-link">Nuestros compromisos</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-section">
+        <h3 class="nav-section-title">Proceso de reporte</h3>
+        <ul class="nav-links">
+          <li><a href="#antes-de-reportar" class="nav-link">Antes de reportar</a></li>
+          <li><a href="#como-reportar" class="nav-link">Cómo reportar</a></li>
+          <li><a href="#después-de-reportar" class="nav-link">Después de reportar</a></li>
+          <li><a href="#seguimiento" class="nav-link">Seguimiento de casos</a></li>
+        </ul>
+      </div>
+      
+      <div class="nav-section">
+        <h3 class="nav-section-title">Recursos y documentos</h3>
+        <ul class="nav-links">
+          <li><a href="#glosario" class="nav-link">Glosario de términos</a></li>
+          <li><a href="#preguntas-frecuentes" class="nav-link">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <div class="guide-content">
+    <!-- Introducción -->
+    <section id="introduccion" class="guide-section">
+      <div class="section-header">
+        <h2>Introducción al canal</h2>
+        <p>Sistema de reportes éticos para mantener un ambiente laboral íntegro.</p>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="19" y1="5" x2="22" y2="2"/></svg></span>Propósito</h4>
+          <p>Prevenir, detectar y corregir conductas inapropiadas que afecten nuestra cultura organizacional.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>Alcance</h4>
+          <p>Reportar violaciones al Código de Ética y políticas internas que pongan en riesgo la integridad.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M7 7l-4 4h8l-4-4zm10 0l-4 4h8l-4-4zM5 11v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span>Principios</h4>
+          <p>Confidencialidad, imparcialidad, protección al denunciante y debido proceso.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tus Derechos -->
+    <section id="derechos" class="guide-section">
+      <div class="section-header">
+        <h2>Tus derechos</h2>
+        <p>Garantías y protecciones al utilizar nuestro canal.</p>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 015 5v3H7V7a5 5 0 015-5z"/><rect x="5" y="10" width="14" height="10" rx="2"/></svg></span>Confidencialidad</h4>
+          <p>Tu identidad estará protegida. Solo compartimos información cuando sea estrictamente necesario.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>Protección</h4>
+          <p>Estás protegido contra represalias. Investigamos y sancionamos cualquier represalia por reportes de buena fe.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1 1 0 001 1h3l7 3V6l-7 3H4a1 1 0 00-1 1z"/><path d="M14 6v12"/></svg></span>Ser escuchado</h4>
+          <p>Tu reporte será atendido con seriedad y profesionalismo. Recibirás confirmación y actualizaciones.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Seguimiento</h4>
+          <p>Consulta el estado con tu folio único. Te mantendremos informado del avance.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compromisos -->
+    <section id="compromisos" class="guide-section">
+      <div class="section-header">
+        <h2>Nuestros compromisos</h2>
+        <p>Principios que guían el manejo de cada reporte.</p>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M7 7l-4 4h8l-4-4zm10 0l-4 4h8l-4-4zM5 11v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span>Imparcialidad</h4>
+          <p>Investigamos basándonos en hechos y evidencia, sin prejuicios ni favoritismos.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg></span>Debido proceso</h4>
+          <p>Todas las partes tienen derecho a ser escuchadas y recibir trato justo y equitativo.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span>Transparencia</h4>
+          <p>Comunicación clara sobre el estado, plazos y resultados del proceso.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 7-7"/><path d="M21 21H3"/></svg></span>Mejora continua</h4>
+          <p>Fortalecemos procesos y políticas con los hallazgos de cada investigación.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Antes de Reportar -->
+    <section id="antes-de-reportar" class="guide-section">
+      <div class="section-header">
+        <h2>¿Qué puedes reportar?</h2>
+        <p>Situaciones que puedes reportar a través del canal.</p>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg></span>Sí reportar</h4>
+          <p>Situaciones clasificadas como <strong>Queja</strong> (insatisfacción de procesos), <strong>Inquietud</strong> (dudas normativas) o <strong>Denuncia</strong> (actos graves).</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>No reportar</h4>
+          <p>Consultas administrativas, quejas de servicio, emergencias, disputas laborales individuales.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cómo Reportar -->
+    <section id="como-reportar" class="guide-section">
+      <div class="section-header">
+        <h2>Cómo reportar</h2>
+        <p>Proceso simple y efectivo para enviar tu reporte.</p>
+      </div>
+      
+      <div class="reporting-process">
+        <div class="process-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Elige el tipo</h3>
+            <p>Anónima: Tu identidad no se revela. Identificada: Podemos contactarte si necesitamos más información.</p>
+          </div>
+        </div>
+        
+        <div class="process-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Describe los hechos</h3>
+            <p>Incluye: ¿Quién? ¿Qué? ¿Cuándo? ¿Dónde? ¿Cómo? y ¿Por qué? Sé lo más específico posible.</p>
+          </div>
+        </div>
+        
+        <div class="process-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Adjunta evidencia</h3>
+            <p>Documentos PDF, imágenes, correos u otros archivos que respalden tu denuncia.</p>
+            <div class="evidence-types">
+              <span class="evidence-type">PDF</span>
+              <span class="evidence-type">Imágenes</span>
+              <span class="evidence-type">Office</span>
+              <span class="evidence-type">Correos</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="process-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>Envía y guarda tu folio</h3>
+            <p>Recibirás un número único para dar seguimiento. Guárdalo de forma segura y no lo compartas.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="cta-section">
+        <h3>¿Listo para denunciar?</h3>
+        <p>Tu reporte marca la diferencia. Mantengamos la integridad juntos.</p>
+        <a href="{% url 'denuncias:submit_complaint' %}" class="cta-button">
+          <span>¡Quiero denunciar!</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+
+    <section id="después-de-denunciar" class="guide-section">
+      <div class="section-header">
+        <h2>Después de denunciar</h2>
+        <p>Proceso de manejo de tu reporte.</p>
+      </div>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h4>Recepción y confirmación</h4>
+            <p>Confirmación inmediata con tu folio de seguimiento.</p>
+            <span class="timeline-duration">Inmediato</span>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h4>Revisión inicial</h4>
+            <p>Evaluamos elegibilidad y elementos necesarios.</p>
+            <span class="timeline-duration">3-5 días hábiles</span>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h4>Investigación</h4>
+            <p>Recopilación de evidencia y entrevistas.</p>
+            <span class="timeline-duration">2-8 semanas</span>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <h4>Resolución</h4>
+            <p>Medidas correctivas y comunicación de resultados.</p>
+            <span class="timeline-duration">1-4 semanas</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seguimiento -->
+    <section id="seguimiento" class="guide-section">
+      <div class="section-header">
+        <h2>Seguimiento</h2>
+        <p>Consulta el estado de tu reporte.</p>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>Consulta en línea</h4>
+          <p>Usa tu folio para consultar el estado actual en cualquier momento.</p>
+          <a href="{% url 'denuncias:lookup_complaint' %}" class="tracking-link" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">Consultar denuncia →</a>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 4l8 7 8-7"/></svg></span>Actualizaciones</h4>
+          <p>Si dejaste tu correo, recibirás notificaciones de cambios importantes.</p>
+        </div>
+        
+        <div class="info-card">
+          <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9"/><path d="M9 19V5"/><path d="M14 19V12"/><path d="M19 19V7"/></svg></span>Estados</h4>
+          <p>Recibida → En revisión → En investigación → Resuelta/Archivada.</p>
+        </div>
+      </div>
+    </section>
+
+    
+
+    <!-- Glosario -->
+    <section id="glosario" class="guide-section">
+      <div class="section-header">
+        <h2>Glosario de términos</h2>
+        <p>Definiciones claras de los conceptos más importantes relacionados con nuestro sistema de denuncias</p>
+      </div>
+      
+      <div class="glossary">
+        <div class="glossary-term">
+          <h3>Queja</h3>
+          <p>Manifestación de insatisfacción respecto a procesos internos, servicios administrativos o condiciones laborales (p. ej., deficiencias en servicios, errores administrativos).</p>
+        </div>
+
+        <div class="glossary-term">
+          <h3>Inquietud</h3>
+          <p>Consulta o duda sobre la interpretación de normativas o situaciones ambiguas (p. ej., conflictos de interés, dudas éticas).</p>
+        </div>
+
+        <div class="glossary-term">
+          <h3>Denuncia</h3>
+          <p>Reporte formal sobre actos graves que violan la ley o el Código de Ética (p. ej., fraude, corrupción, acoso, discriminación).</p>
+        </div>
+
+        <div class="glossary-term">
+          <h3>Denunciante</h3>
+          <p>Persona que realiza la denuncia. Puede ser interna (empleado) o externa (proveedor, cliente, tercero).</p>
+        </div>
+        
+        <div class="glossary-term">
+          <h3>Folio de seguimiento</h3>
+          <p>Número único asignado a cada denuncia que permite consultar su estado y dar seguimiento al caso.</p>
+        </div>
+        
+        <div class="glossary-term">
+          <h3>Investigación</h3>
+          <p>Proceso sistemático de recopilación y análisis de información para determinar la veracidad de los hechos denunciados.</p>
+        </div>
+        
+        <div class="glossary-term">
+          <h3>Evidencia</h3>
+          <p>Información, documentos, testimonios o materiales que respaldan o refutan los hechos descritos en la denuncia.</p>
+        </div>
+        
+        <div class="glossary-term">
+          <h3>Confidencialidad</h3>
+          <p>Obligación de mantener la información de la denuncia y las identidades protegidas, compartiéndola solo cuando sea necesario para la investigación.</p>
+        </div>
+        
+        <div class="glossary-term">
+          <h3>Represalia</h3>
+          <p>Cualquier acción negativa tomada contra una persona por haber realizado una denuncia de buena fe o por haber cooperado en una investigación.</p>
+        </div>
+        
+        <div class="glossary-term">
+          <h3>Medidas correctivas</h3>
+          <p>Acciones tomadas para remediar una situación de incumplimiento y prevenir su recurrencia.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="preguntas-frecuentes" class="guide-section">
+      <div class="section-header">
+        <h2>¿Tienes más preguntas?</h2>
+        <p>Visita nuestra sección de preguntas frecuentes para obtener respuestas a las dudas más comunes.</p>
+      </div>
+      
+      <div class="faq-cta">
+        <div class="faq-cta-content">
+          <h3>Explora nuestras preguntas frecuentes</h3>
+          <p>Hemos recopilado las preguntas más comunes sobre el proceso de denuncia, privacidad, seguimiento y más.</p>
+          <a href="#preguntas-frecuentes" class="faq-cta-button">
+            <span>Ver preguntas frecuentes</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const OFFSET = 120;
+    document.querySelectorAll('.nav-link[href^="#"]').forEach(a => {
+      a.addEventListener('click', function(e){
+        const id = this.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (!el) return;
+        e.preventDefault();
+        const top = el.getBoundingClientRect().top + window.scrollY - OFFSET - 14;
+        window.scrollTo({ top, behavior: 'smooth' });
+        history.replaceState(null, '', '#' + id);
+      });
+    });
+  })();
+</script>
+{% endblock %}

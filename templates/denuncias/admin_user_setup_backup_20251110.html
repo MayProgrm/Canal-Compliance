@@ -1,0 +1,40 @@
+{% extends 'denunciasstyle>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="card-pro" style="margin-bottom:12px;">
+    <div class="card-header"><span class="card-title">Configuración inicial del usuario<div>
+    <div class="card-body">
+      <p class="muted">Actualiza tus datos personales y cambia tu contraseña. Si este es tu primer acceso, realiza ambos pasos.<div>
+  <span><div>
+          {% endif %}
+          <div class="form-group">{{ profile_form.first_name.label_tag }}{{ profile_form.first_name }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.last_name.label_tag }}{{ profile_form.last_name }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.email.label_tag }}{{ profile_form.email }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.phone_number.label_tag }}{{ profile_form.phone_number }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.company.label_tag }}{{ profile_form.company }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.role.label_tag }}{{ profile_form.role }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.area.label_tag }}{{ profile_form.area }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.branch.label_tag }}{{ profile_form.branch }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.matricula.label_tag }}{{ profile_form.matricula }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.employment_start.label_tag }}{{ profile_form.employment_start }}<div>{% endif %}
+          <div class="form-group">{{ profile_form.employment_end.label_tag }}{{ profile_form.employment_end }}<div>{% endif %}
+          <div class="actions">
+            <button type="submit" name="submit_profile" value="1" class="btn btn-primary">Guardar datos<a>
+          <form>
+      <div>
+
+    <div class="card-pro">
+      <div class="card-header"><span class="card-title">Cambiar contraseña<div>
+      <div class="card-body">
+        <form method="post" action="" novalidate>
+          {% csrf_token %}
+          {% if password_form.non_field_errors %}
+            <div class="error">{{ password_form.non_field_errors }}<div>
+          {% if password_form.old_password.errors %}<div class="error">{{ password_form.old_password.errors }}<div>
+          {% if password_form.new_password1.errors %}<div class="error">{{ password_form.new_password1.errors }}<div>
+          {% if password_form.new_password2.errors %}<div class="error">{{ password_form.new_password2.errors }}<button>
+          <form>
+      <div>
+  <div>
+{% endblock %}

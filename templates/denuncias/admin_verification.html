@@ -1,0 +1,33 @@
+{% extends 'denuncias/base_public.html' %}
+
+{% block title %}Verificación de cuenta{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px;">
+  <div class="card-pro">
+    <div class="card-header">
+      <span class="card-title">Verificar cuenta</span>
+    </div>
+    <div class="card-body">
+      <p>Hemos enviado un código de verificación al teléfono {{ masked_phone|default:"[oculto]" }}.</p>
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="message {{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <form method="post" action="" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Verificar</button>
+        </div>
+      </form>
+      {% if debug %}
+        <p class="text-muted" style="margin-top:8px;">Modo debug activo.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

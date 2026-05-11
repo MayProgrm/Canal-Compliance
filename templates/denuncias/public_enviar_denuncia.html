@@ -1,0 +1,973 @@
+{% extends 'denuncias/base_public.html' %}
+{% load static %}
+
+{% block title %}Enviar denuncia{% endblock %}
+
+{% block content %}
+<div class="complaint-form-card">
+  <style>
+    .privacy-policy-choice + .privacy-policy-choice { border-top: 1px solid #e2e8f0; }
+  </style>
+  <div class="complaint-form-header">
+    <h2>Enviar un reporte</h2>
+    <p class="help-text">Completa el formulario para enviar tu reporte. Los campos marcados con (*) son obligatorios.</p>
+  </div>
+  <div id="warnOverlay" aria-modal="true" role="dialog" class="{% if form.is_bound %}is-hidden{% endif %}" style="position:fixed; inset:0; background:rgba(5,24,56,.62); display:flex; align-items:center; justify-content:center; z-index:9999;">
+    <div style="max-width:640px; width:90%; background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(5,24,56,.25); overflow:hidden;">
+      <div style="background:#003a70; color:#fff; padding:1rem 1.25rem;">
+        <h3 style="margin:0; font-size:1.15rem;">Declaración de veracidad</h3>
+      </div>
+      <div style="padding:1rem 1.25rem; color:#0f172a;">
+        <p style="margin:0 0 .5rem;">Declaración de veracidad:<br><br>
+        La información que proporciono es verídica y se presenta de buena fe; mi reporte se basa en hechos reales y comprobables. Reconozco que presentar información falsa, malintencionada o con el fin de perjudicar a terceros constituye una falta grave y derivará en sanciones conforme a las políticas internas aplicables.</p>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; margin-top:.75rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelWarn">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btnAcceptWarn">Aceptar y continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="privacyPoliciesOverlay" aria-modal="true" role="dialog" class="is-hidden" style="position:fixed; inset:0; background:rgba(5,24,56,.62); display:flex; align-items:center; justify-content:center; z-index:9998;">
+    <div style="max-width:980px; width:94%; height:86vh; max-height:86vh; background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(5,24,56,.25); overflow:hidden; display:flex; flex-direction:column;">
+      <div style="background:#003a70; color:#fff; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+        <h3 id="privacyPoliciesHeaderTitle" style="margin:0; font-size:1.15rem;">Avisos de Privacidad</h3>
+      </div>
+      <div style="padding:1rem 1.25rem; color:#0f172a; flex:1; overflow:auto;">
+        <div id="privacyPoliciesList">
+          <p style="margin:.25rem 0 1rem; color:#475569;">Selecciona un aviso. Al abrirlo, los demás se desvanecen y verás el PDF.</p>
+          <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
+            {% if privacy_notices %}
+              {% for notice in privacy_notices %}
+                <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad {{ notice.company }}" data-pdf="{% if notice.file %}{{ notice.file.url }}{% else %}{% static 'PDFs/Aviso de privacidad.pdf' %}{% endif %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad {{ notice.company }}</button>
+              {% endfor %}
+            {% else %}
+              <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad COMETRA" data-pdf="{% static 'PDFs/Aviso de privacidad.pdf' %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad COMETRA</button>
+              <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad SEPSA" data-pdf="{% static 'PDFs/Aviso de privacidad.pdf' %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; border-top:1px solid #e2e8f0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad SEPSA</button>
+              <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad SEGURITEC" data-pdf="{% static 'PDFs/Aviso de privacidad.pdf' %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; border-top:1px solid #e2e8f0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad SEGURITEC</button>
+              <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad TECNOVAL" data-pdf="{% static 'PDFs/Aviso de privacidad.pdf' %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; border-top:1px solid #e2e8f0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad TECNOVAL</button>
+              <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad TAMEME" data-pdf="{% static 'PDFs/Aviso de privacidad.pdf' %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; border-top:1px solid #e2e8f0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad TAMEME</button>
+              <button type="button" class="privacy-policy-choice" data-policy="Aviso de privacidad GRUMER" data-pdf="{% static 'PDFs/Aviso de privacidad.pdf' %}" style="width:100%; text-align:left; padding:.85rem 1rem; border:0; border-top:1px solid #e2e8f0; background:#fff; cursor:pointer; font-weight:700; color:#003a70;">Aviso de privacidad GRUMER</button>
+            {% endif %}
+          </div>
+        </div>
+
+        <div id="privacyPolicyViewer" class="is-hidden">
+          <div id="privacyPolicyPdfMissing" style="display:none; margin:0 0 .5rem; padding:.75rem 1rem; border:1px solid #fde68a; background:#fffbeb; color:#92400e; border-radius:12px;">
+            No se ha configurado el PDF de este aviso todavía.
+          </div>
+          <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
+            <iframe id="privacyPolicyPdfFrame" title="Aviso de privacidad (PDF)" src="about:blank" style="width:100%; height:60vh; min-height:360px; border:0;"></iframe>
+          </div>
+          <div style="margin-top:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+            <label class="form-label" style="display:flex; gap:.5rem; align-items:flex-start;">
+              <input type="checkbox" id="privacyPolicyReadCheck">
+              <span>Sí consiento que mis datos personales sean tratados conforme a todas las <strong>finalidades primarias</strong> referidas en los términos de este Aviso de Privacidad Integral.</span>
+            </label>
+            <label class="form-label" style="display:flex; gap:.5rem; align-items:flex-start;">
+              <input type="checkbox" id="privacyPolicyAcceptCheck">
+              <span>Sí consiento que mis datos personales sean tratados conforme a todas las <strong>finalidades secundarias</strong> referidas en los términos de este Aviso de Privacidad Integral.</span>
+            </label>
+            <div style="display:flex; justify-content:flex-end; margin-top:.25rem;">
+              <button type="button" class="btn btn-primary" id="privacyPoliciesAcceptBtn" disabled>Aceptar y continuar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <form method="post" action="{% url 'denuncias:submit_complaint' %}" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="form-errors">{% for err in form.non_field_errors %}{{ err }}{% endfor %}</div>
+    {% endif %}
+    
+    {% if form.errors %}
+      <div class="form-errors">
+        <strong>Algunos datos obligatorios no han sido completados.</strong>
+        Verifica los campos marcados y vuelve a intentarlo.
+      </div>
+    {% endif %}
+
+    <div class="complaint-form-body">
+      <section class="form-section" id="section-report">
+        <h3>Antes de continuar</h3>
+        <p class="help-text">Elige las opciones que mejor describen tu caso. Al seleccionar, se mostrarán las secciones siguientes en esta misma pantalla.</p>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.action_type.id_for_label }}" class="form-label required-field">¿Qué acción vas a realizar?</label>
+            {{ form.action_type }}
+            {% if form.action_type.errors %}<div class="validation-error">{% for err in form.action_type.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.relationship.id_for_label }}" class="form-label required-field">¿Qué relación tienes con la empresa?</label>
+            {{ form.relationship }}
+            {% if form.relationship.errors %}<div class="validation-error">{% for err in form.relationship.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.reporting_mode.id_for_label }}" class="form-label required-field">¿Cómo deseas enviar tu reporte?</label>
+            {{ form.reporting_mode }}
+            {% if form.reporting_mode.errors %}<div class="validation-error">{% for err in form.reporting_mode.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.password.id_for_label }}" class="form-label required-field">Contraseña de consulta</label>
+            {{ form.password }}
+            <div class="help-text">Crea una contraseña para consultar el estado de tu denuncia posteriormente.</div>
+            {% if form.password.errors %}<div class="validation-error">{% for err in form.password.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.password_confirm.id_for_label }}" class="form-label required-field">Confirmar contraseña</label>
+            {{ form.password_confirm }}
+            {% if form.password_confirm.errors %}<div class="validation-error">{% for err in form.password_confirm.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+      </section>
+
+    <div id="formSections" class="{% if form.is_bound %}{% else %}is-hidden{% endif %}">
+      <section class="form-section is-hidden" id="section-personal">
+        <h3>Tus datos</h3>
+        <p class="help-text">Incluye tu información si deseas seguimiento. Se oculta automáticamente si eliges reporte anónimo.</p>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.name.id_for_label }}" class="form-label required-field">Nombre y apellidos</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="validation-error">{% for err in form.name.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.email.id_for_label }}" class="form-label required-field">Correo electrónico</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="validation-error">{% for err in form.email.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.phone.id_for_label }}" class="form-label required-field">Teléfono</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="validation-error">{% for err in form.phone.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="form-col" id="matricula-wrapper">
+            <label for="{{ form.reporter_matricula.id_for_label }}" class="form-label">Número de empleado (si eres colaborador)</label>
+            {{ form.reporter_matricula }}
+            {% if form.reporter_matricula.errors %}<div class="validation-error">{% for err in form.reporter_matricula.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.company_role.id_for_label }}" class="form-label required-field">Puesto en la empresa</label>
+            {{ form.company_role }}
+            {% if form.company_role.errors %}<div class="validation-error">{% for err in form.company_role.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+        
+      </section>
+
+      <section class="form-section is-hidden" id="section-denuncia-details">
+        <h3>Datos de la denuncia</h3>
+        <div class="form-row">
+          <div class="form-col" id="col-category-denuncia">
+            <label for="{{ form.category.id_for_label }}" class="form-label required-field">Tipo de reporte</label>
+            {{ form.category }}
+            {% if form.category.errors %}<div class="validation-error">{% for err in form.category.errors %}{{ err }}{% endfor %}</div>{% endif %}
+            <p class="help-text">Selecciona la categoría que mejor describa el incidente.</p>
+          </div>
+          <div class="form-col is-hidden" id="col-category-queja">
+            <label for="{{ form.queja_category.id_for_label }}" class="form-label required-field">Tipo de queja</label>
+            {{ form.queja_category }}
+            {% if form.queja_category.errors %}<div class="validation-error">{% for err in form.queja_category.errors %}{{ err }}{% endfor %}</div>{% endif %}
+            <p class="help-text">Selecciona el motivo de tu queja.</p>
+          </div>
+          <div class="form-col is-hidden" id="col-category-inquietud">
+            <label for="{{ form.inquietud_category.id_for_label }}" class="form-label required-field">Tipo de inquietud</label>
+            {{ form.inquietud_category }}
+            {% if form.inquietud_category.errors %}<div class="validation-error">{% for err in form.inquietud_category.errors %}{{ err }}{% endfor %}</div>{% endif %}
+            <p class="help-text">Selecciona el tema de tu inquietud.</p>
+          </div>
+        </div>
+
+        <div id="incident-sub-details" class="is-hidden">
+            <h4 style="font-size:1rem; margin-top:1.5rem; margin-bottom:1rem; color:#003a70;">Ubicación y tiempo</h4>
+            <p class="help-text">Indica dónde y cuándo ocurrió el hecho.</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label for="{{ form.incident_state.id_for_label }}" class="form-label required-field">Estado</label>
+                {{ form.incident_state }}
+                {% if form.incident_state.errors %}<div class="validation-error">{% for err in form.incident_state.errors %}{{ err }}{% endfor %}</div>{% endif %}
+              </div>
+              <div class="form-col">
+                <label for="{{ form.incident_branch.id_for_label }}" class="form-label required-field">Sucursal</label>
+                {{ form.incident_branch }}
+                {% if form.incident_branch.errors %}<div class="validation-error">{% for err in form.incident_branch.errors %}{{ err }}{% endfor %}</div>{% endif %}
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-col">
+                <label for="{{ form.incident_date.id_for_label }}" class="form-label required-field">Fecha del hecho</label>
+                {{ form.incident_date }}
+                {% if form.incident_date.errors %}<div class="validation-error">{% for err in form.incident_date.errors %}{{ err }}{% endfor %}</div>{% endif %}
+              </div>
+              <div class="form-col">
+                <label for="{{ form.incident_time.id_for_label }}" class="form-label required-field">Hora del hecho</label>
+                {{ form.incident_time }}
+                {% if form.incident_time.errors %}<div class="validation-error">{% for err in form.incident_time.errors %}{{ err }}{% endfor %}</div>{% endif %}
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-col">
+                <label for="{{ form.knows_actor.id_for_label }}" class="form-label required-field">¿Sabes quién realizó la acción?</label>
+                {{ form.knows_actor }}
+                {% if form.knows_actor.errors %}<div class="validation-error">{% for err in form.knows_actor.errors %}{{ err }}{% endfor %}</div>{% endif %}
+                <div class="is-hidden" id="actor-block" style="margin-top:.5rem;">
+                  <div class="form-row">
+                    <div class="form-col">
+                      <label for="{{ form.actor_name.id_for_label }}" class="form-label">Nombre del denunciado</label>
+                      {{ form.actor_name }}
+                    </div>
+                    <div class="form-col">
+                      <label for="{{ form.actor_matricula.id_for_label }}" class="form-label">Número de empleado del denunciado</label>
+                      {{ form.actor_matricula }}
+                    </div>
+                    <div class="form-col">
+                      <label for="{{ form.actor_area.id_for_label }}" class="form-label">Área del denunciado</label>
+                      {{ form.actor_area }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-row" id="row-participation-witnesses">
+              <div class="form-col">
+                <label for="{{ form.reporter_role.id_for_label }}" class="form-label required-field">Tu participación</label>
+                {{ form.reporter_role }}
+                {% if form.reporter_role.errors %}<div class="validation-error">{% for err in form.reporter_role.errors %}{{ err }}{% endfor %}</div>{% endif %}
+              </div>
+              <div class="form-col">
+                <label for="{{ form.has_witnesses.id_for_label }}" class="form-label required-field">¿Hay testigos?</label>
+                {{ form.has_witnesses }}
+                {% if form.has_witnesses.errors %}<div class="validation-error">{% for err in form.has_witnesses.errors %}{{ err }}{% endfor %}</div>{% endif %}
+                <div class="is-hidden" id="witnesses-block" style="margin-top:.5rem;">
+                  <div class="form-row">
+                    <div class="form-col">
+                <label for="{{ form.witnesses_count.id_for_label }}" class="form-label">Número de testigos</label>
+                      {{ form.witnesses_count }}
+                    </div>
+                    <div class="form-col">
+                      <label for="{{ form.witnesses_names.id_for_label }}" class="form-label">Nombres de testigos</label>
+                      {{ form.witnesses_names }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </section>
+
+      
+
+      <section class="form-section is-hidden" id="section-description">
+        <h3>Descripción y evidencia</h3>
+        <p class="help-text">Describe con detalle lo ocurrido y adjunta archivos si lo deseas.</p>
+        <div class="form-group">
+          <label for="{{ form.description.id_for_label }}" class="form-label required-field">Descripción</label>
+          {{ form.description }}
+          {% if form.description.errors %}<div class="validation-error">{% for err in form.description.errors %}{{ err }}{% endfor %}</div>{% endif %}
+        </div>
+        <div class="form-group" id="section-complaint">
+          <label class="form-label">Adjuntar evidencia (opcional)</label>
+          
+          <div class="custom-file-upload">
+            <div style="height:0; overflow:hidden; opacity:0; position:absolute; z-index:-1;">
+                {{ form.attachments }}
+            </div>
+            
+            <button type="button" id="btn-add-files" class="btn btn-secondary" style="display:flex; align-items:center; gap:0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Seleccionar archivos
+            </button>
+            
+            {% if form.attachments.help_text %}<div class="help-text" style="margin-top:0.5rem;">{{ form.attachments.help_text }}</div>{% endif %}
+            
+            <ul id="file-list-display" style="list-style:none; padding:0; margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem;"></ul>
+            
+            {% if form.attachments.errors %}<div class="validation-error">{% for err in form.attachments.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+      </section>
+
+      <div class="form-section is-hidden" id="section-extra-toggle">
+        <h3>Preguntas adicionales</h3>
+        <div class="form-group">
+          <label class="form-label">¿Deseas contestar preguntas adicionales?</label>
+          <label style="margin-right:.75rem;"><input type="radio" name="extra_choice" value="si"> Sí</label>
+          <label><input type="radio" name="extra_choice" value="no" checked> No</label>
+        </div>
+      </div>
+      <section class="form-section is-hidden" id="section-extra">
+        <h3>Preguntas adicionales</h3>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.recurrence.id_for_label }}" class="form-label">¿El hecho fue único o se repite?</label>
+            {{ form.recurrence }}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.recurrence_since.id_for_label }}" class="form-label">Si se repite, ¿desde cuándo ocurre?</label>
+            {{ form.recurrence_since }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.immediate_risk.id_for_label }}" class="form-label">¿Existe algún riesgo inmediato?</label>
+            {{ form.immediate_risk }}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.previous_report.id_for_label }}" class="form-label">¿Lo has reportado antes?</label>
+            {{ form.previous_report }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.previous_report_channel.id_for_label }}" class="form-label">¿Por qué medio lo reportaste?</label>
+            {{ form.previous_report_channel }}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.contact_preference.id_for_label }}" class="form-label">Preferencia para contactarte</label>
+            {{ form.contact_preference }}
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-col">
+            <label for="{{ form.share_permission.id_for_label }}" class="form-label">Autorización para compartir detalles</label>
+            {{ form.share_permission }}
+          </div>
+          <div class="form-col">
+            <label for="{{ form.impact_notes.id_for_label }}" class="form-label">Notas sobre el impacto</label>
+            {{ form.impact_notes }}
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section is-hidden" id="section-consent">
+        <h3>Avisos y consentimientos</h3>
+        <p class="help-text">
+          <a href="#" id="privacyPoliciesToggle" style="color:#2563eb; text-decoration:underline;">Ver Avisos de Privacidad</a>
+        </p>
+
+        <div class="form-group" style="margin-top:.75rem;">
+          <label for="terms_accept" class="form-label"><input type="checkbox" name="terms_accept" id="terms_accept" required disabled> He leído y acepto la Política de Privacidad</label>
+        </div>
+        <input type="hidden" name="privacy_policies_opened" id="privacy_policies_opened" value="">
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submitComplaintBtn" disabled>Enviar reporte</button>
+        <a href="{% url 'denuncias:home' %}" class="btn btn-secondary">Volver al inicio</a>
+      </div>
+      </div>
+    </div>
+  </form>
+</div>
+<script>
+(function(){
+  const overlay = document.getElementById('warnOverlay');
+  const btnAccept = document.getElementById('btnAcceptWarn');
+  const btnCancel = document.getElementById('btnCancelWarn');
+  const sections = document.getElementById('formSections');
+  if(overlay && btnAccept && btnCancel){
+    btnAccept.addEventListener('click', function(){
+      overlay.style.display = 'none';
+      resetPrivacyOverlay();
+      setPrivacyPoliciesOverlayOpen(true);
+    });
+    btnCancel.addEventListener('click', function(){
+      window.location.href = "{% url 'denuncias:home' %}";
+    });
+  }
+  const modeSel = document.getElementById('id_reporting_mode');
+  const actionTypeSel = document.getElementById('id_action_type');
+  const relationshipSel = document.getElementById('id_relationship');
+  const companyRole = document.getElementById('id_company_role');
+  const personal = document.getElementById('section-personal');
+  
+  const description = document.getElementById('section-description');
+  const consent = document.getElementById('section-consent');
+  const extraToggleWrap = document.getElementById('section-extra-toggle');
+  const extraToggle = document.querySelector('input[name="extra_choice"]');
+  const extraSection = document.getElementById('section-extra');
+  const matriculaWrap = document.getElementById('matricula-wrapper');
+  const matriculaInput = document.getElementById('id_reporter_matricula');
+  const knowsActor = document.getElementById('id_knows_actor');
+  const actorBlock = document.getElementById('actor-block');
+  const hasWitnesses = document.getElementById('id_has_witnesses');
+  const witnessesBlock = document.getElementById('witnesses-block');
+  const stateSel = document.getElementById('id_incident_state');
+  const branchSel = document.getElementById('id_incident_branch');
+  const phoneInput = document.getElementById('id_phone');
+  
+  const identificationFields = document.getElementById('identification-fields');
+  const denunciaDetailsSection = document.getElementById('section-denuncia-details');
+  const incidentSubDetails = document.getElementById('incident-sub-details');
+  const categorySel = document.getElementById('id_category');
+  const colCatDenuncia = document.getElementById('col-category-denuncia');
+  const colCatQueja = document.getElementById('col-category-queja');
+  const colCatInquietud = document.getElementById('col-category-inquietud');
+  const quejaSel = document.getElementById('id_queja_category');
+  const inquietudSel = document.getElementById('id_inquietud_category');
+  const rowParticipationWitnesses = document.getElementById('row-participation-witnesses');
+
+  let sucursalesMap = null;
+  let matriculaScrolled = false;
+
+  function updateVisibility(){
+    const relVal = (relationshipSel && relationshipSel.value) || '';
+    const actionVal = (actionTypeSel && actionTypeSel.value) || '';
+    const modeVal = (modeSel && modeSel.value) || '';
+    const catVal = (categorySel && categorySel.value) || '';
+
+    if(actionVal){
+        if(identificationFields) identificationFields.classList.remove('is-hidden');
+    } else {
+        if(identificationFields) identificationFields.classList.add('is-hidden');
+    }
+
+    if(!relVal || !actionVal || !modeVal){
+        sections.classList.add('is-hidden');
+        personal.classList.add('is-hidden');
+        if(denunciaDetailsSection) denunciaDetailsSection.classList.add('is-hidden');
+        description.classList.add('is-hidden');
+        consent.classList.add('is-hidden');
+        extraToggleWrap.classList.add('is-hidden');
+        return;
+    }
+
+    sections.classList.remove('is-hidden');
+
+    let personalComplete = true;
+    if(modeVal === 'con_datos'){
+        personal.classList.remove('is-hidden');
+        const roleFilled = companyRole && companyRole.value.trim().length > 0;
+        const matriculaFilled = matriculaInput && matriculaInput.value.trim().length > 0;
+        
+    } else {
+        personal.classList.add('is-hidden');
+    }
+
+    if(!personalComplete){
+        if(denunciaDetailsSection) denunciaDetailsSection.classList.add('is-hidden');
+        description.classList.add('is-hidden');
+        consent.classList.add('is-hidden');
+        extraToggleWrap.classList.add('is-hidden');
+        return;
+    }
+
+    if(denunciaDetailsSection) denunciaDetailsSection.classList.remove('is-hidden');
+
+    if(colCatDenuncia) colCatDenuncia.classList.add('is-hidden');
+    if(colCatQueja) colCatQueja.classList.add('is-hidden');
+    if(colCatInquietud) colCatInquietud.classList.add('is-hidden');
+
+    if(actionVal === 'queja'){
+        if(colCatQueja) colCatQueja.classList.remove('is-hidden');
+        const quejaVal = (quejaSel && quejaSel.value) || '';
+        
+        if(incidentSubDetails) incidentSubDetails.classList.remove('is-hidden');
+        
+        if(quejaVal){
+            description.classList.remove('is-hidden');
+            consent.classList.remove('is-hidden');
+            extraToggleWrap.classList.remove('is-hidden');
+        } else {
+            description.classList.add('is-hidden');
+            consent.classList.add('is-hidden');
+            extraToggleWrap.classList.add('is-hidden');
+        }
+    } else if (actionVal === 'inquietud'){
+        if(colCatInquietud) colCatInquietud.classList.remove('is-hidden');
+        const inquietudVal = (inquietudSel && inquietudSel.value) || '';
+        
+        if(incidentSubDetails) incidentSubDetails.classList.add('is-hidden');
+        
+        if(inquietudVal){
+            description.classList.remove('is-hidden');
+            consent.classList.remove('is-hidden');
+            extraToggleWrap.classList.remove('is-hidden');
+        } else {
+            description.classList.add('is-hidden');
+            consent.classList.add('is-hidden');
+            extraToggleWrap.classList.add('is-hidden');
+        }
+    } else if (actionVal === 'denuncia'){
+        if(colCatDenuncia) colCatDenuncia.classList.remove('is-hidden');
+        
+        if(catVal){
+            if(incidentSubDetails) incidentSubDetails.classList.remove('is-hidden');
+            description.classList.remove('is-hidden');
+            consent.classList.remove('is-hidden');
+            extraToggleWrap.classList.remove('is-hidden');
+        } else {
+            if(incidentSubDetails) incidentSubDetails.classList.add('is-hidden');
+            description.classList.add('is-hidden');
+            consent.classList.add('is-hidden');
+            extraToggleWrap.classList.add('is-hidden');
+        }
+    }
+  }
+
+  if(modeSel) modeSel.addEventListener('change', updateVisibility);
+  if(actionTypeSel) actionTypeSel.addEventListener('change', updateVisibility);
+  if(relationshipSel) relationshipSel.addEventListener('change', function(){
+      onRelationshipChange();
+      updateVisibility();
+  });
+  if(categorySel) categorySel.addEventListener('change', updateVisibility);
+
+  function debounce(func, delay){
+    let timeoutId;
+    return function(){
+      const context = this;
+      const args = arguments;
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(function(){ func.apply(context, args); }, delay);
+    };
+  }
+
+  if(companyRole){
+    companyRole.addEventListener('input', debounce(updateVisibility, 300));
+  }
+  if(matriculaInput){
+    matriculaInput.addEventListener('input', debounce(function(){
+        updateVisibility();
+    }, 500));
+  }
+
+
+  function onRelationshipChange(){
+    const relVal = (relationshipSel && relationshipSel.value) || '';
+    if(matriculaWrap){
+      const relText = (relationshipSel && relationshipSel.options && relationshipSel.selectedIndex >= 0)
+        ? relationshipSel.options[relationshipSel.selectedIndex].text.toLowerCase()
+        : '';
+      if(relVal && (relVal.toLowerCase() === 'cliente' || relText.includes('cliente'))){
+        matriculaWrap.classList.add('is-hidden');
+      } else {
+        matriculaWrap.classList.remove('is-hidden');
+      }
+    }
+  }
+
+  function onKnowsActorChange(){
+    if(!actorBlock || !knowsActor) return;
+    const val = knowsActor.value || '';
+    if(val && (val.toLowerCase() === 'si' || val.toLowerCase() === 'yes' || val.toLowerCase() === 'true' || val === '1')){
+      actorBlock.classList.remove('is-hidden');
+    } else {
+      actorBlock.classList.add('is-hidden');
+    }
+  }
+
+  function onHasWitnessesChange(){
+    if(!hasWitnesses || !witnessesBlock) return;
+    const valRaw = (hasWitnesses.value || '').trim().toLowerCase();
+    if(valRaw && (valRaw === 'si' || valRaw === 'yes' || valRaw === 'true' || valRaw === '1')){
+      witnessesBlock.classList.remove('is-hidden');
+    } else {
+      witnessesBlock.classList.add('is-hidden');
+    }
+  }
+
+  function checkDescriptionComplete(){
+    const desc = document.getElementById('id_description');
+    if(desc && desc.value.trim().length > 0){
+      consent.classList.remove('is-hidden');
+      extraToggleWrap.classList.remove('is-hidden');
+    } else {
+    }
+  }
+  
+
+  function updateExtraChoice(){
+    const choice = document.querySelector('input[name="extra_choice"]:checked');
+    if(choice && choice.value === 'si'){
+      extraSection.classList.remove('is-hidden');
+    } else {
+      extraSection.classList.add('is-hidden');
+    }
+  }
+
+  if(knowsActor){ knowsActor.addEventListener('change', onKnowsActorChange); }
+  if(hasWitnesses){ hasWitnesses.addEventListener('change', onHasWitnessesChange); }
+  
+  function enforce10Digits(el){
+    if(!el) return;
+    el.addEventListener('input', function(){
+      const digits = (this.value || '').replace(/\D+/g, '').slice(0, 10);
+      this.value = digits;
+    });
+  }
+  enforce10Digits(phoneInput);
+  enforce10Digits(matriculaInput);
+  enforce10Digits(document.getElementById('id_actor_matricula'));
+  
+  const desc = document.getElementById('id_description');
+
+  const extraChoices = document.querySelectorAll('input[name="extra_choice"]');
+  extraChoices.forEach(el=> el.addEventListener('change', updateExtraChoice));
+
+  onRelationshipChange();
+  onKnowsActorChange();
+  onHasWitnessesChange();
+  updateExtraChoice();
+  updateVisibility();
+
+  const submitBtn = document.getElementById('submitComplaintBtn');
+  const privacyAccept = document.getElementById('terms_accept');
+  const privacyPoliciesOpenedInput = document.getElementById('privacy_policies_opened');
+  const privacyPoliciesToggle = document.getElementById('privacyPoliciesToggle');
+  const privacyPoliciesOverlay = document.getElementById('privacyPoliciesOverlay');
+  const privacyPoliciesHeaderTitle = document.getElementById('privacyPoliciesHeaderTitle');
+  const privacyPoliciesHeaderBackBtn = document.getElementById('privacyPoliciesHeaderBackBtn');
+  const privacyPoliciesAcceptBtn = document.getElementById('privacyPoliciesAcceptBtn');
+  const privacyPolicyReadCheck = document.getElementById('privacyPolicyReadCheck');
+  const privacyPolicyAcceptCheck = document.getElementById('privacyPolicyAcceptCheck');
+  const privacyPolicyViewer = document.getElementById('privacyPolicyViewer');
+  const privacyPoliciesList = document.getElementById('privacyPoliciesList');
+  const privacyPolicyPdfMissing = document.getElementById('privacyPolicyPdfMissing');
+  const privacyPolicyPdfFrame = document.getElementById('privacyPolicyPdfFrame');
+
+  function setSubmitEnabled(enabled){
+    if(submitBtn){
+      submitBtn.disabled = !enabled;
+    }
+  }
+
+  function enablePrivacyCheckbox(){
+    if(privacyAccept){
+      privacyAccept.disabled = false;
+    }
+  }
+
+  if(privacyAccept){
+    if(privacyAccept.checked){
+      enablePrivacyCheckbox();
+      setSubmitEnabled(true);
+    } else {
+      setSubmitEnabled(false);
+    }
+
+    privacyAccept.addEventListener('change', function(){
+      setSubmitEnabled(privacyAccept.checked);
+    });
+  }
+
+  function setPrivacyPoliciesOverlayOpen(open){
+    if(!privacyPoliciesOverlay) return;
+    if(open){
+      privacyPoliciesOverlay.classList.remove('is-hidden');
+    } else {
+      privacyPoliciesOverlay.classList.add('is-hidden');
+    }
+  }
+
+  let selectedPrivacyPolicyName = '';
+  let selectedPrivacyPolicyPdf = '';
+
+  function resetPrivacyOverlay(){
+    selectedPrivacyPolicyName = '';
+    selectedPrivacyPolicyPdf = '';
+    if(privacyPolicyViewer) privacyPolicyViewer.classList.add('is-hidden');
+    if(privacyPoliciesList) privacyPoliciesList.classList.remove('is-hidden');
+    if(privacyPolicyReadCheck) privacyPolicyReadCheck.checked = false;
+    if(privacyPolicyAcceptCheck) privacyPolicyAcceptCheck.checked = false;
+    if(privacyPoliciesAcceptBtn) privacyPoliciesAcceptBtn.disabled = true;
+    if(privacyPoliciesHeaderTitle) privacyPoliciesHeaderTitle.textContent = 'Avisos de Privacidad';
+    if(privacyPolicyPdfMissing) privacyPolicyPdfMissing.style.display = 'none';
+    if(privacyPolicyPdfFrame) privacyPolicyPdfFrame.src = 'about:blank';
+    const choiceButtons = document.querySelectorAll('.privacy-policy-choice');
+    choiceButtons.forEach(function(btn){
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+    });
+  }
+
+  if(privacyPoliciesToggle){
+    privacyPoliciesToggle.addEventListener('click', function(e){
+      e.preventDefault();
+      resetPrivacyOverlay();
+      setPrivacyPoliciesOverlayOpen(true);
+    });
+  }
+
+  if(privacyPoliciesHeaderBackBtn){
+    privacyPoliciesHeaderBackBtn.addEventListener('click', function(){
+      if(privacyPolicyViewer && !privacyPolicyViewer.classList.contains('is-hidden')){
+        resetPrivacyOverlay();
+        return;
+      }
+      setPrivacyPoliciesOverlayOpen(false);
+    });
+  }
+
+  function trackPolicyOpened(policyName){
+    const name = (policyName || '').trim();
+    if(!name || !privacyPoliciesOpenedInput) return;
+    const current = (privacyPoliciesOpenedInput.value || '').trim();
+    if(!current){
+      privacyPoliciesOpenedInput.value = name;
+      return;
+    }
+    const items = current.split(',').map(s => s.trim()).filter(Boolean);
+    if(items.indexOf(name) === -1){
+      items.push(name);
+      privacyPoliciesOpenedInput.value = items.join(', ');
+    }
+  }
+
+  function updatePrivacyModalAcceptEnabled(){
+    if(!privacyPoliciesAcceptBtn) return;
+    const ok = !!selectedPrivacyPolicyName && !!(privacyPolicyReadCheck && privacyPolicyReadCheck.checked) && !!(privacyPolicyAcceptCheck && privacyPolicyAcceptCheck.checked);
+    privacyPoliciesAcceptBtn.disabled = !ok;
+  }
+
+  const privacyPolicyChoices = document.querySelectorAll('.privacy-policy-choice');
+  privacyPolicyChoices.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      selectedPrivacyPolicyName = (btn.getAttribute('data-policy') || '').trim();
+      selectedPrivacyPolicyPdf = (btn.getAttribute('data-pdf') || '').trim();
+      trackPolicyOpened(selectedPrivacyPolicyName);
+
+      privacyPolicyChoices.forEach(function(other){
+        if(other !== btn){
+          other.style.opacity = '.22';
+          other.style.pointerEvents = 'none';
+        }
+      });
+
+      if(privacyPoliciesHeaderTitle) privacyPoliciesHeaderTitle.textContent = selectedPrivacyPolicyName || 'Avisos de Privacidad';
+      if(privacyPolicyPdfMissing) privacyPolicyPdfMissing.style.display = selectedPrivacyPolicyPdf ? 'none' : 'block';
+      if(privacyPolicyPdfFrame) privacyPolicyPdfFrame.src = selectedPrivacyPolicyPdf || 'about:blank';
+      if(privacyPoliciesList) privacyPoliciesList.classList.add('is-hidden');
+      if(privacyPolicyViewer) privacyPolicyViewer.classList.remove('is-hidden');
+      updatePrivacyModalAcceptEnabled();
+    });
+  });
+
+  if(privacyPolicyReadCheck){
+    privacyPolicyReadCheck.addEventListener('change', updatePrivacyModalAcceptEnabled);
+  }
+  if(privacyPolicyAcceptCheck){
+    privacyPolicyAcceptCheck.addEventListener('change', updatePrivacyModalAcceptEnabled);
+  }
+
+  if(privacyPoliciesAcceptBtn){
+    privacyPoliciesAcceptBtn.addEventListener('click', function(){
+      if(!selectedPrivacyPolicyName) return;
+      if(!(privacyPolicyReadCheck && privacyPolicyReadCheck.checked)) return;
+      if(!(privacyPolicyAcceptCheck && privacyPolicyAcceptCheck.checked)) return;
+
+      enablePrivacyCheckbox();
+      if(privacyAccept){
+        privacyAccept.checked = true;
+      }
+      setSubmitEnabled(true);
+      setPrivacyPoliciesOverlayOpen(false);
+    });
+  }
+
+  const formEl = document.querySelector("form[action='{% url 'denuncias:submit_complaint' %}']");
+  if(formEl){
+    formEl.addEventListener('submit', function(e){
+      if(!privacyAccept){
+        return;
+      }
+      const consentSection = document.getElementById('section-consent');
+      if(privacyAccept.disabled){
+        e.preventDefault();
+        alert('Antes de enviar, abre y acepta un Aviso de Privacidad para habilitar el consentimiento.');
+        if(consentSection){
+          consentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+      if(!privacyAccept.checked){
+        e.preventDefault();
+        alert('Debes confirmar que has leído y aceptas la Política de Privacidad para enviar el reporte.');
+        if(consentSection){
+          consentSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    });
+  }
+
+  const realInput = document.getElementById('id_attachments');
+  const btnAdd = document.getElementById('btn-add-files');
+  const fileList = document.getElementById('file-list-display');
+  
+  if(realInput && btnAdd && fileList){
+      const dt = new DataTransfer();
+      
+      btnAdd.addEventListener('click', function(){
+          const dummy = document.createElement('input');
+          dummy.type = 'file';
+          dummy.multiple = true;
+          dummy.accept = realInput.accept || '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.rtf,.odt,.ods,.odp,.xls,.xlsx,.ppt,.pptx';
+          
+          dummy.onchange = function(e){
+              for(let file of this.files){
+                  let exists = false;
+                  for(let j=0; j<dt.files.length; j++){
+                      if(dt.files[j].name === file.name && dt.files[j].size === file.size){
+                          exists = true; 
+                          break;
+                      }
+                  }
+                  if(!exists) dt.items.add(file);
+              }
+              realInput.files = dt.files;
+              renderFiles();
+          };
+          dummy.click();
+      });
+      
+      function renderFiles(){
+          fileList.innerHTML = '';
+          for(let i=0; i<dt.files.length; i++){
+              const file = dt.files[i];
+              const li = document.createElement('li');
+              li.style.cssText = 'background:#f8fafc; padding:0.5rem; border:1px solid #e2e8f0; border-radius:6px; display:flex; justify-content:space-between; align-items:center;';
+              
+              const nameSpan = document.createElement('span');
+              nameSpan.textContent = file.name;
+              nameSpan.style.cssText = 'font-size:0.9rem; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:1rem;';
+              
+              const btnDel = document.createElement('button');
+              btnDel.type = 'button';
+              btnDel.innerHTML = '&times;';
+              btnDel.style.cssText = 'background:none; border:none; color:#ef4444; font-size:1.25rem; cursor:pointer; padding:0 0.25rem; line-height:1;';
+              btnDel.title = 'Eliminar';
+              
+              btnDel.onclick = function(){
+                  dt.items.remove(i);
+                  realInput.files = dt.files;
+                  renderFiles();
+              };
+              
+              li.appendChild(nameSpan);
+              li.appendChild(btnDel);
+              fileList.appendChild(li);
+          }
+      }
+  }
+
+  async function loadSucursales(){
+    try {
+      const res = await fetch('{% static "data/sucursales.json" %}');
+      sucursalesMap = await res.json();
+      if(stateSel){
+        const current = stateSel.value;
+        stateSel.innerHTML = '';
+        const opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = 'Selecciona...';
+        stateSel.appendChild(opt0);
+        Object.keys(sucursalesMap).sort().forEach(st => {
+          const opt = document.createElement('option');
+          opt.value = st;
+          opt.textContent = st;
+          stateSel.appendChild(opt);
+        });
+        if(current){ stateSel.value = current; }
+      }
+      updateBranches();
+      if(stateSel){ stateSel.addEventListener('change', updateBranches); }
+    } catch (e) {
+      console.error('No se pudo cargar sucursales.json', e);
+    }
+  }
+
+  function updateBranches(){
+    if(!branchSel) return;
+    branchSel.innerHTML = '';
+    const opt0 = document.createElement('option');
+    opt0.value = '';
+    opt0.textContent = stateSel && stateSel.value ? 'Selecciona...' : 'Selecciona el estado primero...';
+    branchSel.appendChild(opt0);
+    if(!sucursalesMap || !stateSel || !stateSel.value) {
+      branchSel.disabled = true;
+      return;
+    }
+    branchSel.disabled = false;
+    const branches = sucursalesMap[stateSel.value] || [];
+    branches.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = b;
+      branchSel.appendChild(opt);
+    });
+  }
+
+  const fileInput = document.getElementById('id_attachments');
+  const addFileBtn = document.getElementById('btn-add-files');
+  const fileListDisplay = document.getElementById('file-list-display');
+  const dt = new DataTransfer();
+
+  if(fileInput && addFileBtn && fileListDisplay){
+    addFileBtn.addEventListener('click', function(){
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function(){
+      for(let i=0; i<this.files.length; i++){
+        if(dt.items.length < 5) {
+             dt.items.add(this.files[i]);
+        } else {
+            alert('Máximo 5 archivos permitidos.');
+            break;
+        }
+      }
+      this.files = dt.files;
+      renderFileList();
+    });
+
+    function renderFileList(){
+      fileListDisplay.innerHTML = '';
+      if(dt.files.length === 0){
+          return;
+      }
+      for(let i=0; i<dt.files.length; i++){
+        const file = dt.files[i];
+        const li = document.createElement('li');
+        li.style.cssText = 'background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:0.5rem 0.75rem; display:flex; align-items:center; justify-content:space-between; font-size:0.9rem;';
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = file.name;
+        nameSpan.style.cssText = 'overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;';
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.style.cssText = 'background:none; border:none; color:#dc3545; font-size:1.25rem; cursor:pointer; padding:0 0.25rem; line-height:1;';
+        removeBtn.title = 'Eliminar archivo';
+        
+        removeBtn.addEventListener('click', function(){
+          dt.items.remove(i);
+          fileInput.files = dt.files;
+          renderFileList();
+        });
+        
+        li.appendChild(nameSpan);
+        li.appendChild(removeBtn);
+        fileListDisplay.appendChild(li);
+      }
+    }
+  }
+
+  loadSucursales();
+
+})();
+</script>
+{% endblock %}

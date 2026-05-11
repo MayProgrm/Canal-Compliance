@@ -1,0 +1,214 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Estadísticas{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light stats-hero">
+        <h2>Estadísticas</h2>
+        <p class="help-text">Analiza visitas, envíos y actividad mensual{% if routes_count %} • {{ routes_count }} rutas medidas{% endif %}.</p>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="stat-cards">
+          {% for m in page_metrics %}
+            <div class="stat-card">
+              <h4>{{ m.label }}</h4>
+              <div class="stat-value">{{ m.count }}</div>
+              <div class="stat-meta">{% if m.last_viewed %}Último: {{ m.last_viewed|date:'Y-m-d H:i' }}{% else %}-{% endif %}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <section class="panels-grid stats-gap">
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header">
+          <span class="card-title">Métricas por página</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table complaints-table--center complaints-table--blue">
+              <thead><tr><th>Página</th><th>Vistas</th><th>Última vista</th></tr></thead>
+              <tbody>
+                {% for m in page_metrics %}
+                  <tr>
+                    <td>{{ m.label }}</td>
+                    <td>{{ m.count }}</td>
+                    <td>{% if m.last_viewed %}{{ m.last_viewed|date:'Y-m-d H:i' }}{% else %}-{% endif %}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="3" class="text-muted">Sin métricas.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header">
+          <span class="card-title">Resumen mensual</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table complaints-table--center complaints-table--blue">
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th>Visitas portal</th>
+                  <th>Denuncias enviadas</th>
+                  <th>Seguimientos ≥ 2</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for month_label, data in monthly_metrics.items %}
+                  <tr>
+                    <td>{{ month_label }}</td>
+                    <td>{{ data.visits_portal }}</td>
+                    <td>{{ data.submissions }}</td>
+                    <td>{{ data.followups_gt3 }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="4" class="text-muted">Sin datos.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <article class="status-panel stats-chart">
+      <div class="panel-header"><h3 class="panel-title">Visualización de métricas</h3></div>
+      <div class="panel-body">
+      <div class="line-chart">
+          <div class="line-legend">
+            <span><span class="swatch visits"></span>Visitas</span>
+            <span><span class="swatch submissions"></span>Denuncias enviadas</span>
+            <span><span class="swatch followups"></span>Seguimientos ≥ 2</span>
+            <span><span class="swatch lookup"></span>Consulta de denuncia</span>
+            <span><span class="swatch faq"></span>Preguntas frecuentes</span>
+          </div>
+          <svg id="monthlyLineChart" width="100%" height="240" viewBox="0 0 800 240" preserveAspectRatio="none"></svg>
+          <div id="chartSummary" style="margin-top:.5rem; font-weight:600; color:#0f172a;"></div>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
+{% comment %} Datos para la gráfica {% endcomment %}
+{{ monthly_metrics|json_script:"monthly-data" }}
+<script>
+(function(){
+  var svg = document.getElementById('monthlyLineChart');
+  if(!svg) return;
+  var monthly = {};
+  try {
+    monthly = JSON.parse(document.getElementById('monthly-data').textContent);
+  } catch(e) { monthly = {}; }
+  var data = [];
+  Object.keys(monthly).sort().forEach(function(month_label){
+    var d = monthly[month_label] || {};
+    data.push({ m: month_label, visits: d.visits_portal || 0, submissions: d.submissions || 0, followups: d.followups_gt3 || 0, lookup: d.lookup_complaint || 0, faq: d.faq || 0 });
+  });
+  if(!data.length) return;
+  var w = 800, h = 200, padL = 50, padR = 20, padT = 20, padB = 30;
+  var maxV = 1;
+  data.forEach(function(d){ maxV = Math.max(maxV, d.visits, d.submissions, d.followups, d.lookup, d.faq); });
+  var xStep = (w - padL - padR) / Math.max(1, (data.length - 1));
+  function pathFor(key){
+    var dstr = '';
+    data.forEach(function(item, i){
+      var x = padL + i * xStep;
+      var y = padT + (h - padT - padB) * (1 - (item[key] / maxV));
+      dstr += (i === 0 ? 'M' : 'L') + x + ',' + y + ' ';
+    });
+    return dstr;
+  }
+  // Axes and grid
+  var axis = document.createElementNS('http://www.w3.org/2000/svg','g');
+  axis.setAttribute('stroke','#cbd5e1'); axis.setAttribute('stroke-width','1');
+  var xAxis = document.createElementNS('http://www.w3.org/2000/svg','line');
+  xAxis.setAttribute('x1', padL); xAxis.setAttribute('y1', h - padB);
+  xAxis.setAttribute('x2', w - padR); xAxis.setAttribute('y2', h - padB);
+  axis.appendChild(xAxis);
+  var yAxis = document.createElementNS('http://www.w3.org/2000/svg','line');
+  yAxis.setAttribute('x1', padL); yAxis.setAttribute('y1', padT);
+  yAxis.setAttribute('x2', padL); yAxis.setAttribute('y2', h - padB);
+  axis.appendChild(yAxis);
+  var ticks = 4;
+  for(var t=1; t<=ticks; t++){
+    var y = padT + (h - padT - padB) * (1 - (t / ticks));
+    var gl = document.createElementNS('http://www.w3.org/2000/svg','line');
+    gl.setAttribute('x1', padL); gl.setAttribute('y1', y);
+    gl.setAttribute('x2', w - padR); gl.setAttribute('y2', y);
+    gl.setAttribute('stroke','#eef2f7');
+    axis.appendChild(gl);
+  }
+  svg.appendChild(axis);
+  var visits = document.createElementNS('http://www.w3.org/2000/svg','path');
+  visits.setAttribute('d', pathFor('visits'));
+  visits.setAttribute('fill','none');
+  visits.setAttribute('stroke','#0a2a5c');
+  visits.setAttribute('stroke-width','3');
+  var submissions = document.createElementNS('http://www.w3.org/2000/svg','path');
+  submissions.setAttribute('d', pathFor('submissions'));
+  submissions.setAttribute('fill','none');
+  submissions.setAttribute('stroke','#2563eb');
+  submissions.setAttribute('stroke-width','3');
+  var followups = document.createElementNS('http://www.w3.org/2000/svg','path');
+  followups.setAttribute('d', pathFor('followups'));
+  followups.setAttribute('fill','none');
+  followups.setAttribute('stroke','#ef4444');
+  followups.setAttribute('stroke-width','3');
+  var lookup = document.createElementNS('http://www.w3.org/2000/svg','path');
+  lookup.setAttribute('d', pathFor('lookup'));
+  lookup.setAttribute('fill','none');
+  lookup.setAttribute('stroke','#16a34a');
+  lookup.setAttribute('stroke-width','3');
+  var faq = document.createElementNS('http://www.w3.org/2000/svg','path');
+  faq.setAttribute('d', pathFor('faq'));
+  faq.setAttribute('fill','none');
+  faq.setAttribute('stroke','#f59e0b');
+  faq.setAttribute('stroke-width','3');
+  svg.appendChild(visits);
+  svg.appendChild(submissions);
+  svg.appendChild(followups);
+  svg.appendChild(lookup);
+  svg.appendChild(faq);
+  var months = data.map(function(d){ return d.m; });
+  function addPoint(color, key){
+    data.forEach(function(item, i){
+      var x = padL + i * xStep;
+      var y = padT + (h - padT - padB) * (1 - (item[key] / maxV));
+      var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 3.5);
+      c.setAttribute('fill', color); c.setAttribute('stroke', '#ffffff'); c.setAttribute('stroke-width', '1');
+      svg.appendChild(c);
+    });
+  }
+  addPoint('#0a2a5c','visits');
+  addPoint('#2563eb','submissions');
+  addPoint('#ef4444','followups');
+  addPoint('#16a34a','lookup');
+  addPoint('#f59e0b','faq');
+  months.forEach(function(label, i){
+    var x = padL + i * xStep;
+    var text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', x); text.setAttribute('y', h - 8);
+    text.setAttribute('fill', '#475569'); text.setAttribute('font-size','11'); text.setAttribute('text-anchor','middle');
+    text.textContent = label;
+    svg.appendChild(text);
+  });
+  var sum = data.reduce(function(acc, d){ acc.visits += d.visits; acc.submissions += d.submissions; acc.followups += d.followups; acc.lookup += d.lookup; acc.faq += d.faq; return acc; }, {visits:0, submissions:0, followups:0, lookup:0, faq:0});
+  var el = document.getElementById('chartSummary');
+  if(el) {
+    el.textContent = 'Total visitas: ' + sum.visits + ' • Denuncias: ' + sum.submissions + ' • Seguimientos > 3: ' + sum.followups + ' • Consultas: ' + sum.lookup + ' • FAQ: ' + sum.faq;
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "denunciasstyle>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <header class="update-hero">
+    <div class="update-hero__brand">
+      <img src="{% static 'images>
+      <h1>Actualización de datos<div>
+    <p class="update-hero__desc">Renueva tu perfil en tres pasos: identidad, laboral y seguridad.<header>
+
+  <nav class="stepper" aria-label="Progreso de actualización">
+    <div class="stepper__item stepper__item--active">
+      <span class="stepper__index">1<span>
+    <div>
+    <div class="stepper__item">
+      <span class="stepper__index">2<span>
+    <div>
+    <div class="stepper__item">
+      <span class="stepper__index">3<span>
+    <nav>
+
+  <section class="card card--xl">
+    <div class="card-header">
+      <span class="card-title">Identidad y contacto<span>
+    <div>
+        {% endif %}
+        <div class="grid grid-2">
+          <div class="form-group"><label for="{{ profile_form.first_name.id_for_label }}">Nombre<div>{% endif %}<label>{{ profile_form.last_name }}{% if profile_form.last_name.errors %}<div class="error">{{ profile_form.last_name.errors }}<div>
+          <div class="form-group"><label for="{{ profile_form.email.id_for_label }}">Correo<div>{% endif %}<label>{{ profile_form.phone_number }}{% if profile_form.phone_number.errors %}<div class="error">{{ profile_form.phone_number.errors }}<div>
+        <>
+        <div class="grid grid-3">
+          <div class="form-group"><label for="{{ profile_form.company.id_for_label }}">Empresa<div>{% endif %}<label>{{ profile_form.role }}{% if profile_form.role.errors %}<div class="error">{{ profile_form.role.errors }}<div>
+          <div class="form-group"><label for="{{ profile_form.area.id_for_label }}">Área<div>{% endif %}<label>{{ profile_form.branch }}{% if profile_form.branch.errors %}<div class="error">{{ profile_form.branch.errors }}<div>
+          <div class="form-group"><label for="{{ profile_form.matricula.id_for_label }}">Matrícula<div>{% endif %}<div>
+        <hr class="divider" label>{{ profile_form.employment_start }}{% if profile_form.employment_start.errors %}<div class="error">{{ profile_form.employment_start.errors }}<div>
+          <div class="form-group"><label for="{{ profile_form.employment_end.id_for_label }}">Fecha de egreso<div>{% endif %}<div>
+        <div class="actions actions--between">
+          <a class="btn" href="{% url 'denuncias:dashboard' %}">Cancelar<button>
+        <form>
+    <section>
+
+  <section class="card card--xl">
+    <div class="card-header">
+      <span class="card-title">Seguridad<span>
+    <div>
+        {% endif %}
+        <div class="grid grid-3">
+          <div class="form-group"><label for="{{ password_form.old_password.id_for_label }}">Contraseña actual<div>{% endif %}<label>{{ password_form.new_password1 }}{% if password_form.errors.new_password1 %}<div class="error">{{ password_form.errors.new_password1 }}<div>
+          <div class="form-group"><label for="{{ password_form.new_password2.id_for_label }}">Confirmar contraseña<div>{% endif %}<div>
+        <div class="actions actions--end">
+          <button type="submit" name="submit_password" value="1" class="btn btn-primary">Actualizar contraseña<div>
+      <div>
+  <div>
+{% endblock %}

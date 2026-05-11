@@ -1,0 +1,17 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Ajustes avanzados{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card-pro" style="margin-bottom:12px;">
+    <div class="card-header">
+      <span class="card-title">Ajustes del sistema</span>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">Esta sección está disponible solo para el superusuario.</p>
+      <p>Para configurar opciones del panel, ve a la sección de <a class="btn" href="{% url 'denuncias:admin_settings' %}">Configuración</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

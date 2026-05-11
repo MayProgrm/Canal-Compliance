@@ -1,0 +1,44 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Configuración inicial{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card-pro" style="margin-bottom:12px;">
+    <div class="card-header">
+      <span class="card-title">Datos personales</span>
+    </div>
+    <div class="card-body">
+      <p class="text-muted">Actualiza tus datos personales. Si es tu primer acceso, completa esta sección.</p>
+      <form method="post" action="" novalidate>
+        {% csrf_token %}
+        {% if profile_form.non_field_errors %}
+          <div class="error">{{ profile_form.non_field_errors }}</div>
+        {% endif %}
+        {{ profile_form.as_p }}
+        <div class="actions">
+          <button type="submit" name="submit_profile" value="1" class="btn btn-primary">Guardar datos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card-pro">
+    <div class="card-header">
+      <span class="card-title">Cambiar contraseña</span>
+    </div>
+    <div class="card-body">
+      <form method="post" action="" novalidate>
+        {% csrf_token %}
+        {% if password_form.non_field_errors %}
+          <div class="error">{{ password_form.non_field_errors }}</div>
+        {% endif %}
+        {{ password_form.as_p }}
+        <div class="actions">
+          <button type="submit" name="submit_password" value="1" class="btn btn-primary">Actualizar contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

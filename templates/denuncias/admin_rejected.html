@@ -1,0 +1,227 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Rechazados{% endblock %}
+{% block main_extra_classes %}container--wide{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Denuncias rechazadas</h2>
+        <p class="help-text">Listado de tickets con estado rechazada y motivo.</p>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="chips" style="margin-bottom:.5rem;">
+          <span class="chip">Total rechazadas: <strong id="chip-total-rechazadas">{{ page_obj.paginator.count }}</strong></span>
+          <span class="chip">Áreas: <strong>{{ by_area|length }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card">
+      <div class="admin-dashboard-header">
+        <span class="card-title">Filtros</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <form id="rejected-filters-form" class="filters-enhanced" aria-label="Filtros de rechazados">
+          <div class="filters-grid">
+            <div>
+              <label for="rejected-search">Buscar</label>
+              <input type="text" id="rejected-search" name="q" class="input" placeholder="Folio, estado, área…" value="{{ q|default:'' }}" />
+            </div>
+            <div>
+              <label for="area-filter">Área</label>
+              <select id="area-filter" name="area" class="input">
+                <option value="" {% if not area %}selected{% endif %}>Todas</option>
+                {% for r in by_area %}
+                  {% with opt=r.actor_area|default:'Sin área' %}
+                  <option value="{{ opt }}" {% if area == opt %}selected{% endif %}>{{ opt }}</option>
+                  {% endwith %}
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <a href="{% url 'denuncias:admin_rejected' %}" class="btn btn-outline" id="btn-clear-rejected">Limpiar</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header">
+        <span class="card-title">Listado</span>
+      </div>
+      <div class="admin-dashboard-body admin-dashboard-body--flush">
+        <div class="table-responsive">
+          <table class="complaints-table complaints-table--center complaints-table--blue complaints-table--rejected" aria-label="Listado de denuncias rechazadas">
+            <colgroup>
+              <col style="width:10%">
+              <col style="width:14%">
+              <col style="width:12%">
+              <col style="width:24%">
+              <col style="width:10%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Actualizada</th>
+                <th>Estado</th>
+                <th>Área</th>
+                <th>Ver</th>
+              </tr>
+            </thead>
+             <tbody id="rejected-body">
+               {% for c in complaints %}
+               <tr data-area="{{ c.actor_area|default:'Sin área' }}">
+                 <td class="mono">{{ c.folio }}</td>
+                 <td>{{ c.updated_at|date:'Y-m-d' }}</td>
+                 <td><span class="badge badge-danger">{{ c.get_status_display }}</span></td>
+                 <td><span class="badge badge-info">{{ c.actor_area|default:'-' }}</span></td>
+                 <td><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Abrir</a></td>
+               </tr>
+               {% empty %}
+               <tr><td colspan="5" class="text-muted">No hay denuncias rechazadas.</td></tr>
+               {% endfor %}
+               <tr id="no-results" style="display:none;"><td colspan="5" class="text-muted">Sin coincidencias.</td></tr>
+              </tbody>
+            </table>
+        </div>
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        <div class="pagination" style="margin-top:8px; display:flex; gap:.5rem;">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if area %}&area={{ area|urlencode }}{% endif %}">Anterior</a>
+          {% else %}
+            <span class="btn disabled" aria-disabled="true">Anterior</span>
+          {% endif %}
+          <span class="btn page-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-primary" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}{% if area %}&area={{ area|urlencode }}{% endif %}">Siguiente</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px; margin-bottom:24px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Distribución por área</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+          <table class="complaints-table complaints-table--center complaints-table--blue">
+            <thead>
+              <tr>
+                <th>Área</th>
+                <th>Rechazados</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in by_area %}
+                <tr>
+                  <td>{{ r.actor_area|default:'Sin área' }}</td>
+                  <td>{{ r.n }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<script>
+(function(){
+  var input = document.getElementById('rejected-search');
+  var body = document.getElementById('rejected-body');
+  var area = document.getElementById('area-filter');
+  var chipTotal = document.getElementById('chip-total-rechazadas');
+  var noResults = document.getElementById('no-results');
+  var btnClear = document.getElementById('btn-clear-rejected');
+  function norm(v){
+    var s = (v || '').toString().toLowerCase().trim();
+    try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {}
+    return s;
+  }
+  function tokens(q){ return norm(q).split(/\s+/).filter(function(t){ return !!t; }); }
+  function matchText(el, q){
+    var toks = tokens(q);
+    if(!toks.length) return true;
+    var txt = norm(el.textContent || '');
+    for(var i=0;i<toks.length;i++){ if(txt.indexOf(toks[i]) === -1) return false; }
+    return true;
+  }
+  function matchesArea(row, a){
+    var val = norm(row.getAttribute('data-area'));
+    var sel = norm(a);
+    if(!sel) return true;
+    if(sel === 'sin área' || sel === 'sin area'){ return val === '' || val === 'sin área' || val === 'sin area'; }
+    return val.indexOf(sel) !== -1;
+  }
+  function applyFilters(){
+    var q = norm(input && input.value);
+    var a = area && area.value || '';
+    var rows = body ? Array.from(body.querySelectorAll('tr')).filter(function(r){ return r.id !== 'no-results'; }) : [];
+    var shown = 0;
+    rows.forEach(function(r){
+      var ok = matchText(r, q) && matchesArea(r, a);
+      r.style.display = ok ? 'table-row' : 'none';
+      if(ok) shown++;
+    });
+    if(chipTotal){ chipTotal.textContent = shown.toString(); }
+    if(noResults){ noResults.style.display = shown === 0 ? 'table-row' : 'none'; }
+  }
+  var timer;
+  function debounced(){ clearTimeout(timer); timer = setTimeout(applyFilters, 120); }
+  if(input){ input.addEventListener('input', debounced); input.addEventListener('keyup', debounced); }
+  if(area){ area.addEventListener('change', applyFilters); area.addEventListener('input', applyFilters); }
+  if(btnClear){
+    btnClear.addEventListener('click', function(){
+      if(input) input.value = '';
+      if(area) area.value = '';
+      try {
+        var url = new URL(window.location.href);
+        var hadQ = url.searchParams.has('q');
+        var hadA = url.searchParams.has('area');
+        url.searchParams.delete('q');
+        url.searchParams.delete('area');
+        url.searchParams.delete('page');
+        if(hadQ || hadA){
+          var qs = url.searchParams.toString();
+          window.location.href = url.pathname + (qs ? ('?' + qs) : '');
+          return;
+        }
+      } catch(e) {}
+      applyFilters();
+    });
+  }
+  if(input){
+    input.addEventListener('keydown', function(ev){ if(ev.key === 'Escape'){ input.value=''; debounced(); } });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', applyFilters);
+  } else {
+    applyFilters();
+  }
+
+  function shouldAutoRefresh(){
+    var active = document.activeElement;
+    if(active){
+      var tag = (active.tagName || '').toLowerCase();
+      if(tag === 'input' || tag === 'textarea' || tag === 'select') return false;
+    }
+    var hasQuery = !!(input && input.value && input.value.trim());
+    var hasArea = !!(area && area.value && area.value.trim());
+    return !hasQuery && !hasArea;
+  }
+  setInterval(function(){
+    if(shouldAutoRefresh()) window.location.reload();
+  }, 60000);
+})();
+</script>

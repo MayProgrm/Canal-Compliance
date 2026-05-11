@@ -1,0 +1,26 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Editar usuario{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card-pro" style="margin-bottom:12px;">
+    <div class="card-header">
+      <span class="card-title">Editar perfil: {{ target_user.get_full_name|default:target_user.username }}</span>
+    </div>
+    <div class="card-body">
+      <form method="post" action="" novalidate>
+        {% csrf_token %}
+        {% if profile_form.non_field_errors %}
+          <div class="error">{{ profile_form.non_field_errors }}</div>
+        {% endif %}
+        {{ profile_form.as_p }}
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          <a class="btn" href="{% url 'denuncias:admin_roles' %}">Volver</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

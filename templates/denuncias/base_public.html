@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Canal de denuncias{% endblock %}</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32.png' %}">
+  <link rel="icon" type="image/png" sizes="48x48" href="{% static 'images/favicon-48.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon-180.png' %}">
+  {% block extra_head %}{% endblock %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="header {% block header_class %}{% endblock %}">
+    <div class="container">
+      <a href="{% url 'denuncias:home' %}" class="logo">
+        <img src="{% static 'images/gsi-logo.png' %}" alt="Logo" class="logo-img">
+        <span class="logo-text">{% block brand_text %}Canal de denuncias{% endblock %}</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="{% url 'denuncias:submit_complaint' %}">¡Quiero denunciar!</a></li>
+          <li><a href="{% url 'denuncias:lookup_complaint' %}">Consultar denuncia</a></li>
+          <li><a href="{% url 'denuncias:guide' %}">Guía de uso</a></li>
+          <li><a href="{% url 'denuncias:faq' %}">Preguntas frecuentes</a></li>
+          <li><a href="{% url 'denuncias:updates' %}">Biblioteca GSI</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Canal de denuncias. Sistema seguro y confidencial para reportar irregularidades.</p>
+    </div>
+  </footer>
+  {% include 'denuncias/chatbot_widget.html' %}
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

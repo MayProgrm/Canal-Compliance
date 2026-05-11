@@ -1,0 +1,65 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Config. métricas{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <section class="panels-grid" style="margin-top:.75rem;">
+      <article class="status-panel compact">
+        <div class="panel-header"><h3 class="panel-title">Vistas acumuladas del portal</h3></div>
+        <div class="panel-body">
+          <p>Total de vistas acumuladas: <strong>{{ pageviewstat_total }}</strong></p>
+          <p class="text-muted">Última vista: {% if pageviewstat_last %}{{ pageviewstat_last|date:'Y-m-d H:i' }}{% else %}-{% endif %}</p>
+        </div>
+      </article>
+      <article class="status-panel compact">
+        <div class="panel-header"><h3 class="panel-title">Registros y denuncias</h3></div>
+        <div class="panel-body">
+          <div class="chips">
+            <span class="chip">Registros de vistas: <strong>{{ pageviewlog_total }}</strong></span>
+            <span class="chip">Denuncias >3 consultas: <strong>{{ complaints_lookup_gt3 }}</strong></span>
+            <span class="chip">Total denuncias: <strong>{{ complaints_total }}</strong></span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+ 
+
+    <article class="status-panel compact panel-full" style="margin-top:16px;">
+      <div class="panel-header"><h3 class="panel-title">Acciones de reseteo</h3></div>
+      <div class="panel-body">
+        <div style="display:grid; gap:.75rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+          <form method="post" action="{% url 'denuncias:admin_reset_metrics' %}">
+            {% csrf_token %}
+            <label>Escribe CONFIRMAR:</label>
+            <input type="text" name="confirm" class="input" placeholder="CONFIRMAR" required>
+            <label>Contraseña administrador:</label>
+            <input type="password" name="admin_password" class="input" placeholder="Contraseña" required>
+            <button type="submit" class="btn btn-primary btn-sm">Resetear métricas acumuladas</button>
+          </form>
+          <form method="post" action="{% url 'denuncias:admin_reset_monthly_metrics' %}">
+            {% csrf_token %}
+            <label>Escribe CONFIRMAR:</label>
+            <input type="text" name="confirm" class="input" placeholder="CONFIRMAR" required>
+            <label>Contraseña administrador:</label>
+            <input type="password" name="admin_password" class="input" placeholder="Contraseña" required>
+            <button type="submit" class="btn btn-primary btn-sm">Resetear métricas mensuales</button>
+          </form>
+          <form method="post" action="{% url 'denuncias:admin_reset_complaints' %}">
+            {% csrf_token %}
+            <label>Escribe CONFIRMAR:</label>
+            <input type="text" name="confirm" class="input" placeholder="CONFIRMAR" required>
+            <label>Contraseña administrador:</label>
+            <input type="password" name="admin_password" class="input" placeholder="Contraseña" required>
+            <button type="submit" class="btn btn-primary btn-sm">Eliminar todas las denuncias</button>
+          </form>
+        </div>
+        <p class="text-muted" style="margin-top:8px;">Estas acciones solo están disponibles en modo DEBUG.</p>
+      </div>
+    </article>
+  </div>
+</div>
+{% endblock %}

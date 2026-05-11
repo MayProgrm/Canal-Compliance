@@ -1,0 +1,38 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Actualizador{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:16px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Panel del actualizador</h2>
+        <p class="help-text">Gestiona la Biblioteca GSI y los avisos de privacidad sin usar el administrador de Django.</p>
+      </div>
+      <div class="admin-dashboard-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+        <a class="admin-card-link" href="{% url 'denuncias:actualizador_library' %}" style="text-decoration:none;">
+          <div class="card-pro" style="height:100%;">
+            <div class="card-header"><span class="card-title">Biblioteca GSI</span></div>
+            <div class="card-body">
+              <div class="help-text" style="margin:0;">Recursos totales: {{ resources_total }}</div>
+              <div class="help-text" style="margin:.25rem 0 0;">Crea, edita y elimina documentos, infografías y actualizaciones.</div>
+            </div>
+          </div>
+        </a>
+        <a class="admin-card-link" href="{% url 'denuncias:actualizador_privacy' %}" style="text-decoration:none;">
+          <div class="card-pro" style="height:100%;">
+            <div class="card-header"><span class="card-title">Avisos de privacidad</span></div>
+            <div class="card-body">
+              <div class="help-text" style="margin:0;">Avisos configurados: {{ privacy_total }}</div>
+              <div class="help-text" style="margin:.25rem 0 0;">Sube y actualiza PDFs por empresa.</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Panel de administración{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Panel de administración</h2>
+        <p class="help-text">Bienvenid@, {{ request.user.get_full_name|default:request.user.username }}.</p>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="stat-cards">
+          <div class="stat-card"><div class="stat-value">{{ total_complaints }}</div><div class="stat-label">Total Registrado</div></div>
+          {% for card in mini_cards %}
+            <div class="stat-card"><div class="stat-value">{{ card.count }}</div><div class="stat-label">{{ card.label }}</div></div>
+          {% endfor %}
+          {% for card in status_cards %}
+             {% if card.count > 0 %}
+             <div class="stat-card"><div class="stat-value">{{ card.count }}</div><div class="stat-label">{{ card.label }}</div></div>
+             {% endif %}
+          {% endfor %}
+        </div>
+        
+      </div>
+    </div>
+
+    
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Filtros</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <form method="get" class="filters-enhanced">
+          <div class="filters-grid">
+          <div>
+            <label>Estado</label>
+            <select name="status" class="input">
+              <option value="">Todos los estados</option>
+              {% for value,label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Gravedad</label>
+            <select name="severity" class="input">
+              <option value="">Todas</option>
+              {% for value,label in severity_choices %}
+                <option value="{{ value }}" {% if severity_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Tipo de denuncia</label>
+            <select name="category" class="input">
+              <option value="">Todas</option>
+              {% for value,label in category_choices %}
+                <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Buscar</label>
+            <input type="text" name="search" value="{{ search_query }}" class="input" placeholder="Folio, nombre, correo o descripción">
+          </div>
+          <div>
+            <label>Desde</label>
+            <input type="date" name="from" value="{{ date_from }}" class="input">
+          </div>
+          <div>
+            <label>Hasta</label>
+            <input type="date" name="to" value="{{ date_to }}" class="input">
+          </div>
+          </div>
+          <div class="filter-chips">
+            {% if status_filter %}<span class="filter-chip">Estado: {{ status_filter }}</span>{% endif %}
+            {% if severity_filter %}<span class="filter-chip">Gravedad: {{ severity_filter }}</span>{% endif %}
+            {% if category_filter %}<span class="filter-chip">Categoría: {{ category_filter }}</span>{% endif %}
+            {% if search_query %}<span class="filter-chip">Buscar: {{ search_query }}</span>{% endif %}
+            {% if date_from %}<span class="filter-chip">Desde: {{ date_from }}</span>{% endif %}
+            {% if date_to %}<span class="filter-chip">Hasta: {{ date_to }}</span>{% endif %}
+          </div>
+          <div class="filters-actions">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{% url 'denuncias:dashboard' %}" class="btn btn-outline">Limpiar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Denuncias</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+        <table class="complaints-table" aria-label="Listado de denuncias">
+          <thead>
+            <tr>
+              <th class="col-folio">Folio</th>
+              <th class="col-date">Fecha</th>
+              <th class="col-name">Remitente</th>
+              <th class="col-status">Estado</th>
+              <th class="col-severity">Gravedad</th>
+              <th class="col-category">Categoría</th>
+              <th class="col-desc">Descripción</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in denuncias %}
+              <tr>
+                <td class="col-folio">{{ c.folio }}</td>
+                <td class="col-date">{{ c.created_at|date:'Y-m-d H:i' }}</td>
+                <td class="col-name">{% if c.name %}{{ c.name }}{% else %}<span class="text-muted">Anónimo</span>{% endif %}</td>
+                <td class="col-status"><span class="badge badge-status {{ c.status }}">{{ c.get_status_display }}</span></td>
+                <td class="col-severity"><span class="badge">{{ c.get_severity_display }}</span></td>
+                <td class="col-category">{{ c.get_category_display|default:'-' }}</td>
+                <td class="col-desc desc-clamp">{{ c.description|default:'-' }}</td>
+                <td class="col-actions table-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Ver</a></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="text-muted">No hay denuncias recientes.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Consultas / Inquietudes</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+        <table class="complaints-table" aria-label="Listado de consultas">
+          <thead>
+            <tr>
+              <th class="col-folio">Folio</th>
+              <th class="col-date">Fecha</th>
+              <th class="col-name">Remitente</th>
+              <th class="col-status">Estado</th>
+              <th class="col-category">Categoría</th>
+              <th class="col-desc">Descripción</th>
+              <th class="col-actions">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in consultas %}
+              <tr>
+                <td class="col-folio">{{ c.folio }}</td>
+                <td class="col-date">{{ c.created_at|date:'Y-m-d H:i' }}</td>
+                <td class="col-name">{% if c.name %}{{ c.name }}{% else %}<span class="text-muted">Anónimo</span>{% endif %}</td>
+                <td class="col-status"><span class="badge badge-status {{ c.status }}">{{ c.get_status_display }}</span></td>
+                <td class="col-category">{{ c.get_category_display|default:'-' }}</td>
+                <td class="col-desc desc-clamp">{{ c.description|default:'-' }}</td>
+                <td class="col-actions table-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Ver</a></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted">No hay consultas recientes.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

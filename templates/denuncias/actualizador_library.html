@@ -1,0 +1,143 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Actualizador · Biblioteca{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:16px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Biblioteca GSI</h2>
+        <p class="help-text">Administra recursos visibles en la sección de Biblioteca (documentos, infografías y actualizaciones).</p>
+      </div>
+      <div class="admin-dashboard-body">
+        {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}
+              <li class="message {{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% for kind, label, items in groups %}
+          <div class="card-pro" style="margin-bottom:16px;">
+            <div class="card-header">
+              <span class="card-title">{{ label }}</span>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive" style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                <table class="complaints-table complaints-table--blue" aria-label="Recursos">
+                  <thead>
+                    <tr>
+                      <th style="text-align:left;">Título</th>
+                      <th style="text-align:left;">Fecha</th>
+                      <th>Publicado</th>
+                      <th>Orden</th>
+                      <th style="text-align:left;">Archivo</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for it in items %}
+                      <tr>
+                        <td style="text-align:left; font-weight:700; color:#0a2a5c;">{{ it.title }}</td>
+                        <td style="text-align:left;">{% if it.published_on %}{{ it.published_on }}{% else %}-{% endif %}</td>
+                        <td>{% if it.is_published %}<span class="badge badge-success">Sí</span>{% else %}<span class="badge">No</span>{% endif %}</td>
+                        <td>{{ it.sort_order }}</td>
+                        <td style="text-align:left;">
+                          {% if it.file %}
+                            <a href="{{ it.file.url }}" target="_blank" rel="noopener">Ver</a>
+                          {% else %}
+                            <span class="text-muted">—</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <div style="display:flex; gap:.35rem; flex-wrap:wrap; justify-content:center;">
+                            <a class="btn btn-secondary btn-sm" href="{% url 'denuncias:actualizador_library' %}?edit={{ it.id }}">Editar</a>
+                            <form method="post" action="{% url 'denuncias:actualizador_library' %}" style="margin:0;">
+                              {% csrf_token %}
+                              <input type="hidden" name="action" value="delete">
+                              <input type="hidden" name="item_id" value="{{ it.id }}">
+                              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este recurso?');">Eliminar</button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="6" class="text-muted">Sin elementos.</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+        <div class="admin-dashboard-card" style="margin-top:16px;">
+          <div class="admin-dashboard-header admin-dashboard-header--light">
+            <span class="card-title">{% if edit_item %}Editar recurso{% else %}Agregar recurso{% endif %}</span>
+          </div>
+          <div class="admin-dashboard-body">
+            <form method="post" action="{% url 'denuncias:actualizador_library' %}{% if edit_item %}?edit={{ edit_item.id }}{% endif %}" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+              {% if edit_item %}<input type="hidden" name="item_id" value="{{ edit_item.id }}">{% endif %}
+              {% if form.non_field_errors %}
+                <div class="form-errors">{% for err in form.non_field_errors %}{{ err }}{% endfor %}</div>
+              {% endif %}
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:.75rem 1rem;">
+                <div>
+                  <label class="form-label" for="{{ form.kind.id_for_label }}">{{ form.kind.label }}</label>
+                  {{ form.kind }}
+                  {% for err in form.kind.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+                </div>
+                <div>
+                  <label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                  {{ form.title }}
+                  {% for err in form.title.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+                </div>
+                <div style="grid-column: 1 / -1;">
+                  <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                  {{ form.description }}
+                  {% for err in form.description.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+                </div>
+                <div>
+                  <label class="form-label" for="{{ form.file.id_for_label }}">{{ form.file.label }}</label>
+                  {{ form.file }}
+                  {% for err in form.file.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+                </div>
+                <div>
+                  <label class="form-label" for="{{ form.published_on.id_for_label }}">{{ form.published_on.label }}</label>
+                  {{ form.published_on }}
+                  {% for err in form.published_on.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+                </div>
+                <div>
+                  <label class="form-label" for="{{ form.sort_order.id_for_label }}">{{ form.sort_order.label }}</label>
+                  {{ form.sort_order }}
+                  {% for err in form.sort_order.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+                </div>
+                <div style="display:flex; align-items:end; gap:.5rem;">
+                  <div class="form-check" style="display:flex; align-items:center; gap:.5rem; margin-bottom:.35rem;">
+                    {{ form.is_published }}
+                    <label class="form-label" for="{{ form.is_published.id_for_label }}" style="margin:0;">{{ form.is_published.label }}</label>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:flex-end; gap:.5rem; margin-top:1rem;">
+                {% if edit_item %}
+                  <a class="btn btn-secondary" href="{% url 'denuncias:actualizador_library' %}">Cancelar</a>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">{% if edit_item %}Guardar{% else %}Agregar{% endif %}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

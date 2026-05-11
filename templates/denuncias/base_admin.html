@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Panel de administración{% endblock %}<style.css' %}">
+  <link rel="icon" type="imagefavicon-16.png' %}">
+  <link rel="icon" type="imagefavicon-32.png' %}">
+  <link rel="icon" type="imagefavicon-48.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'imageshead>
+<body>
+  <header class="header">
+    <div class="container">
+        <a href="{% if request.user.is_authenticated and request.user.is_staff %}{% url 'denuncias:dashboard' %}{% else %}{% url 'denuncias:login' %}{% endif %}" class="logo">
+            <img src="{% static 'imagesspan>
+      <a><a><a><ul>
+      <div>
+  <div>
+        {% endfor %}
+      {% endif %}
+      {% block content %}{% endblock %}
+    <main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 Panel de administración del canal de denuncias.<div>
+  <main.js' %}"><body>
+</html>

@@ -1,0 +1,236 @@
+{% extends 'denuncias/base_public.html' %}
+
+{% block title %}Enviar denuncia{% endblock %}
+
+{% block content %}
+<div class="pf-form">
+  <header class="pf-hero">
+    <h1 class="pf-title">Enviar una denuncia</h1>
+    <p class="pf-subtitle">Comparte la información esencial de forma clara y segura. Puedes enviar de forma anónima; únicamente la descripción es obligatoria.</p>
+  </header>
+
+  
+
+  <div class="pf-card">
+    <div class="pf-triangle" aria-hidden="true"></div>
+    <form method="post" enctype="multipart/form-data" class="pf-body" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="validation-error">
+          {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+      {% endif %}
+
+      <section class="pf-section" id="section-report">
+        <h3 class="pf-section-title">Antes de continuar</h3>
+        <p class="pf-section-desc">Elige las opciones que mejor describen tu caso. Al seleccionar, se mostrarán las secciones siguientes en esta misma pantalla.</p>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.relationship.id_for_label }}" class="pf-label">Relación con la empresa</label>
+            {{ form.relationship }}
+            {% if form.relationship.errors %}<div class="validation-error">{% for err in form.relationship.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.reporting_mode.id_for_label }}" class="pf-label required">Modo de reporte</label>
+            {{ form.reporting_mode }}
+            {% if form.reporting_mode.errors %}<div class="validation-error">{% for err in form.reporting_mode.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-section" id="section-personal">
+        <h3 class="pf-section-title">Tus datos</h3>
+        <p class="pf-section-desc">Comparte tus datos de contacto si deseas seguimiento.</p>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.name.id_for_label }}" class="pf-label">Nombre y apellidos</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="validation-error">{% for err in form.name.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.email.id_for_label }}" class="pf-label">Correo electrónico</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="validation-error">{% for err in form.email.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.phone.id_for_label }}" class="pf-label">Teléfono</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}<div class="validation-error">{% for err in form.phone.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.reporter_matricula.id_for_label }}" class="pf-label">Matrícula (si eres colaborador)</label>
+            {{ form.reporter_matricula }}
+            {% if form.reporter_matricula.errors %}<div class="validation-error">{% for err in form.reporter_matricula.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.company_role.id_for_label }}" class="pf-label">Rol</label>
+            {{ form.company_role }}
+            {% if form.company_role.errors %}<div class="validation-error">{% for err in form.company_role.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.category.id_for_label }}" class="pf-label">Categoría</label>
+            {{ form.category }}
+            {% if form.category.errors %}<div class="validation-error">{% for err in form.category.errors %}{{ err }}{% endfor %}</div>{% endif %}
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-section" id="section-incident">
+        <h3 class="pf-section-title">Ubicación y tiempo</h3>
+        <p class="pf-section-desc">Indica dónde y cuándo ocurrió el incidente.</p>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.incident_state.id_for_label }}" class="pf-label">Estado</label>
+            {{ form.incident_state }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.incident_branch.id_for_label }}" class="pf-label">Sucursal</label>
+            {{ form.incident_branch }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.incident_date.id_for_label }}" class="pf-label">Fecha del hecho</label>
+            {{ form.incident_date }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.incident_time.id_for_label }}" class="pf-label">Hora del hecho</label>
+            {{ form.incident_time }}
+          </div>
+        </div>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.knows_actor.id_for_label }}" class="pf-label">¿Sabe quién realizó la acción o acto?</label>
+            {{ form.knows_actor }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.reporter_role.id_for_label }}" class="pf-label">Tu rol</label>
+            {{ form.reporter_role }}
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-section" id="section-actors">
+        <h3 class="pf-section-title">Involucrados y testigos</h3>
+        <p class="pf-section-desc">Datos del denunciado y testigos, si aplica.</p>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.actor_name.id_for_label }}" class="pf-label">Nombre del denunciado</label>
+            {{ form.actor_name }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.actor_matricula.id_for_label }}" class="pf-label">Matrícula del denunciado</label>
+            {{ form.actor_matricula }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.actor_area.id_for_label }}" class="pf-label">Área del denunciado</label>
+            {{ form.actor_area }}
+          </div>
+        </div>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.has_witnesses.id_for_label }}" class="pf-label">¿Hay testigos?</label>
+            {{ form.has_witnesses }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.witnesses_count.id_for_label }}" class="pf-label">Cantidad de testigos</label>
+            {{ form.witnesses_count }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.witnesses_names.id_for_label }}" class="pf-label">Nombres de testigos</label>
+            {{ form.witnesses_names }}
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-section" id="section-description">
+        <h3 class="pf-section-title required">Descripción y evidencia</h3>
+        <p class="pf-section-desc">Describe con detalle lo ocurrido y, si lo deseas, adjunta archivos.</p>
+        <div class="pf-field">
+          {{ form.description }}
+          {% if form.description.errors %}<div class="validation-error">{% for err in form.description.errors %}{{ err }}{% endfor %}</div>{% endif %}
+        </div>
+        <div class="pf-field">
+          <label for="{{ form.attachments.id_for_label }}" class="pf-label">Adjuntar evidencia (opcional)</label>
+          {{ form.attachments }}
+          {% if form.attachments.help_text %}<div class="help-text">{{ form.attachments.help_text }}</div>{% endif %}
+          {% if form.attachments.errors %}<div class="validation-error">{% for err in form.attachments.errors %}{{ err }}{% endfor %}</div>{% endif %}
+        </div>
+      </section>
+
+      <section class="pf-section" id="section-extra">
+        <h3 class="pf-section-title">Preguntas adicionales</h3>
+        <p class="pf-section-desc">Información que ayuda a entender el contexto y la recurrencia.</p>
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label for="{{ form.recurrence.id_for_label }}" class="pf-label">¿El hecho fue único o se repite?</label>
+            {{ form.recurrence }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.recurrence_since.id_for_label }}" class="pf-label">Si se repite, ¿desde cuándo ocurre?</label>
+            {{ form.recurrence_since }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.immediate_risk.id_for_label }}" class="pf-label">¿Existe algún riesgo inmediato?</label>
+            {{ form.immediate_risk }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.previous_report.id_for_label }}" class="pf-label">¿Lo has reportado antes?</label>
+            {{ form.previous_report }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.previous_report_channel.id_for_label }}" class="pf-label">Si lo reportaste, ¿por dónde?</label>
+            {{ form.previous_report_channel }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.contact_preference.id_for_label }}" class="pf-label">Preferencia para contactarte</label>
+            {{ form.contact_preference }}
+          </div>
+          <div class="pf-field">
+            <label for="{{ form.share_permission.id_for_label }}" class="pf-label">Autorización para compartir detalles</label>
+            {{ form.share_permission }}
+          </div>
+        </div>
+        <div class="pf-field">
+          <label for="{{ form.impact_notes.id_for_label }}" class="pf-label">Notas sobre el impacto (opcional)</label>
+          {{ form.impact_notes }}
+        </div>
+      </section>
+
+      <section class="pf-section" id="section-consent">
+        <h3 class="pf-section-title">Consentimientos</h3>
+        <div class="pf-check">
+          <label for="share_authorize" class="pf-check-label">
+            <input type="checkbox" name="share_authorize" id="share_authorize" required>
+            Autorizo compartir detalles con RRHH/Comité para investigar
+          </label>
+        </div>
+        <div class="pf-check">
+          <label for="terms_accept" class="pf-check-label">
+            <input type="checkbox" name="terms_accept" id="terms_accept" required>
+            Acepto términos y condiciones
+          </label>
+        </div>
+      </section>
+
+      <div class="pf-actions">
+        <button type="submit" class="btn btn-primary">Enviar denuncia</button>
+        <a href="{% url 'denuncias:home' %}" class="btn btn-secondary">Volver al inicio</a>
+      </div>
+    </form>
+  </div>
+  <div class="pf-divider" role="separator" aria-hidden="true"></div>
+  <section class="pf-privacy" aria-labelledby="privacyTitle">
+    <div class="pf-privacy-icon" aria-hidden="true">🔒</div>
+    <div class="pf-privacy-content">
+      <h4 id="privacyTitle">Tu privacidad es importante</h4>
+      <ul class="pf-privacy-list">
+        <li>Todos los datos son tratados con confidencialidad.</li>
+        <li>Puedes enviar denuncias de forma completamente anónima.</li>
+        <li>Recibirás un folio único para dar seguimiento a tu caso.</li>
+        <li>Solo el personal autorizado tendrá acceso a tu información.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'denuncias/base_public.html' %}
+
+{% block title %}Consultar denuncia{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <h1 class="page-hero-title">Consultar denuncia</h1>
+  <p class="page-hero-subtitle" style="text-align:center;">Ingresa tu folio para ver el avance, adjuntos y mensajes de tu caso.</p>
+  </section>
+<section class="status-panel status-panel--lookup" role="region" aria-label="Buscar folio">
+  <div class="panel-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-col">
+          <label for="{{ form.folio.id_for_label }}" class="form-label">Número de folio</label>
+          {{ form.folio }}
+          <div class="help-text">Ejemplo: GSI-XY4821</div>
+        </div>
+        <div class="form-col">
+          <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
+          {{ form.password }}
+          <div class="help-text">La que generaste al crear tu reporte</div>
+        </div>
+      </div>
+      <div class="form-actions action-group">
+        <button type="submit" class="btn btn-primary">Consultar denuncia</button>
+        <a href="{% url 'denuncias:home' %}" class="btn btn-secondary">Volver al inicio</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+{% if complaint %}
+
+<div class="cards-grid">
+  {% if complaint.action_type != 'consulta' %}
+  <section class="status-panel status-panel--status">
+    <div class="panel-header"><h2 class="panel-title">Estado del reporte</h2></div>
+    <div class="panel-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+      <div style="margin-bottom: 1.5rem;">
+        <div class="chip" style="font-size: 1.25rem; padding: 0.6rem 1.2rem; display: inline-block; margin-bottom: 0.75rem;">{{ complaint.get_status_display }}</div>
+        <div class="ticket-meta" style="color: #64748b; font-size: 0.9rem;">Última actualización:<br>{{ complaint.updated_at|date:'d/m/Y H:i' }}</div>
+      </div>
+      <div class="progress-bar {% if complaint.status == 'enviado' %}stage-1{% elif complaint.status == 'admitido' %}stage-2{% elif complaint.status == 'investigacion' %}stage-3{% elif complaint.status == 'resolucion' %}stage-4{% elif complaint.status == 'resuelto' %}stage-5{% elif complaint.status == 'rechazado' %}stage-5{% endif %}" style="margin: 0 auto; width: 100%;"></div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="status-panel status-panel--summary">
+    <div class="panel-header"><h2 class="panel-title">Qué sigue</h2></div>
+    <div class="panel-body" style="display: flex; flex-direction: column; justify-content: center; padding: 2rem;">
+      {% if complaint.action_type == 'consulta' %}
+        {% if complaint.status == 'enviado' %}
+          <div class="next-steps">Tu consulta fue recibida y será atendida en breve.</div>
+          <ul class="compact-list"><li>Espera nuestra respuesta por este mismo canal.</li><li>Si requerimos más detalles, te escribiremos por el chat.</li></ul>
+        {% elif complaint.status == 'admitido' %}
+          <div class="next-steps">Tu consulta está siendo revisada por el equipo encargado.</div>
+          <ul class="compact-list"><li>Estamos analizando tu inquietud.</li><li>Pronto recibirás una actualización.</li></ul>
+        {% elif complaint.status == 'investigacion' %}
+          <div class="next-steps">Estamos analizando los detalles de tu consulta.</div>
+          <ul class="compact-list"><li>El equipo está trabajando en tu respuesta.</li></ul>
+        {% elif complaint.status == 'resolucion' %}
+          <div class="next-steps">Estamos redactando la respuesta a tu consulta.</div>
+          <ul class="compact-list"><li>Te notificaremos en cuanto esté lista.</li></ul>
+        {% elif complaint.status == 'resuelto' %}
+          <div class="next-steps">Tu consulta ha sido atendida.</div>
+          <ul class="compact-list"><li>Revisa la respuesta en la sección de Actualizaciones.</li></ul>
+        {% elif complaint.status == 'rechazado' %}
+          <div class="next-steps">Tu consulta ha sido cerrada.</div>
+          <ul class="compact-list"><li>Revisa el motivo en Actualizaciones.</li></ul>
+        {% else %}
+          <div class="next-steps">Tu consulta está en proceso.</div>
+        {% endif %}
+      {% else %}
+        {% if complaint.status == 'enviado' %}
+          <div class="next-steps">Tu denuncia fue recibida y pasará a revisión inicial en un plazo de 3 a 5 días hábiles.</div>
+          <ul class="compact-list"><li>Espera confirmación por este mismo canal.</li><li>Si se requiere información adicional, verás aquí un chat habilitado.</li></ul>
+        {% elif complaint.status == 'admitido' %}
+          <div class="next-steps">Estamos revisando tu reporte para confirmar elementos y alcance.</div>
+          <ul class="compact-list"><li>Podríamos contactarte por este canal.</li><li>Tu caso avanzará a investigación si procede.</li></ul>
+        {% elif complaint.status == 'investigacion' %}
+          <div class="next-steps">Se están recopilando evidencias y realizando entrevistas.</div>
+          <ul class="compact-list"><li>Tiempo estimado: 2–8 semanas según complejidad.</li><li>Comparte información extra si se solicita.</li></ul>
+        {% elif complaint.status == 'resolucion' %}
+          <div class="next-steps">Se evalúan medidas correctivas y se redacta la respuesta.</div>
+          <ul class="compact-list"><li>Recibirás comunicación aquí cuando esté lista.</li></ul>
+        {% elif complaint.status == 'resuelto' %}
+          <div class="next-steps">El caso está concluido.</div>
+          <ul class="compact-list"><li>Consulta la respuesta en Actualizaciones.</li></ul>
+        {% elif complaint.status == 'rechazado' %}
+          <div class="next-steps">Tu solicitud fue rechazada.</div>
+          <ul class="compact-list"><li>Motivo: ver Actualizaciones</li></ul>
+        {% else %}
+          <div class="next-steps">Tu caso está en proceso.</div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </section>
+
+  {% if complaint.action_type == 'consulta' %}
+  <section class="status-panel span-2">
+    <div class="panel-header"><h2 class="panel-title">Chat con el administrador</h2></div>
+    <div class="panel-body" style="padding: 1.2rem;">
+      <ul class="chat-messages" style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding: 0; list-style: none;">
+        {% for m in chat_messages %}
+          <li class="chat-msg-item {% if m.sender == 'reporter' %}reporter{% else %}admin{% endif %}">
+            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">
+               {% if m.sender == 'reporter' %}Tú{% else %}Administrador{% endif %} · {{ m.created_at|date:"d/m/Y H:i" }}
+            </div>
+            <div class="chat-bubble {% if m.sender == 'reporter' %}reporter{% else %}admin{% endif %}">
+              {{ m.message }}
+            </div>
+          </li>
+        {% empty %}
+          <li class="text-muted" style="text-align: center; padding: 1rem;">Aún no hay mensajes. Escribe tu consulta o duda aquí.</li>
+        {% endfor %}
+      </ul>
+      
+      {% if chat_enabled %}
+      <form method="post" action="{% url 'denuncias:submit_chat_message' complaint.folio %}" class="chat-form" style="margin-top: 1rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+        {% csrf_token %}
+        <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+          {{ chat_form.message }}
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1.5rem;">Enviar mensaje</button>
+          </div>
+        </div>
+      </form>
+      <style>
+        .chat-form textarea {
+          width: 100%;
+          min-height: 80px;
+          padding: 0.75rem;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-family: inherit;
+          resize: vertical;
+        }
+        .chat-form textarea:focus {
+          outline: none;
+          border-color: #0b3b7e;
+          box-shadow: 0 0 0 2px rgba(11, 59, 126, 0.1);
+        }
+        .chat-msg-item { display: flex; flex-direction: column; }
+        .chat-msg-item.reporter { align-items: flex-end; }
+        .chat-msg-item.admin { align-items: flex-start; }
+        .chat-bubble { max-width: 80%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; }
+        .chat-bubble.reporter { background: #0b3b7e; color: white; border-bottom-right-radius: 2px; }
+        .chat-bubble.admin { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 2px; }
+      </style>
+      {% endif %}
+    </div>
+  </section>
+  {% else %}
+  <section class="status-panel status-panel--updates span-2">
+    <div class="panel-header"><h2 class="panel-title">Actualizaciones</h2></div>
+    <div class="panel-body">
+      {% if chat_enabled and chat_messages %}
+        {% for msg in chat_messages|slice:":3" %}
+          <div class="update-entry"><div class="update-meta">{{ msg.created_at|date:'d/m/Y H:i' }}</div><div class="update-text">{{ msg.message }}</div></div>
+        {% endfor %}
+      {% elif complaint.response %}
+        <div class="update-entry"><div class="update-meta">Respuesta</div><div class="update-text">{{ complaint.response|linebreaksbr }}</div></div>
+      {% else %}
+        <div class="update-empty" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">No hay actualizaciones recientes.</div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if complaint.action_type != 'consulta' %}
+  <section class="status-panel status-panel--attachments span-2">
+    <div class="panel-header"><h2 class="panel-title">Adjuntos</h2></div>
+    <div class="panel-body">
+      {% with attachments=complaint.attachments.all %}
+        {% if attachments %}
+          {% for att in attachments|slice:":3" %}
+            <div class="attachment-entry"><a href="{% url 'denuncias:public_download_attachment' complaint.folio att.id %}" target="_blank" class="attachment-link">{{ att.file.name|default:'Archivo adjunto' }}</a></div>
+          {% endfor %}
+        {% else %}
+          <div class="attachments-empty" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">No hay archivos adjuntos.</div>
+        {% endif %}
+      {% endwith %}
+    </div>
+  </section>
+
+  {% if complaint.action_type != 'consulta' %}
+  <section class="status-panel">
+    <div class="panel-header"><h2 class="panel-title">Privacidad y contacto</h2></div>
+    <div class="panel-body">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="f-label">Nombre</div><div class="f-value">{% if show_reporter_name %}{{ complaint.name }}{% else %}Anónimo{% endif %}</div></div>
+        <div class="detail-item"><div class="f-label">Correo</div><div class="f-value">{{ masked_email|default:'-' }}</div></div>
+        <div class="detail-item"><div class="f-label">Teléfono</div><div class="f-value">{{ masked_phone|default:'-' }}</div></div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {% if optional_items and complaint.action_type != 'consulta' %}
+  <section class="status-panel">
+    <div class="panel-header"><h2 class="panel-title">Notas del usuario</h2></div>
+    <div class="panel-body">
+      {% if reporter_notes %}
+        <div class="updates-container">
+          {% for n in reporter_notes %}
+            <div class="update-entry">
+              <div class="update-meta">{{ n.created_at|date:'d/m/Y H:i' }}</div>
+              <div class="update-text">{{ n.content }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="no-updates">{% if complaint.action_type == 'consulta' %}Aún no hay notas.{% else %}Aún no hay notas del usuario.{% endif %}</div>
+      {% endif %}
+      <form method="post" action="{% url 'denuncias:add_reporter_note' complaint.folio %}" class="mt-2">
+        {% csrf_token %}
+        <div class="form-group">
+          {{ note_form.content }}
+        </div>
+        <div class="action-group">
+          <button type="submit" class="btn btn-primary">Agregar nota</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="status-panel span-2">
+    <div class="panel-body action-group">
+      <button type="button" id="btnPrintLookup" class="btn btn-secondary">Imprimir estado</button>
+      <a href="{% url 'denuncias:home' %}" class="btn btn-outline">Volver al inicio</a>
+    </div>
+  </section>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  const btnPrint = document.getElementById('btnPrintLookup');
+  if(btnPrint){
+    btnPrint.addEventListener('click', ()=>{ window.print(); });
+  }
+})();
+</script>
+{% endblock %}

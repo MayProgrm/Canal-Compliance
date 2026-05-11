@@ -1,0 +1,287 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Roles{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<style>
+  .roles-hero-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .roles-kpis {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+  .roles-kpi {
+    background: #f8fbff;
+    border: 1px solid #d9e8fb;
+    border-radius: 999px;
+    padding: .35rem .7rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .roles-users-card .admin-dashboard-body {
+    padding-top: .75rem;
+  }
+  .roles-users-card .table-responsive {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .roles-users-card .complaints-table {
+    table-layout: auto;
+    margin: 0;
+    width: 100%;
+  }
+  .roles-users-card .complaints-table th,
+  .roles-users-card .complaints-table td {
+    padding: .4rem .55rem;
+    font-size: .84rem;
+    line-height: 1.15;
+    vertical-align: middle;
+  }
+  .roles-users-card .complaints-table thead th {
+    font-size: .82rem;
+    letter-spacing: .2px;
+  }
+  .roles-users-card .complaints-table th:nth-child(1),
+  .roles-users-card .complaints-table td:nth-child(1),
+  .roles-users-card .complaints-table th:nth-child(2),
+  .roles-users-card .complaints-table td:nth-child(2),
+  .roles-users-card .complaints-table th:nth-child(3),
+  .roles-users-card .complaints-table td:nth-child(3) {
+    text-align: left;
+  }
+  .roles-users-card .complaints-table td:nth-child(1) {
+    font-weight: 700;
+    color: #0a2a5c;
+    white-space: nowrap;
+  }
+  .roles-users-card .complaints-table td:nth-child(3) {
+    word-break: break-word;
+  }
+  .roles-users-card .complaints-table td:nth-child(7) {
+    min-width: 220px;
+  }
+  .roles-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: .35rem;
+    align-items: center;
+  }
+  .roles-actions form {
+    margin: 0;
+  }
+  .roles-actions .btn {
+    padding: .28rem .55rem;
+    font-size: .8rem;
+    border-radius: 10px;
+  }
+  .roles-create-card .admin-dashboard-body {
+    padding-top: 1rem;
+  }
+  .roles-create-shell {
+    border: 1px solid #dbe7f8;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    padding: .9rem;
+  }
+  .roles-create-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .7rem .9rem;
+  }
+  .roles-span-2 { grid-column: 1 / -1; }
+  .roles-create-shell .form-label {
+    font-weight: 600;
+    margin-bottom: .3rem;
+    display: inline-block;
+  }
+  .roles-create-shell .help-text {
+    color: #475569;
+    font-size: .88rem;
+    line-height: 1.35;
+  }
+  .roles-create-shell .help-text ul {
+    margin: .25rem 0 0 1.15rem;
+    padding: 0;
+  }
+  .roles-create-shell .help-text li {
+    margin: .12rem 0;
+  }
+  .roles-create-footer {
+    border-top: 1px solid #e2e8f0;
+    margin-top: .8rem;
+    padding-top: .75rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  @media (max-width: 900px) {
+    .roles-create-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Roles y accesos</h2>
+        <p class="help-text">Gestiona usuarios del panel administrativo.</p>
+      </div>
+      <div class="admin-dashboard-body roles-hero-body">
+        <p class="help-text" style="margin:0;">Administra permisos, estado de acceso y datos de actualización de cada usuario.</p>
+        <div class="roles-kpis">
+          <span class="roles-kpi">Usuarios: {{ admins|length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card roles-users-card" style="margin-top:16px;">
+        <div class="admin-dashboard-header admin-dashboard-header--light">
+          <span class="card-title">Usuarios administrativos</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+          <table class="complaints-table complaints-table--admins complaints-table--blue" aria-label="Usuarios administrativos">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Acceso</th>
+              <th>Req. actualización</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in admins %}
+              <tr>
+                <td>{{ u.username }}</td>
+                <td>{{ u.get_full_name|default:'-' }}</td>
+                <td>{{ u.email|default:'-' }}</td>
+                <td>
+                  {% if u.is_superuser %}
+                    <span class="badge">Superusuario</span>
+                  {% elif u.username == 'Delegador' or u.role == 'Delegador' %}
+                    <span class="badge">Delegador</span>
+                  {% else %}
+                    <span class="badge">Staff</span>
+                  {% endif %}
+                </td>
+                <td>{% if u.is_active %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge">Inactivo</span>{% endif %}</td>
+                <td>{% if u.require_data_update %}<span class="badge">Sí</span>{% else %}<span class="badge">No</span>{% endif %}</td>
+                <td>
+                  <div class="roles-actions">
+                    {% if u.is_superuser or u.username == 'Delegador' or u.role == 'Delegador' %}
+                      <button class="btn btn-primary btn-sm" disabled>Protegido</button>
+                    {% else %}
+                      <a class="btn btn-secondary btn-sm" href="{% url 'denuncias:admin_edit_user_profile' u.id %}">Editar</a>
+                      <form method="post" action="{% url 'denuncias:admin_toggle_user_active' u.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">{% if u.is_active %}Deshabilitar{% else %}Habilitar{% endif %}</button>
+                      </form>
+                      <form method="post" action="{% url 'denuncias:admin_toggle_require_data_update' u.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-secondary btn-sm">{% if u.require_data_update %}Quitar req.{% else %}Req. update{% endif %}</button>
+                      </form>
+                      <details style="display:inline-block;">
+                        <summary class="btn btn-secondary btn-sm" style="list-style:none; cursor:pointer;">Contraseña</summary>
+                        <div style="margin-top:.5rem; min-width:240px;">
+                          <form method="post" action="{% url 'denuncias:admin_set_user_password' u.id %}" novalidate>
+                            {% csrf_token %}
+                            <div class="form-group" style="margin-bottom:.5rem;">
+                              <input name="password1" type="password" class="form-control" placeholder="Nueva contraseña" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:.5rem;">
+                              <input name="password2" type="password" class="form-control" placeholder="Confirmar contraseña" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                          </form>
+                        </div>
+                      </details>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted">No hay usuarios administrativos.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card roles-create-card" style="margin-top:16px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Crear usuario</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <p class="help-text" style="margin-top:0;">Completa los datos del nuevo usuario administrativo y define su acceso inicial.</p>
+        <form method="post" action="{% url 'denuncias:admin_create_admin_user' %}" novalidate class="roles-create-shell">
+          {% csrf_token %}
+          {% for h in create_form.hidden_fields %}{{ h }}{% endfor %}
+          {% if create_form.non_field_errors %}
+            <div class="form-errors">{% for err in create_form.non_field_errors %}{{ err }}{% endfor %}</div>
+          {% endif %}
+          <div class="roles-create-grid">
+            <div>
+              <label for="{{ create_form.username.id_for_label }}" class="form-label">{{ create_form.username.label }}</label>
+              {{ create_form.username }}
+              {% for err in create_form.username.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div>
+              <label for="{{ create_form.email.id_for_label }}" class="form-label">{{ create_form.email.label }}</label>
+              {{ create_form.email }}
+              {% for err in create_form.email.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div>
+              <label for="{{ create_form.first_name.id_for_label }}" class="form-label">{{ create_form.first_name.label }}</label>
+              {{ create_form.first_name }}
+              {% for err in create_form.first_name.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div>
+              <label for="{{ create_form.last_name.id_for_label }}" class="form-label">{{ create_form.last_name.label }}</label>
+              {{ create_form.last_name }}
+              {% for err in create_form.last_name.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div>
+              <label for="{{ create_form.phone_number.id_for_label }}" class="form-label">{{ create_form.phone_number.label }}</label>
+              {{ create_form.phone_number }}
+              {% for err in create_form.phone_number.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div class="roles-span-2">
+              <label for="{{ create_form.password1.id_for_label }}" class="form-label">{{ create_form.password1.label }}</label>
+              {{ create_form.password1 }}
+              {% if create_form.password1.help_text %}<div class="help-text" style="margin-top:.25rem;">{{ create_form.password1.help_text|safe }}</div>{% endif %}
+              {% for err in create_form.password1.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div class="roles-span-2">
+              <label for="{{ create_form.password2.id_for_label }}" class="form-label">{{ create_form.password2.label }}</label>
+              {{ create_form.password2 }}
+              {% for err in create_form.password2.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="roles-create-footer">
+            <button type="submit" class="btn btn-primary">Crear usuario</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

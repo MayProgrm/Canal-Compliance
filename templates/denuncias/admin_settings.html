@@ -1,0 +1,316 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Configuración{% endblock %}
+{% block main_extra_classes %}container--wide{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+  <div class="admin-dashboard-header admin-dashboard-header--light" style="margin-top:0.75rem; border-radius:12px;">
+    <h2 style="margin:0; font-size:1.6rem; font-weight:700;">Configuración</h2>
+    <p class="help-text" style="margin:.25rem 0 0;">Centro de administración para superusuarios</p>
+  </div>
+
+  
+
+  <div id="top-tab-general">
+  <section class="settings-grid">
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="17" y="13" width="4" height="8"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Estadísticas</h2>
+        <p>Analiza visitas, envíos y actividad mensual.</p>
+      </div>
+      <div class="settings-meta">
+        {{ total_routes_tracked }} rutas medidas
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_stats' %}">Abrir estadísticas</a></div>
+      </div>
+    </article>
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Investigación</h2>
+        <p>Planes, evidencias, hallazgos e informes por caso.</p>
+      </div>
+      <div class="settings-meta">
+        Acceso a artefactos
+        <div class="settings-actions"><button type="button" class="btn btn-primary btn-sm" id="btnOpenInvestigation">Abrir investigación</button></div>
+      </div>
+    </article>
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M7 8V6a5 5 0 0 1 10 0v2"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Exportación</h2>
+        <p>Descarga datos en Excel o consulta tablas.</p>
+      </div>
+      <div class="settings-meta">
+        Totales, gravedad, categorías, métricas
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_export' %}">Abrir exportación</a></div>
+      </div>
+    </article>
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v6H3z"/><path d="M3 9l2 12h14l2-12"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Archivo</h2>
+        <p>Consulta denuncias finales y exporta PDF.</p>
+      </div>
+      <div class="settings-meta">
+        Resuelto • Archivado • Transferido
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_archive' %}">Abrir archivo</a></div>
+      </div>
+    </article>
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M4 20c0-3 3-5 8-5s8 2 8 5"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Casos</h2>
+        <p>Denuncias asignadas por administrador.</p>
+      </div>
+      <div class="settings-meta">
+        Gestión de carga de trabajo
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_cases' %}">Abrir casos</a></div>
+      </div>
+    </article>
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M6 8h12"/><path d="M6 12h12"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Rechazados</h2>
+        <p>Motivos de rechazo y distribución por área.</p>
+      </div>
+      <div class="settings-meta">
+        Informe de motivos
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_rejected' %}">Abrir rechazados</a></div>
+      </div>
+    </article>
+
+    {% if request.user.is_superuser %}
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5 22a7 7 0 0 1 14 0"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Roles</h2>
+        <p>Consulta quién tiene acceso y sus privilegios.</p>
+      </div>
+      <div class="settings-meta">
+        {{ total_superusers }} superusuarios • {{ staff_admins }} admins
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_roles' %}">Abrir roles</a></div>
+      </div>
+    </article>
+    {% endif %}
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Orden de asignación</h2>
+        <p>Configura el orden de asignación de casos.</p>
+      </div>
+      <div class="settings-meta">
+        Turnos y prioridades
+        <div class="settings-actions">
+          <a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_assignment' %}">Abrir orden</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_distribute_areas' %}">Distribuir áreas nuevas</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Configuración de métricas</h2>
+        <p>Gestiona ajustes y mantenimiento de estadísticas.</p>
+      </div>
+      <div class="settings-meta">
+        Herramientas de mantenimiento
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_metrics_config' %}">Abrir configuración</a></div>
+      </div>
+    </article>
+  </section>
+  </div>
+
+  <div id="top-tab-investigacion" style="display:none;">
+  <div id="investigation-section" class="admin-dashboard-card" style="margin-top:0;">
+    <div class="admin-dashboard-header admin-dashboard-header--light">
+      <h2>Investigación de casos</h2>
+    </div>
+    <div class="admin-dashboard-body admin-dashboard-body--flush">
+      <div style="display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.6rem;">
+        <button type="button" class="btn btn-primary btn-sm" data-tab="inv-resumen">Resumen por caso</button>
+        <button type="button" class="btn btn-primary btn-sm" data-tab="inv-planes">Planes</button>
+        <button type="button" class="btn btn-primary btn-sm" data-tab="inv-evidencias">Evidencias</button>
+        <button type="button" class="btn btn-primary btn-sm" data-tab="inv-hallazgos">Hallazgos</button>
+        <button type="button" class="btn btn-primary btn-sm" data-tab="inv-informes">Informes</button>
+      </div>
+      <div class="inv-filter-bar">
+        <input type="text" id="inv-search" class="input" placeholder="Buscar por folio, estado, asignado, texto…" />
+      </div>
+      <div id="inv-resumen" style="display:none;">
+        <div class="table-responsive">
+          <table class="complaints-table complaints-table--center" aria-label="Investigación de casos">
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Estado</th>
+                <th>Asignado</th>
+                <th>Plan</th>
+                <th>Evidencias</th>
+                <th>Hallazgos</th>
+                <th>Informe</th>
+                <th>Ver</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in investigation_complaints %}
+              <tr>
+                <td>{{ c.folio }}</td>
+                <td>{{ c.get_status_display }}</td>
+                <td>{% if c.assigned_to %}{{ c.assigned_to.get_full_name|default:c.assigned_to.username }}{% else %}-{% endif %}</td>
+                <td>{% if c.investigation_plan and c.investigation_plan.objective %}{{ c.investigation_plan.objective|truncatechars:80 }}{% else %}Sin plan{% endif %}</td>
+                <td>{{ c.evidence_items.count }}</td>
+                <td>{{ c.findings.count }}</td>
+                <td>{% if c.case_report and c.case_report.conclusion %}{{ c.case_report.get_conclusion_display }}{% else %}Sin informe{% endif %}</td>
+                <td><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Abrir</a></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="8" class="text-muted">Sin casos disponibles.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="inv-planes" style="display:none;">
+        <ul class="timeline" style="list-style:none; padding:0; margin-top:.5rem;">
+          {% for c in investigation_complaints %}
+          {% if c.investigation_plan %}
+          <li style="padding:.75rem .9rem; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; margin-bottom:.65rem;">
+            <div class="time" style="font-weight:600; color:#0b3b7e; font-size:.9rem;">{{ c.created_at|date:'d/m/Y H:i' }} · {{ c.folio }}</div>
+            <div class="note" style="text-align:justify; line-height:1.55; margin-top:.25rem;"><span style="display:inline-block; background:#0b3b7e; color:#fff; border-radius:10px; padding:.15rem .45rem; font-weight:600; font-size:.85rem;">Objetivo</span> <span style="color:#6b7280;">·</span> <span style="font-size:.95rem;">{{ c.investigation_plan.objective|default:'-' }}</span></div>
+            {% if c.investigation_plan.responsible %}<div class="text-muted" style="margin-top:.35rem; font-size:.85rem;">Responsable: {{ c.investigation_plan.responsible }}</div>{% endif %}
+            {% if c.investigation_plan.deadline %}<div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">Plazo: {{ c.investigation_plan.deadline|date:'d/m/Y' }}</div>{% endif %}
+            <div style="margin-top:.35rem;"><a class="btn btn-sm" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Ver caso</a></div>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+      <div id="inv-evidencias" style="display:none;">
+        <ul class="timeline" style="list-style:none; padding:0; margin-top:.5rem;">
+          {% for c in investigation_complaints %}
+          {% for ev in c.evidence_items.all %}
+          <li style="padding:.75rem .9rem; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; margin-bottom:.65rem;">
+            <div class="time" style="font-weight:600; color:#0b3b7e; font-size:.9rem;">{{ ev.obtained_at|date:'d/m/Y'|default:'-' }} · {{ c.folio }}</div>
+            <div class="note" style="text-align:justify; line-height:1.55; margin-top:.25rem;">
+              {% if ev.kind %}<span style="display:inline-block; background:#0b3b7e; color:#fff; border-radius:10px; padding:.15rem .45rem; font-weight:600; font-size:.85rem;">{{ ev.kind }}</span>{% endif %}
+              {% if ev.kind and ev.description %} <span style="color:#6b7280;">·</span> {% endif %}
+              <span style="font-size:.95rem;">{{ ev.description }}</span>
+            </div>
+            {% if ev.file %}<div class="text-muted" style="margin-top:.35rem; font-size:.85rem;"><a href="{{ ev.file.url }}" target="_blank" rel="noopener">Ver archivo</a></div>{% endif %}
+            {% if ev.related_fact %}<div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">{{ ev.related_fact }}</div>{% endif %}
+          </li>
+          {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      <div id="inv-hallazgos" style="display:none;">
+        <ul class="timeline" style="list-style:none; padding:0; margin-top:.5rem;">
+          {% for c in investigation_complaints %}
+          {% for fi in c.findings.all %}
+          <li style="padding:.75rem .9rem; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; margin-bottom:.65rem;">
+            <div class="time" style="font-weight:600; color:#0b3b7e; font-size:.9rem;">{{ fi.created_at|date:'d/m/Y H:i' }} · {{ c.folio }}</div>
+            <div class="note" style="text-align:justify; line-height:1.55; margin-top:.25rem;">
+              {% if fi.code %}<span style="display:inline-block; background:#0b3b7e; color:#fff; border-radius:10px; padding:.15rem .45rem; font-weight:600; font-size:.85rem;">{{ fi.code }}</span>{% endif %}
+              {% if fi.code and fi.description %} <span style="color:#6b7280;">·</span> {% endif %}
+              <span style="font-size:.95rem;">{{ fi.description }}</span>
+            </div>
+            {% if fi.evidence_refs %}<div class="text-muted" style="margin-top:.35rem; font-size:.85rem;">Evidencias: {{ fi.evidence_refs }}</div>{% endif %}
+            <div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">{{ fi.get_confirmation_display }} · {{ fi.get_risk_display }}</div>
+            {% if fi.policy_ref %}<div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">Política/ley: {{ fi.policy_ref }}</div>{% endif %}
+          </li>
+          {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+      <div id="inv-informes" style="display:none;">
+        <ul class="timeline" style="list-style:none; padding:0; margin-top:.5rem;">
+          {% for c in investigation_complaints %}
+          {% if c.case_report %}
+          <li style="padding:.75rem .9rem; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; margin-bottom:.65rem;">
+            <div class="time" style="font-weight:600; color:#0b3b7e; font-size:.9rem;">{{ c.case_report.updated_at|date:'d/m/Y H:i' }} · {{ c.folio }}</div>
+            <div class="note" style="text-align:justify; line-height:1.55; margin-top:.25rem;">
+              <span style="display:inline-block; background:#0b3b7e; color:#fff; border-radius:10px; padding:.15rem .45rem; font-weight:600; font-size:.85rem;">Conclusión</span> <span style="color:#6b7280;">·</span> <span style="font-size:.95rem;">{{ c.case_report.get_conclusion_display|default:'-' }}</span>
+            </div>
+            {% if c.case_report.recommendations %}<div class="text-muted" style="margin-top:.35rem; font-size:.85rem;">Recomendaciones: {{ c.case_report.recommendations|truncatechars:120 }}</div>{% endif %}
+            <div style="margin-top:.35rem;"><a class="btn btn-sm" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Ver caso</a></div>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <script>
+      (function(){
+        var btns = document.querySelectorAll('#investigation-section button[data-tab]');
+        var panes = {
+          'inv-resumen': document.getElementById('inv-resumen'),
+          'inv-planes': document.getElementById('inv-planes'),
+          'inv-evidencias': document.getElementById('inv-evidencias'),
+          'inv-hallazgos': document.getElementById('inv-hallazgos'),
+          'inv-informes': document.getElementById('inv-informes')
+        };
+        function show(name){ Object.keys(panes).forEach(function(k){ if(panes[k]) panes[k].style.display = (k===name)?'block':'none'; }); }
+        btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.getAttribute('data-tab')); }); });
+        show('inv-resumen');
+        var search = document.getElementById('inv-search');
+        function matchText(el, q){ return (el.textContent || '').toLowerCase().indexOf(q) !== -1; }
+        function filterPane(paneEl, itemSelector, q){
+          var items = paneEl ? paneEl.querySelectorAll(itemSelector) : [];
+          items.forEach(function(it){ it.style.display = (q && q.length) ? (matchText(it, q) ? '' : 'none') : ''; });
+        }
+        if(search){
+          search.addEventListener('input', function(){
+            var q = (search.value || '').toLowerCase().trim();
+            filterPane(panes['inv-resumen'], 'tbody tr', q);
+            filterPane(panes['inv-planes'], 'li', q);
+            filterPane(panes['inv-evidencias'], 'li', q);
+            filterPane(panes['inv-hallazgos'], 'li', q);
+            filterPane(panes['inv-informes'], 'li', q);
+          });
+        }
+      })();
+    </script>
+  </div>
+  </div>
+</div>
+<script>
+  (function(){
+    var panes = {
+      general: document.getElementById('top-tab-general'),
+      investigacion: document.getElementById('top-tab-investigacion')
+    };
+    function show(name){ Object.keys(panes).forEach(function(k){ if(panes[k]) panes[k].style.display = (k===name)?'block':'none'; }); }
+    var initial = (new URLSearchParams(window.location.search)).get('tab');
+    if(initial && panes[initial]) { show(initial); } else { show('general'); }
+    var openInv = document.getElementById('btnOpenInvestigation');
+    if(openInv){ openInv.addEventListener('click', function(){ show('investigacion'); window.scrollTo({ top: 0, behavior: 'smooth' }); }); }
+  })();
+</script>
+{% endblock %}

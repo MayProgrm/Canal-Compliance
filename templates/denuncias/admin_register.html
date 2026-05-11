@@ -1,0 +1,31 @@
+{% extends 'denuncias/base_public.html' %}
+
+{% block title %}Registro de administrador{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:640px;">
+  <div class="card-pro">
+    <div class="card-header">
+      <span class="card-title">Crear cuenta de administrador</span>
+    </div>
+    <div class="card-body">
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li class="message {{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <form method="post" action="" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Registrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <p class="text-muted" style="margin-top:8px;">Esta ruta es de administración y requiere privilegios adecuados.</p>
+  </div>
+</div>
+{% endblock %}

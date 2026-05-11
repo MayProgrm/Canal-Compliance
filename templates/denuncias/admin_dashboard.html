@@ -1,0 +1,158 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 768px) {
+    .filters-grid {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+</style>
+<div class="container admin-dashboard-page">
+  <div class="admin-dashboard-card">
+    <div class="admin-dashboard-header admin-dashboard-header--light">
+      <h2>Panel de administración</h2>
+      <p class="help-text">Bienvenido(a), {{ request.user.get_full_name|default:request.user.username }}.</p>
+    </div>
+    <div class="admin-dashboard-body">
+        <div class="stat-cards">
+          <div class="stat-card"><h4>Total de denuncias</h4><div class="stat-value">{{ total_complaints }}</div></div>
+        <div class="stat-card"><h4>Pendientes</h4><div class="stat-value">{{ pending_complaints }}</div></div>
+        <div class="stat-card"><h4>En revisión</h4><div class="stat-value">{{ in_review_complaints }}</div></div>
+        <div class="stat-card"><h4>Resueltas</h4><div class="stat-value">{{ resolved_complaints }}</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-card" style="margin-top:12px;">
+    <div class="admin-dashboard-header">
+      <span class="card-title">Filtros</span>
+    </div>
+    <div class="admin-dashboard-body">
+      <form method="get" class="filters-enhanced">
+        <div class="filters-grid">
+          <div>
+            <label>Estado</label>
+            <select name="status" class="input">
+              <option value="">Todos los estados</option>
+              {% for value,label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Gravedad</label>
+            <select name="severity" class="input">
+              <option value="">Todas</option>
+              {% for value,label in severity_choices %}
+                <option value="{{ value }}" {% if severity_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Categoría</label>
+            <select name="category" class="input">
+              <option value="">Todas</option>
+              {% for value,label in category_choices %}
+                <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Buscar</label>
+            <input type="text" name="search" value="{{ search_query }}" class="input" placeholder="Folio, nombre, correo o descripción">
+          </div>
+          <div>
+            <label>Desde</label>
+            <input type="date" name="from" value="{{ date_from }}" class="input">
+          </div>
+          <div>
+            <label>Hasta</label>
+            <input type="date" name="to" value="{{ date_to }}" class="input">
+          </div>
+        </div>
+        <div class="filters-actions">
+          <button type="submit" class="btn btn-primary">Filtrar</button>
+          <button type="button" id="btn-clear" class="btn btn-outline">Limpiar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+    <div class="admin-dashboard-header admin-dashboard-header--light">
+      <span class="card-title">Denuncias</span>
+    </div>
+    <div class="admin-dashboard-body">
+      <div class="table-responsive">
+        <table class="complaints-table" aria-label="Listado de tickets de denuncias">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Fecha</th>
+              <th>Consultas</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Estado</th>
+              <th>Gravedad</th>
+              <th>Categoría</th>
+              <th>Descripción</th>
+              <th>Ver</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in complaints %}
+              <tr>
+                <td>{{ c.folio }}</td>
+                <td>{{ c.created_at|date:'Y-m-d H:i' }}</td>
+                <td>{{ c.lookup_count|default:'0' }}</td>
+                <td>{% if c.name %}{{ c.name }}{% else %}<span class="text-muted">Anónimo</span>{% endif %}</td>
+                <td>{{ c.email|default:'-' }}</td>
+                <td>{{ c.get_status_display }}</td>
+                <td>{{ c.get_severity_display }}</td>
+                <td>{{ c.get_category_display|default:'-' }}</td>
+                <td class="desc-clamp">{{ c.description|default:'-' }}</td>
+                <td><a class="btn btn-primary" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Abrir</a></td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="10" class="text-muted">No hay denuncias registradas.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if is_paginated %}
+        <div class="pagination" style="margin-top:8px; display:flex; gap:.5rem;">
+          {% if page_obj.has_previous %}
+            <a class="btn btn-outline" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+          {% else %}
+            <span class="btn disabled" aria-disabled="true">Anterior</span>
+          {% endif %}
+          <span class="btn page-info">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="btn btn-primary" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<script>
+(function(){
+  var c = document.getElementById('btn-clear');
+  if(c){ c.addEventListener('click', function(){ var f = c.closest('form'); if(f){ f.reset(); } window.location.href = window.location.pathname; }); }
+})();
+</script>

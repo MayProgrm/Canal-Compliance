@@ -1,0 +1,180 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Exportación{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Exportación de datos</h2>
+        <p class="help-text">Descarga métricas, resúmenes y tablas en formato Excel o PDF.</p>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="chips">
+          <span class="chip">Denuncias: <strong>{{ total_denuncias }}</strong></span>
+          <span class="chip">Categorías: <strong>{{ categorias_counts|length }}</strong></span>
+          <span class="chip">Seguimientos ≥ 2: <strong>{{ ge2_followups_total }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <section class="export-actions-row" style="margin-top:.5rem;">
+      <article class="settings-card">
+        <div class="settings-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M14 3v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+        </div>
+        <div class="settings-content">
+          <h2>Exportar Excel</h2>
+          <p>Descarga datos y vistas del sistema en formato .xlsx.</p>
+        </div>
+        <div class="settings-meta">
+          Acciones
+          <div class="settings-actions">
+            <a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_export_excel' %}">Exportar datos (.xlsx)</a>
+            <a class="btn btn-outline btn-sm" href="{% url 'denuncias:admin_stats_export_excel' %}">Exportar vistas (.xlsx)</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="settings-card">
+        <div class="settings-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M7 3v0a5 5 0 0 1 10 0v0"/></svg>
+        </div>
+        <div class="settings-content">
+          <h2>Exportar PDF</h2>
+          <p>Genera archivo con denuncias en estado final.</p>
+        </div>
+        <div class="settings-meta">
+          Resuelto • Archivado • Transferido
+          <div class="settings-actions">
+            <a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_archive_pdf' %}">Descargar PDF</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="export-metrics-col">
+      <section class="export-mini-grid">
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header">
+          <span class="card-title">Por categoría</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table complaints-table--center complaints-table--blue complaints-table--compact" aria-label="Por categoría">
+              <thead><tr><th>Categoría</th><th>Cantidad</th></tr></thead>
+              <tbody>
+                {% for r in categorias_counts %}
+                  <tr><td>{{ r.category|default:'Sin categoría' }}</td><td>{{ r.n }}</td></tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header">
+          <span class="card-title">Por gravedad</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table complaints-table--center complaints-table--blue complaints-table--compact" aria-label="Por gravedad">
+              <thead><tr><th>Gravedad</th><th>Cantidad</th></tr></thead>
+              <tbody>
+                {% for r in gravedad_counts %}
+                  <tr><td>{{ r.severity|capfirst }}</td><td>{{ r.n }}</td></tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header">
+          <span class="card-title">Por estado</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table complaints-table--center complaints-table--blue complaints-table--compact" aria-label="Por estado">
+              <thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
+              <tbody>
+                {% for r in status_counts %}
+                  <tr><td>{{ r.status|capfirst }}</td><td>{{ r.n }}</td></tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header">
+          <span class="card-title">Seguimiento por consultas de folio</span>
+        </div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table complaints-table--center complaints-table--blue complaints-table--compact" aria-label="Seguimiento por consultas">
+              <thead><tr><th>Rango</th><th>Denuncias</th></tr></thead>
+              <tbody>
+                {% for row in seguimiento_rows %}
+                  <tr><td>{{ row.label }}</td><td>{{ row.count }}</td></tr>
+                {% empty %}
+                  <tr><td colspan="2" class="text-muted">Sin datos</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      </section>
+
+      
+
+    </section>
+
+    <div class="admin-dashboard-card" style="margin-top:16px;">
+      <div class="admin-dashboard-header">
+        <span class="card-title">Denuncias recientes</span>
+      </div>
+      <div class="admin-dashboard-body admin-dashboard-body--flush">
+        <div class="table-responsive">
+          <table class="complaints-table complaints-table--center complaints-table--blue" aria-label="Denuncias recientes">
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Categoría</th>
+                <th>Gravedad</th>
+                <th>Estado</th>
+                <th>Creada</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in generales %}
+                <tr>
+                  <td>{{ c.folio }}</td>
+                  <td>{{ c.category|default:'-' }}</td>
+                  <td>{{ c.severity|default:'-' }}</td>
+                  <td>{{ c.status|default:'-' }}</td>
+                  <td>{{ c.created_at|date:'Y-m-d H:i' }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-muted">Sin registros</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

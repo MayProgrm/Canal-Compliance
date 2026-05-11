@@ -1,0 +1,67 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Casos{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Casos por administrador</h2>
+        <p class="help-text">Listado de denuncias asignadas a cada administrador.</p>
+      </div>
+      <div class="admin-dashboard-body"></div>
+    </div>
+
+  {% for info in admin_infos %}
+    <article class="status-panel compact" style="margin-top:16px;">
+      <div class="panel-header"><h3 class="panel-title">{{ info.user.get_full_name|default:info.user.username }} — {{ info.count }} caso(s)</h3></div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          <table class="table-pro" aria-label="Casos asignados">
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Creada</th>
+                <th>Estado</th>
+                <th>Ver</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for comp in info.complaints %}
+                <tr>
+                  <td>{{ comp.folio }}</td>
+                  <td>{{ comp.created_at|date:'Y-m-d H:i' }}</td>
+                  <td>{{ comp.get_status_display }}</td>
+                  <td><a class="btn btn-sm btn-primary" href="{% url 'denuncias:admin_complaint_detail' comp.id %}">Abrir</a></td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="4" class="text-muted">Sin casos asignados.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <p class="text-muted">No hay información de casos por administrador.</p>
+  {% endfor %}
+</div>
+<script>
+(function(){
+  function shouldReload(){
+    var el = document.activeElement;
+    if(!el) return true;
+    var tag = (el.tagName || '').toLowerCase();
+    if(tag === 'input' || tag === 'textarea' || tag === 'select') return false;
+    return true;
+  }
+  setInterval(function(){
+    if(shouldReload()) window.location.reload();
+  }, 60000);
+})();
+</script>
+{% endblock %}

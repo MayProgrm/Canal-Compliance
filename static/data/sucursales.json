@@ -1,0 +1,199 @@
+{
+  "Aguascalientes": [
+    "SEPSA Aguascalientes"
+  ],
+  "Baja California": [
+    "SEPSA Ensenada",
+    "SEPSA Mexicali",
+    "TECNOVAL Ensenada",
+    "TECNOVAL Mexicali",
+    "TECNOVAL Tijuana"
+  ],
+  "Baja California Sur": [
+    "SEPSA La Paz",
+    "SEPSA Los Cabos"
+  ],
+  "Campeche": [
+    "COMETRA Campeche",
+    "COMETRA Ciudad del Carmen"
+  ],
+  "Chiapas": [
+    "COMETRA San Cristóbal de las Casas",
+    "COMETRA Tapachula",
+    "COMETRA Tuxtla Gutiérrez",
+    "TAMEME Tapachula",
+    "TAMEME Tuxtla Gutiérrez"
+  ],
+  "Chihuahua": [
+    "SEPSA Chihuahua",
+    "SEPSA Juárez",
+    "TECNOVAL Chihuahua",
+    "TECNOVAL Delicias",
+    "REGIOTRANSLADOS Ciudad Juárez"
+  ],
+  "Ciudad de México": [
+    "COMETRA La Viga",
+    "COMETRA Vallejo",
+    "SEPSA Arenal",
+    "SEGURITEC Eliodoro",
+    "TECNOVAL CDMX Norte",
+    "TECNOVAL CDMX Sur",
+    "TAMEME CDMX",
+    "GRUMER Sabino"
+  ],
+  "Coahuila": [
+    "SEPSA Acuña",
+    "SEPSA Monclova",
+    "SEPSA Piedras Negras",
+    "SEPSA Sabinas",
+    "SEPSA Saltillo",
+    "SEPSA Torreón",
+    "TECNOVAL Monclova",
+    "TECNOVAL Piedras Negras",
+    "TECNOVAL Saltillo",
+    "TECNOVAL Torreón"
+  ],
+  "Colima": [
+    "SEPSA Colima"
+  ],
+  "Durango": [
+    "SEPSA Durango"
+  ],
+  "Guanajuato": [
+    "SEPSA Celaya",
+    "SEPSA Irapuato",
+    "SEPSA León",
+    "TECNOVAL León"
+  ],
+  "Guerrero": [
+    "COMETRA Acapulco",
+    "COMETRA Chilpancingo",
+    "COMETRA Iguala",
+    "COMETRA Zihuatanejo",
+    "GRUMER Acapulco"
+  ],
+  "Hidalgo": [
+    "COMETRA Huejutla",
+    "COMETRA Pachuca",
+    "COMETRA Tula",
+    "COMETRA Tulancingo",
+    "TECNOVAL Pachuca"
+  ],
+  "Jalisco": [
+    "SEPSA Guadalajara",
+    "SEPSA Puerto Vallarta",
+    "SEGURITEC Guadalajara",
+    "TECNOVAL Guadalajara"
+  ],
+  "Estado de México": [
+    "SEPSA Toluca",
+    "SEGURITEC Toluca",
+    "TECNOVAL Toluca",
+    "GRUMER Toluca"
+  ],
+  "Michoacán": [
+    "COMETRA Lázaro Cárdenas",
+    "SEPSA Morelia",
+    "SEPSA Uruapan",
+    "SEPSA Zamora"
+  ],
+  "Morelos": [
+    "COMETRA Cuautla",
+    "COMETRA Cuernavaca",
+    "TECNOVAL Cuernavaca"
+  ],
+  "Nayarit": [
+    "SEPSA Tepic"
+  ],
+  "Nuevo León": [
+    "COMETRA Monterrey",
+    "SEPSA Monterrey",
+    "SEGURITEC Monterrey",
+    "TECNOVAL Monterrey",
+    "REGIOTRANSLADOS Monterrey",
+    "GRUMER Monterrey"
+  ],
+  "Oaxaca": [
+    "COMETRA Oaxaca",
+    "COMETRA Pinotepa Nacional",
+    "COMETRA Puerto Escondido",
+    "COMETRA Salina Cruz",
+    "COMETRA Tuxtepec"
+  ],
+  "Puebla": [
+    "COMETRA Puebla",
+    "COMETRA Tehuacán",
+    "COMETRA Teziutlán",
+    "SEGURITEC Puebla"
+  ],
+  "Querétaro": [
+    "SEPSA Querétaro",
+    "SEGURITEC Querétaro",
+    "TAMEME Querétaro"
+  ],
+  "Quintana Roo": [
+    "COMETRA Cancún",
+    "COMETRA Chetumal",
+    "COMETRA Cozumel",
+    "COMETRA Playa del Carmen",
+    "SEGURITEC Cancún"
+  ],
+  "San Luis Potosí": [
+    "COMETRA Ciudad Valles",
+    "SEPSA San Luis Potosí",
+    "SEGURITEC San Luis Potosí"
+  ],
+  "Sinaloa": [
+    "SEPSA Culiacán",
+    "SEPSA Guasave",
+    "SEPSA Los Mochis",
+    "SEPSA Mazatlán"
+  ],
+  "Sonora": [
+    "SEPSA Guaymas",
+    "SEPSA Hermosillo",
+    "SEPSA Nogales",
+    "SEPSA Obregón",
+    "SEPSA San Luis Río Colorado"
+  ],
+  "Tabasco": [
+    "COMETRA Cárdenas",
+    "COMETRA Emiliano Zapata",
+    "COMETRA Villahermosa",
+    "TECNOVAL Villahermosa",
+    "GRUMER Villahermosa"
+  ],
+  "Tamaulipas": [
+    "COMETRA Ciudad Madero",
+    "COMETRA Ciudad Mante",
+    "COMETRA Ciudad Victoria",
+    "COMETRA Matamoros",
+    "SEPSA Nuevo Laredo",
+    "SEPSA Reynosa",
+    "REGIOTRANSLADOS Matamoros",
+    "REGIOTRANSLADOS Reynosa"
+  ],
+  "Tlaxcala": [
+    "COMETRA Tlaxcala"
+  ],
+  "Veracruz": [
+    "COMETRA Veracruz",
+    "COMETRA Coatzacoalcos",
+    "COMETRA Córdoba",
+    "COMETRA Orizaba",
+    "COMETRA Poza Rica",
+    "COMETRA San Andrés Tuxtla",
+    "COMETRA Tuxpan",
+    "COMETRA Xalapa",
+    "SEGURITEC Veracruz",
+    "SEGURITEC Xalapa",
+    "REGIOTRANSLADOS Poza Rica"
+  ],
+  "Yucatán": [
+    "COMETRA Mérida",
+    "SEGURITEC Mérida"
+  ],
+  "Zacatecas": [
+    "SEPSA Zacatecas"
+  ]
+}

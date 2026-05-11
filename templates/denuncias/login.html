@@ -1,0 +1,84 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Acceso de administradores{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <section class="admin-login-card">
+    <header class="admin-login-header">
+      <div class="admin-login-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h1 class="admin-login-title">Acceso de administradores</h1>
+      <p class="admin-login-subtitle">Ingresa tus credenciales para acceder al panel de administración</p>
+    </header>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          {% if message.level_tag == 'error' %}
+            <li class="message {{ message.tags }}">{{ message }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="admin-login-body">
+      <form method="post" action="" class="admin-login-form" novalidate>
+        {% csrf_token %}
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+        <div class="form-group">
+          <label for="id_username" class="admin-label">Usuario / email</label>
+          <input id="id_username" name="username" type="text" autocomplete="username" placeholder="Nombre de usuario" required>
+          <small class="field-hint">Este campo es obligatorio</small>
+        </div>
+        <div class="form-group password-group">
+          <label for="id_password" class="admin-label">Contraseña</label>
+          <div class="password-input-wrapper">
+            <input id="id_password" name="password" type="password" autocomplete="current-password" placeholder="Contraseña" required>
+            <button type="button" class="password-toggle" aria-label="Mostrar/ocultar contraseña" data-visible="false">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="admin-btn admin-btn-primary btn-block">Iniciar sesión</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-login-footer">
+      Si necesitas acceso de administrador, contacta al responsable del sistema.
+    </div>
+  </section>
+</div>
+
+ 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function(){
+    const btn = document.querySelector('.password-toggle');
+    const input = document.getElementById('id_password');
+    if(btn && input){
+      btn.addEventListener('click', function(){
+        const isText = input.type === 'text';
+        input.type = isText ? 'password' : 'text';
+        btn.setAttribute('data-visible', (!isText).toString());
+        btn.setAttribute('aria-label', isText ? 'Mostrar contraseña' : 'Ocultar contraseña');
+      });
+    }
+  })();
+</script>
+{% endblock %}

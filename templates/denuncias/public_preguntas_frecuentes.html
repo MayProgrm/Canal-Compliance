@@ -1,0 +1,665 @@
+{% extends 'denuncias/base_public.html' %}
+
+{% block title %}Preguntas frecuentes - Canal de denuncias{% endblock %}
+
+{% block content %}
+<style>
+/* Compact FAQ styles */
+.faq-hero {
+  background: var(--primary-color);
+  color: white;
+  padding: 2.5rem 0;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.faq-hero-content h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.faq-hero-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Compact FAQ container */
+.faq-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.faq-section {
+  margin-bottom: 3.5rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  background: var(--primary-color);
+  color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(5,24,56,.12);
+  padding: 3rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.section-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+.section-header h2 {
+  font-size: 2rem;
+  color: #ffffff;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  position: relative;
+}
+
+.section-header p {
+  color: rgba(255,255,255,0.9);
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* Compact FAQ items */
+.faq-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.faq-item {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.faq-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.faq-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  background: none;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.faq-summary:hover {
+  background: #f8fafc;
+}
+
+.faq-question {
+  flex: 1;
+  margin-right: 1rem;
+  line-height: 1.3;
+}
+
+.faq-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: transform 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.faq-icon::before {
+  content: '+';
+  font-weight: bold;
+  display: block;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.faq-details[open] .faq-icon::before {
+  content: '−';
+}
+
+.faq-answer {
+  padding: 0 1.5rem 1.2rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.faq-answer p {
+  margin-bottom: 0.8rem;
+}
+
+.faq-answer ul, .faq-answer ol {
+  margin: 0.8rem 0;
+  padding-left: 1.2rem;
+}
+
+.faq-answer li {
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+
+/* Compact file formats */
+.file-formats {
+  background: #f8fafc;
+  padding: 0.8rem;
+  border-radius: 6px;
+  margin: 0.8rem 0;
+}
+
+.format-category {
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.format-category:last-child {
+  margin-bottom: 0;
+}
+
+.format-note {
+  font-style: italic;
+  color: #6b7280;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.inline-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.inline-link:hover {
+  border-bottom-color: var(--primary-color);
+}
+
+/* Compact resources section */
+.faq-resources {
+  background: #f8fafc;
+  padding: 2.5rem 0;
+  margin-top: 3rem;
+}
+
+.resources-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.resources-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.resources-header h2 {
+  font-size: 1.6rem;
+  color: var(--text-dark);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+}
+
+.resources-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.2rem;
+}
+
+.resource-card {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.resource-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.resource-icon {
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
+  display: block;
+}
+
+.resource-card h3 {
+  font-size: 1.05rem;
+  color: var(--text-dark);
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.resource-card p {
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.resource-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: gap 0.3s ease;
+}
+
+.resource-link:hover {
+  gap: 0.6rem;
+}
+
+/* Compact animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Compact responsive design */
+@media (max-width: 768px) {
+  .faq-hero-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .faq-hero-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .faq-container {
+    padding: 0 1rem;
+  }
+  
+  .faq-summary {
+    padding: 1rem 1.2rem;
+    font-size: 0.95rem;
+  }
+  
+  .faq-answer {
+    padding: 0 1.2rem 1rem;
+  }
+  
+  .resources-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .resources-container {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .faq-hero {
+    padding: 2rem 0;
+  }
+  
+  .faq-hero-content h1 {
+    font-size: 1.6rem;
+  }
+  
+  .section-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .faq-summary {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .faq-answer {
+    padding: 0 1rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .resource-card {
+    padding: 1rem;
+  }
+}
+</style>
+<div class="faq-hero">
+  <div class="faq-hero-content">
+    <h1>Preguntas frecuentes</h1>
+    <p class="faq-hero-subtitle">Resolvemos tus dudas sobre el proceso de reporte, la privacidad y el seguimiento de casos.</p>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+  </div>
+</div>
+
+<div class="faq-container">
+  <div class="faq-section">
+    <div class="section-header">
+      <h2>Sobre el proceso de reporte</h2>
+      <p>Conoce cómo funciona nuestro sistema y qué puedes esperar al realizar un reporte.</p>
+    </div>
+    
+    <div class="faq-items">
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Qué tipo de situaciones puedo reportar?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Puedes reportar situaciones clasificadas en tres categorías principales:</p>
+            <ul>
+              <li><strong>Queja:</strong> Manifestación de insatisfacción respecto a procesos internos, servicios administrativos o condiciones laborales (p. ej., deficiencias en servicios, errores administrativos).</li>
+              <li><strong>Inquietud:</strong> Consulta o duda sobre la interpretación de normativas o situaciones ambiguas (p. ej., conflictos de interés, dudas éticas).</li>
+              <li><strong>Denuncia:</strong> Reporte formal sobre actos graves que violan la ley o el Código de Ética (p. ej., fraude, corrupción, acoso, discriminación).</li>
+            </ul>
+            <p>El sistema te ayudará a identificar la categoría correcta al momento de realizar tu reporte.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Puedo realizar un reporte de forma anónima?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Sí. Nuestro sistema te permite enviar tu reporte de forma completamente anónima. Cuando eliges esta opción:</p>
+            <ul>
+              <li>El sistema oculta automáticamente los campos de datos personales.</li>
+              <li>No se registra ninguna información que pueda identificarte.</li>
+              <li>La investigación se realiza con la misma seriedad y profesionalismo.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Quién puede utilizar este canal de reportes?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>El canal está disponible para:</p>
+            <ul>
+              <li><strong>Colaboradores internos:</strong> Personal en nómina, contratistas y consultores.</li>
+              <li><strong>Proveedores y socios comerciales:</strong> Empresas y personas que colaboran con nosotros.</li>
+              <li><strong>Clientes:</strong> Usuarios de nuestros productos y servicios.</li>
+              <li><strong>Público externo:</strong> Personas que tengan conocimiento de situaciones irregulares.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Qué sucede después de enviar mi reporte?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Nuestro proceso está diseñado para ser transparente y eficiente:</p>
+            <ol>
+              <li><strong>Recepción inmediata:</strong> Recibirás un folio único de seguimiento.</li>
+              <li><strong>Revisión inicial:</strong> Evaluamos la elegibilidad y pertinencia del caso.</li>
+              <li><strong>Apertura de investigación:</strong> Si procede, asignamos el caso a especialistas.</li>
+              <li><strong>Análisis y recolección de evidencia:</strong> Investigamos a fondo los hechos.</li>
+              <li><strong>Resolución y medidas:</strong> Emitimos conclusiones y aplicamos medidas correctivas.</li>
+              <li><strong>Seguimiento continuo:</strong> Monitoreamos la implementación de medidas.</li>
+            </ol>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Cuánto tiempo toma la resolución de un caso?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>El tiempo de resolución varía según varios factores:</p>
+            <ul>
+              <li><strong>Complejidad del caso:</strong> Casos simples pueden resolverse en semanas, mientras que investigaciones complejas pueden tomar meses.</li>
+              <li><strong>Cantidad y calidad de evidencia:</strong> Más información disponible generalmente acelera el proceso.</li>
+              <li><strong>Número de personas involucradas:</strong> Casos con múltiples partes requieren más tiempo.</li>
+            </ul>
+            <p>Te mantendremos informado sobre el progreso a través de nuestro sistema de consulta con tu folio.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div class="section-header">
+      <h2>Privacidad y protección</h2>
+      <p>Tu seguridad y confidencialidad son nuestra máxima prioridad.</p>
+    </div>
+    
+    <div class="faq-items">
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Cómo protegen mi identidad y privacidad?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Implementamos medidas rigurosas de protección:</p>
+            <ul>
+              <li><strong>Cifrado de datos:</strong> Toda la información se transmite y almacena de forma segura.</li>
+              <li><strong>Acceso restringido:</strong> Solo personal autorizado puede acceder a la información.</li>
+              <li><strong>Divulgación limitada:</strong> Compartimos información únicamente cuando es estrictamente necesario para la investigación.</li>
+              <li><strong>Cumplimiento normativo:</strong> Operamos bajo estrictas normas de protección de datos personales.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Existe riesgo de represalias por reportar?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>No. Mantenemos una política estricta de <strong>no represalias</strong> que incluye:</p>
+            <ul>
+              <li><strong>Prohibición explícita:</strong> Cualquier forma de represalia está prohibida y será sancionada.</li>
+              <li><strong>Protección al reportante:</strong> Implementamos medidas para proteger a quienes reportan de buena fe.</li>
+              <li><strong>Investigación inmediata:</strong> Cualquier indicio de represalia se investiga de forma prioritaria.</li>
+              <li><strong>Medidas correctivas:</strong> Las represalias conllevan sanciones disciplinarias severas.</li>
+            </ul>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-section">
+    <div class="section-header">
+      <h2>Evidencia y seguimiento</h2>
+      <p>Información sobre cómo fortalecer tu reporte y dar seguimiento.</p>
+    </div>
+    
+    <div class="faq-items">
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Es obligatorio proporcionar evidencia?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>No es obligatorio, pero proporcionar evidencia fortalece significativamente tu reporte:</p>
+            <ul>
+              <li><strong>Documentos:</strong> Contratos, correos electrónicos, políticas internas.</li>
+              <li><strong>Registros digitales:</strong> Capturas de pantalla, archivos de audio o video.</li>
+              <li><strong>Testimonios:</strong> Declaraciones de testigos o personas involucradas.</li>
+              <li><strong>Evidencia física:</strong> Documentos impresos, fotografías.</li>
+            </ul>
+            <p>La evidencia ayuda a agilizar el proceso de investigación y fortalece la credibilidad de tu reporte.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Qué formatos de archivo son aceptados?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Aceptamos los formatos más comunes, alineados con las políticas del sistema:</p>
+            <div class="file-formats">
+              <div class="format-category">
+                <strong>Documentos:</strong> PDF, DOC, DOCX, TXT, RTF, ODT
+              </div>
+              <div class="format-category">
+                <strong>Imágenes:</strong> JPG, JPEG, PNG, GIF, BMP, WEBP
+              </div>
+              <div class="format-category">
+                <strong>Audio:</strong> MP3, WAV, OGG, M4A, AAC
+              </div>
+              <div class="format-category">
+                <strong>Video:</strong> MP4, AVI, MOV, WMV, FLV, WEBM
+              </div>
+              <div class="format-category">
+                <strong>Comprimidos:</strong> ZIP, RAR, 7Z, TAR, GZ
+              </div>
+            </div>
+            <p class="format-note">Evita archivos comprimidos protegidos con contraseña o formatos ejecutables (.exe).</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Puedo agregar información adicional después de enviar mi reporte?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Sí, puedes complementar tu reporte en cualquier momento:</p>
+            <ul>
+              <li><strong>Conserva tu folio:</strong> Es tu llave de acceso al sistema.</li>
+              <li><strong>Accede a consulta de estado:</strong> Usa nuestro portal de seguimiento.</li>
+              <li><strong>Agrega notas:</strong> Puedes incluir información adicional o aclaraciones.</li>
+              <li><strong>Adjunta nuevos documentos:</strong> Añade evidencia que fortalezca tu caso.</li>
+            </ul>
+            <p>Utiliza el enlace: <a href="{% url 'denuncias:lookup_complaint' %}" class="inline-link">Consultar denuncia</a></p>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Cómo puedo consultar el estado de mi denuncia?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>El seguimiento es simple y accesible:</p>
+            <ol>
+              <li><strong>Accede al portal:</strong> Visita nuestra sección de consulta.</li>
+              <li><strong>Ingresa tu folio:</strong> Usa el número único que recibiste al enviar.</li>
+              <li><strong>Consulta el estado:</strong> Verás el avance actual y mensajes relevantes.</li>
+              <li><strong>Historial completo:</strong> Podrás ver todas las actualizaciones del caso.</li>
+            </ol>
+            <p>Accede aquí: <a href="{% url 'denuncias:lookup_complaint' %}" class="inline-link">Consultar denuncia</a></p>
+          </div>
+        </details>
+      </div>
+
+      <div class="faq-item">
+        <details class="faq-details">
+          <summary class="faq-summary" aria-expanded="false">
+            <span class="faq-question">¿Qué ocurre si mi denuncia no procede?</span>
+            <span class="faq-icon"></span>
+          </summary>
+          <div class="faq-answer">
+            <p>Si tu denuncia no cumple los criterios de elegibilidad:</p>
+            <ul>
+              <li><strong>Notificación clara:</strong> Recibirás una explicación detallada del motivo.</li>
+              <li><strong>Archivo temporal:</strong> El caso se archiva, pero puede reabrirse.</li>
+              <li><strong>Información adicional:</strong> Podrás presentar nueva evidencia si surge.</li>
+              <li><strong>Canales alternativos:</strong> Te orientaremos sobre otros recursos disponibles.</li>
+            </ul>
+            <p>La decisión se comunica de forma respetuosa y profesional, explicando claramente los criterios aplicados.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const details = document.querySelectorAll('.faq-details');
+    details.forEach(detail => {
+      detail.addEventListener('toggle', () => {
+        const summary = detail.querySelector('summary');
+        if (summary) {
+          summary.setAttribute('aria-expanded', detail.open);
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,635 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<div class="full-bleed">
+  <div class="admin-dashboard-header admin-dashboard-header--light" style="margin-top:1.5rem;">
+    <h2>Detalles</h2>
+    <div class="actions"><span class="badge badge-status {{ complaint.status }}">{{ complaint.get_status_display }}</span></div>
+  </div>
+  <section class="status-panel">
+    <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Resumen</h3></div>
+    <div class="panel-body">
+      <div class="summary-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+        <div class="summary-item">
+          <div class="label">Creada</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{{ complaint.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+        {% if complaint.action_type != 'consulta' %}
+        <div class="summary-item">
+          <div class="label">Gravedad</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{{ complaint.get_severity_display }}</div>
+        </div>
+        {% endif %}
+        <div class="summary-item">
+          <div class="label">Categoría</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{{ complaint.get_category_display|default:complaint.category|default:"-" }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">Folio</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{{ complaint.folio }}</div>
+        </div>
+        {% if not is_delegador %}
+        <div class="summary-item">
+          <div class="label">Asignado a</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{% if complaint.assigned_to %}{{ complaint.assigned_to.get_full_name|default:complaint.assigned_to.username }}{% else %}Sin asignar{% endif %}</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">Consultas del folio</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{{ complaint.lookup_count|default:0 }}</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">Actualizada</div>
+          <div class="value" style="white-space: normal; word-break: break-word;">{{ complaint.updated_at|date:"d/m/Y H:i" }}</div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="progress-wrap">
+        <div class="status-text">{{ complaint.get_status_display }}</div>
+        <div class="progress-track">
+          <div class="progress-fill {% if complaint.status == 'info_adicional' %}bar-yellow stage-5{% elif complaint.status == 'archivado' %}bar-purple stage-5{% elif complaint.status == 'transferido' %}bar-red stage-5{% elif complaint.status == 'enviado' %}bar-green stage-1{% elif complaint.status == 'admitido' %}bar-green stage-2{% elif complaint.status == 'investigacion' %}bar-green stage-3{% elif complaint.status == 'resolucion' %}bar-green stage-4{% elif complaint.status == 'resuelto' %}bar-green stage-5{% endif %}"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if not is_delegador %}
+  <section class="status-panel" style="margin-top: 1rem;">
+    <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Actualizar estado</h3></div>
+    <div class="panel-body">
+      <form method="post" action="" style="font-size: 0.85rem;">
+        {% csrf_token %}
+        
+        {% if response_form.non_field_errors %}
+        <div class="alert alert-danger">{{ response_form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label style="font-weight: 600; margin-bottom: 0.25rem; display: block;">{{ response_form.status.label }}</label>
+          {{ response_form.status }}
+          {% if response_form.status.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ response_form.status.errors }}</div>{% endif %}
+        </div>
+
+        {% if complaint.action_type != 'consulta' %}
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label style="font-weight: 600; margin-bottom: 0.25rem; display: block;">{{ response_form.severity.label }}</label>
+          {{ response_form.severity }}
+          {% if response_form.severity.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ response_form.severity.errors }}</div>{% endif %}
+        </div>
+        {% endif %}
+
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+          <label style="font-weight: 600; margin-bottom: 0.25rem; display: block;">{{ response_form.response.label }}</label>
+          {{ response_form.response }}
+          {% if response_form.response.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ response_form.response.errors }}</div>{% endif %}
+        </div>
+
+        <div style="display:flex; gap: 0.4rem; justify-content:flex-end; margin-top: 0.5rem;">
+          <button type="submit" name="update_status" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if messages %}
+  <section class="status-panel">
+    <div class="panel-body">
+      {% for message in messages %}
+        <div class="text-muted">{{ message }}</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="detail-wide" style="margin-top:.75rem;">
+    <div class="panels-grid" style="grid-template-columns: repeat(2, minmax(360px, 1fr)); gap: 1rem; align-items: start;">
+      {% if not is_delegador and complaint.action_type != 'consulta' %}
+      <article class="status-panel">
+        <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Datos del denunciante</h3></div>
+        <div class="panel-body details-grid" style="padding:1.35rem 1.5rem;">
+          <div class="field"><div class="f-label">Nombre</div><div class="f-value">{% if complaint.name %}{{ complaint.name }}{% else %}Anónimo{% endif %}</div></div>
+          <div class="field"><div class="f-label">Correo</div><div class="f-value">{{ complaint.email|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Teléfono</div><div class="f-value">{{ complaint.phone|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Matrícula</div><div class="f-value">{{ complaint.reporter_matricula|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Relación</div><div class="f-value">{{ complaint.relationship|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Departamento</div><div class="f-value">{{ complaint.reporter_department|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Puesto</div><div class="f-value">{{ complaint.reporter_position|default:"-" }}</div></div>
+        </div>
+      </article>
+      {% endif %}
+      {% if complaint.action_type != 'consulta' %}
+      <article class="status-panel">
+        <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Incidente</h3></div>
+        <div class="panel-body details-grid" style="padding:1.35rem 1.5rem;">
+          {% if not is_delegador %}<div class="field"><div class="f-label">Estado</div><div class="f-value">{{ complaint.incident_state|default:"-" }}</div></div>{% endif %}
+          <div class="field"><div class="f-label">Sucursal</div><div class="f-value">{{ complaint.incident_branch|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Fecha/Hora</div><div class="f-value">{{ complaint.incident_date|date:"d/m/Y"|default:"-" }} {{ complaint.incident_time|time:"H:i"|default:"" }}</div></div>
+          {% if not is_delegador %}
+          <div class="field"><div class="f-label">¿Conoce al denunciado?</div><div class="f-value">{% if complaint.knows_actor %}Sí{% elif complaint.knows_actor is not None %}No{% else %}-{% endif %}</div></div>
+          <div class="field"><div class="f-label">Participación</div><div class="f-value">{{ complaint.reporter_role|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">¿Testigos?</div><div class="f-value">{{ complaint.has_witnesses|yesno:"Sí,No"|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">N° Testigos</div><div class="f-value">{{ complaint.witnesses_count|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Testigos</div><div class="f-value">{{ complaint.witnesses_names|default:"-" }}</div></div>
+          {% endif %}
+        </div>
+      </article>
+      {% if not is_delegador %}
+      <article class="status-panel">
+        <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Datos del denunciado</h3></div>
+        <div class="panel-body details-grid" style="padding:1.35rem 1.5rem;">
+          <div class="field"><div class="f-label">Nombre</div><div class="f-value">{{ complaint.actor_name|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Matrícula</div><div class="f-value">{{ complaint.actor_matricula|default:"-" }}</div></div>
+          <div class="field"><div class="f-label">Área</div><div class="f-value">{{ complaint.actor_area|default:"-" }}</div></div>
+        </div>
+      </article>
+      {% endif %}
+      {% endif %}
+      <article class="status-panel">
+        <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Adjuntos</h3></div>
+        <div class="panel-body attachments" style="padding:1.35rem 1.5rem;">
+          {% if complaint.attachment %}
+            <div class="attachment-item"><strong>Principal:</strong> <a href="{% url 'denuncias:admin_download_main_attachment' complaint.id %}" target="_blank" rel="noopener">Ver archivo</a></div>
+          {% endif %}
+          {% for a in complaint.attachments.all %}
+            <div class="attachment-item">Adicional: <a href="{% url 'denuncias:admin_download_attachment' complaint.id a.id %}" target="_blank" rel="noopener">Ver archivo</a> <span class="text-muted">({{ a.uploaded_at|date:"d/m/Y" }})</span></div>
+          {% empty %}
+            {% if not complaint.attachment %}
+            <p class="text-muted">No hay adjuntos.</p>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </article>
+    </div>
+
+    <div class="panels-grid" style="grid-template-columns: repeat(2, minmax(360px, 1fr)); gap: 1rem; align-items: start; margin-top:.75rem;">
+      {% if not is_delegador %}
+      <article class="status-panel" style="grid-column: 1 / -1;">
+        <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Descripción</h3></div>
+        <div class="panel-body" style="padding: 1.2rem;">
+          <div class="desc-box" style="text-align:justify; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem; line-height:1.6;">{{ complaint.description|linebreaksbr }}</div>
+        </div>
+      </article>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if not is_delegador %}
+  {% if complaint.action_type != 'consulta' %}
+  <section class="status-panel" style="margin-top: 1rem;">
+    <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Investigación</h3></div>
+    <div class="panel-body" style="padding: 1.2rem;">
+      <div class="inv-tabs">
+        <button type="button" class="inv-tab-btn active" data-tab="plan">Plan de investigación</button>
+        <button type="button" class="inv-tab-btn" data-tab="evidencias">Recolección de evidencias</button>
+        <button type="button" class="inv-tab-btn" data-tab="hallazgos">Registro de hallazgos</button>
+        <button type="button" class="inv-tab-btn" data-tab="informe">Informe y recomendación</button>
+      </div>
+      <div class="tab-content" style="display:grid; gap: 1rem;">
+      <div id="tab-plan" class="inv-panel" style="display:none;">
+        {% if complaint.investigation_plan %}
+        <div class="time" style="font-weight:600; margin-bottom:.35rem; color:#0b3b7e; font-size:.9rem;">{{ complaint.updated_at|date:"d/m/Y H:i" }} · {{ complaint.folio }}</div>
+        <div style="background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem;">
+          <div class="details-grid" style="padding:0 .25rem 0 .25rem; grid-template-columns: repeat(2, minmax(280px, 1fr));">
+            <div class="field"><div class="f-label">Objetivo</div><div class="f-value">{{ complaint.investigation_plan.objective|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Alcance</div><div class="f-value">{{ complaint.investigation_plan.scope|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Actividades previstas</div><div class="f-value">{{ complaint.investigation_plan.activities|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Fechas clave</div><div class="f-value">{{ complaint.investigation_plan.key_dates|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Plazo (fecha límite)</div><div class="f-value">{{ complaint.investigation_plan.deadline|date:"d/m/Y"|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Responsable</div><div class="f-value">{{ complaint.investigation_plan.responsible|default:"-" }}</div></div>
+          </div>
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'denuncias:admin_complaint_detail' complaint.id %}">
+          {% csrf_token %}
+          <div style="background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem;">
+            <div class="inv-form-grid" style="grid-template-columns: repeat(2, minmax(280px, 1fr));">
+              <div class="inv-field" style="grid-column:1 / -1;">
+                <div style="font-weight:700; margin-bottom:.2rem;">Objetivo y alcance</div>
+                <div class="text-muted" style="font-size:.85rem;">Define claramente el propósito y el alcance de la investigación.</div>
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Objetivo</label>
+                {{ plan_form.objective }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Alcance</label>
+                {{ plan_form.scope }}
+              </div>
+              <div class="inv-field" style="grid-column:1 / -1; margin-top:.25rem;">
+                <div style="font-weight:700; margin-bottom:.2rem;">Planificación y responsables</div>
+                <div class="text-muted" style="font-size:.85rem;">Detalla actividades, fechas clave, plazos y el responsable.</div>
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Actividades previstas</label>
+                {{ plan_form.activities }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Fechas clave</label>
+                {{ plan_form.key_dates }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Plazo (fecha límite)</label>
+                {{ plan_form.deadline }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Responsable</label>
+                {{ plan_form.responsible }}
+              </div>
+            </div>
+            <div class="inv-actions" style="margin-top:.5rem;">
+              <button type="submit" name="submit_plan" value="true" class="btn-inv-primary">Guardar plan</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div id="tab-evidencias" class="inv-panel" style="display:none;">
+        <form method="post" action="{% url 'denuncias:admin_complaint_detail' complaint.id %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div style="background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem;">
+            <div class="inv-form-grid" style="grid-template-columns: repeat(2, minmax(280px, 1fr));">
+              {% for field in evidence_form %}
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="inv-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="inv-error" style="color:#b00020; font-size:.85rem; margin-top:.2rem;">{{ error }}</div>{% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+            <div class="inv-actions" style="margin-top:.5rem;">
+              <button type="submit" name="add_evidence" value="true" class="btn-inv-primary">Agregar evidencia</button>
+            </div>
+          </div>
+        </form>
+        <ul class="timeline" style="margin-top:1.25rem; list-style:none; padding:0;">
+          {% for ev in evidences %}
+            <li style="padding:.75rem .9rem; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; margin-bottom:.65rem;">
+              <div class="time" style="font-weight:600; color:#0b3b7e; font-size:.9rem;">{{ ev.obtained_at|date:"d/m/Y"|default:"-" }} · {{ complaint.folio }}</div>
+              <div class="note" style="text-align:justify; line-height:1.55; margin-top:.25rem;">
+                {% if ev.kind %}<span style="display:inline-block; background:#0b3b7e; color:#fff; border-radius:10px; padding:.15rem .45rem; font-weight:600; font-size:.85rem;">{{ ev.kind }}</span>{% endif %}
+                {% if ev.kind and ev.description %} <span style="color:#6b7280;">·</span> {% endif %}
+                <span style="font-size:.95rem;">{{ ev.description }}</span>
+              </div>
+              {% if ev.file %}
+              <div class="note" style="margin-top:.35rem;"><a href="{% url 'denuncias:admin_download_evidence' complaint.id ev.id %}" target="_blank" rel="noopener">Ver archivo</a></div>
+              {% endif %}
+              {% if ev.related_fact %}
+              <div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">{{ ev.related_fact }}</div>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="text-muted">Aún no hay evidencias registradas.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div id="tab-hallazgos" class="inv-panel" style="display:none;">
+        <form method="post" action="{% url 'denuncias:admin_complaint_detail' complaint.id %}">
+          {% csrf_token %}
+          <div style="background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem;">
+            <div class="inv-form-grid" style="grid-template-columns: repeat(2, minmax(280px, 1fr));">
+              {% for field in finding_form %}
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="inv-help">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="inv-error" style="color:#b00020; font-size:.85rem; margin-top:.2rem;">{{ error }}</div>{% endfor %}
+              </div>
+              {% endfor %}
+            </div>
+            <div class="inv-actions" style="margin-top:.5rem;">
+              <button type="submit" name="add_finding" value="true" class="btn-inv-primary">Agregar hallazgo</button>
+            </div>
+          </div>
+        </form>
+        <ul class="timeline" style="margin-top:1.25rem; list-style:none; padding:0;">
+          {% for fi in findings %}
+            <li style="padding:.75rem .9rem; background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; margin-bottom:.65rem;">
+              <div class="time" style="font-weight:600; color:#0b3b7e; font-size:.9rem;">{{ fi.created_at|date:"d/m/Y H:i" }} · {{ complaint.folio }}</div>
+              {% if fi.code and fi.code != fi.description %}
+                <div class="note" style="text-align:justify; line-height:1.55; margin-top:.25rem;">
+                  <span style="display:inline-block; background:#0b3b7e; color:#fff; border-radius:10px; padding:.15rem .45rem; font-weight:600; font-size:.85rem;">{{ fi.code }}</span> <span style="color:#6b7280;">·</span> <span style="font-size:.95rem;">{{ fi.description }}</span>
+                </div>
+              {% else %}
+                <div class="note" style="text-align:justify; line-height:1.55; font-weight:500; margin-top:.25rem; font-size:.95rem;">{{ fi.description }}</div>
+              {% endif %}
+              {% if fi.evidence_refs %}
+              <div class="text-muted" style="margin-top:.35rem; font-size:.85rem;">Evidencias: {{ fi.evidence_refs }}</div>
+              {% endif %}
+              <div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">Resultado: {{ fi.get_confirmation_display }} · Riesgo: {{ fi.get_risk_display }}</div>
+              {% if fi.policy_ref %}
+              <div class="text-muted" style="margin-top:.2rem; font-size:.85rem;">Política/ley: {{ fi.policy_ref }}</div>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="text-muted">Aún no hay hallazgos registrados.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div id="tab-informe" class="inv-panel" style="display:none;">
+        {% if complaint.case_report %}
+        <div class="time" style="font-weight:600; margin-bottom:.35rem; color:#0b3b7e; font-size:.9rem;">{{ complaint.updated_at|date:"d/m/Y H:i" }} · {{ complaint.folio }}</div>
+        <div style="background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem;">
+          <div class="details-grid" style="padding:0 .25rem 0 .25rem; grid-template-columns: repeat(2, minmax(280px, 1fr));">
+            <div class="field"><div class="f-label">Resumen del caso</div><div class="f-value">{{ complaint.case_report.case_summary|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">ID del caso</div><div class="f-value">{{ complaint.case_report.case_id|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Fecha de inicio</div><div class="f-value">{{ complaint.case_report.start_date|date:"d/m/Y"|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Fecha de fin</div><div class="f-value">{{ complaint.case_report.end_date|date:"d/m/Y"|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Tipo de denuncia</div><div class="f-value">{{ complaint.case_report.complaint_type|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Hechos investigados</div><div class="f-value">{{ complaint.case_report.investigated_facts|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Metodología</div><div class="f-value">{{ complaint.case_report.methodology|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Hallazgos principales</div><div class="f-value">{{ complaint.case_report.main_findings|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Conclusión</div><div class="f-value">{{ complaint.case_report.get_conclusion_display|default:"-" }}</div></div>
+            <div class="field"><div class="f-label">Recomendaciones</div><div class="f-value">{{ complaint.case_report.recommendations|default:"-" }}</div></div>
+          </div>
+        </div>
+        {% endif %}
+        <form method="post" action="{% url 'denuncias:admin_complaint_detail' complaint.id %}">
+          {% csrf_token %}
+          <div style="background:#f9fbff; border:1px solid #e6eef8; border-radius:12px; padding:1rem;">
+            <div class="inv-form-grid" style="grid-template-columns: repeat(2, minmax(280px, 1fr));">
+              <div class="inv-field" style="grid-column:1 / -1;">
+                <div style="font-weight:700; margin-bottom:.2rem;">Información del caso</div>
+                <div class="text-muted" style="font-size:.85rem;">Identificación y datos generales del periodo y tipo de denuncia.</div>
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">ID del caso</label>
+                {{ report_form.case_id }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Tipo de denuncia</label>
+                {{ report_form.complaint_type }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Fecha de inicio</label>
+                {{ report_form.start_date }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Fecha de fin</label>
+                {{ report_form.end_date }}
+              </div>
+              <div class="inv-field" style="grid-column:1 / -1; margin-top:.25rem;">
+                <div style="font-weight:700; margin-bottom:.2rem;">Análisis y resultados</div>
+                <div class="text-muted" style="font-size:.85rem;">Resumen, hechos investigados, metodología, hallazgos, conclusión y recomendaciones.</div>
+              </div>
+              <div class="inv-field" style="grid-column:1 / -1;">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Resumen del caso</label>
+                {{ report_form.case_summary }}
+              </div>
+              <div class="inv-field" style="grid-column:1 / -1;">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Hechos investigados</label>
+                {{ report_form.investigated_facts }}
+              </div>
+              <div class="inv-field" style="grid-column:1 / -1;">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Metodología</label>
+                {{ report_form.methodology }}
+              </div>
+              <div class="inv-field" style="grid-column:1 / -1;">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Hallazgos principales</label>
+                {{ report_form.main_findings }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Conclusión</label>
+                {{ report_form.conclusion }}
+              </div>
+              <div class="inv-field">
+                <label class="inv-label" style="font-weight:600; margin-bottom:.25rem;">Recomendaciones</label>
+                {{ report_form.recommendations }}
+              </div>
+            </div>
+            <div class="inv-actions" style="margin-top:.5rem;">
+              <button type="submit" name="submit_report" value="true" class="btn-inv-primary">Guardar informe</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        var buttons = document.querySelectorAll('button[data-tab]');
+        var panes = {
+          plan: document.getElementById('tab-plan'),
+          evidencias: document.getElementById('tab-evidencias'),
+          hallazgos: document.getElementById('tab-hallazgos'),
+          informe: document.getElementById('tab-informe')
+        };
+        function show(name){
+          Object.keys(panes).forEach(function(k){ if(panes[k]) panes[k].style.display = (k===name)?'block':'none'; });
+          buttons.forEach(function(btn){ btn.classList.toggle('active', btn.getAttribute('data-tab')===name); });
+        }
+        buttons.forEach(function(b){ b.addEventListener('click', function(){ show(b.getAttribute('data-tab')); }); });
+        show('plan');
+      })();
+    </script>
+  </section>
+  {% else %}
+  <section class="status-panel" style="margin-top: 1rem;">
+    <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Chat con el usuario</h3></div>
+    <div class="panel-body" style="padding: 1.2rem;">
+      <ul class="chat-messages">
+        {% for m in chat_messages %}
+          <li>
+            <div class="time">{{ m.created_at|date:"d/m/Y H:i" }}</div>
+            <div class="text" style="text-align:justify; font-size: 0.85rem; line-height: 1.3;">{{ m.message }}</div>
+          </li>
+        {% empty %}
+          <li class="text-muted" style="font-size: 0.8rem;">Aún no hay mensajes.</li>
+        {% endfor %}
+      </ul>
+      <form method="post" action="{% url 'denuncias:admin_send_chat_message' complaint.id %}" class="chat-form" style="margin-top: 0.5rem;">
+        {% csrf_token %}
+        {{ chat_form.as_p }}
+        <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  
+
+  <div class="grid-two" style="margin-top:1rem;">
+    {% if is_delegador %}
+    <section class="status-panel">
+      <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Actualizar estado</h3></div>
+      <div class="panel-body">
+        <div class="summary-grid" style="margin-bottom:.5rem;">
+          <div class="summary-item"><div class="label">Claridad del relato</div><div class="value">{{ delegator_brief.clarity }}%</div></div>
+          <div class="summary-item"><div class="label">Campos faltantes</div><div class="value">{% if delegator_brief.missing %}{{ delegator_brief.missing|join:', ' }}{% else %}Completo{% endif %}</div></div>
+        </div>
+        <div class="grid-two">
+          <section class="status-panel">
+            <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Datos originales</h3></div>
+            <div class="panel-body">
+              <div class="field"><div class="f-label">Fecha de creación</div><div class="f-value">{{ complaint.created_at|date:"d/m/Y H:i" }}</div></div>
+              <div class="field"><div class="f-label">Gravedad</div><div class="f-value">{{ complaint.get_severity_display }}</div></div>
+              <div class="field"><div class="f-label">Categoría</div><div class="f-value">{{ complaint.get_category_display|default:'-' }}</div></div>
+              <div class="field"><div class="f-label">Folio</div><div class="f-value">{{ complaint.folio }}</div></div>
+              <div class="field"><div class="f-label">Incidente</div><div class="f-value">Sucursal: {{ complaint.incident_branch|default:'No especificada' }} — Fecha: {{ complaint.incident_date|date:"d/m/Y"|default:'No especificada' }} — Hora: {{ complaint.incident_time|time:"H:i"|default:'No especificada' }}</div></div>
+            </div>
+          </section>
+          <section class="status-panel">
+            <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Recomendación del sistema</h3></div>
+            <div class="panel-body">
+              <div class="field"><div class="f-label">Área sugerida</div><div class="f-value">{{ recommendation.area|default:'-' }} {% if diff_area %}<span class="chip">difiere del área original</span>{% endif %}</div></div>
+              <div class="field"><div class="f-label">Gravedad sugerida</div><div class="f-value">{{ recommendation.severity|default:'-' }} {% if diff_severity %}<span class="chip">difiere de la original</span>{% endif %}</div></div>
+              <div class="field"><div class="f-label">Sugerencias</div><div class="f-value">
+                <div class="text-muted" style="margin-bottom:.3rem;">Acciones recomendadas para el Delegador:</div>
+                <ul class="guidance" style="margin:.25rem 0 .5rem 1.25rem; line-height:1.5;">
+                  {% if recommendation.area %}
+                  <li>Asignar al área {{ recommendation.area }} y notificar al responsable.</li>
+                  {% else %}
+                  <li>Seleccionar manualmente el área adecuada y asignar un responsable.</li>
+                  {% endif %}
+                  {% if recommendation.severity == 'Alta' or recommendation.severity == 'Crítica' %}
+                  <li>Priorizar por gravedad y solicitar respuesta en 24–48 horas.</li>
+                  {% else %}
+                  <li>Planificar el seguimiento acorde a la prioridad indicada.</li>
+                  {% endif %}
+                  {% if delegator_brief.missing %}
+                  <li>Solicitar la información faltante: {{ delegator_brief.missing|join:', ' }}.</li>
+                  {% endif %}
+                  {% if diff_area %}
+                  <li>Confirmar la diferencia de área con los datos del caso.</li>
+                  {% endif %}
+                  {% if diff_severity %}
+                  <li>Validar la gravedad sugerida con la evidencia disponible.</li>
+                  {% endif %}
+                  <li>Registrar las acciones y actualizaciones en el sistema.</li>
+                </ul>
+              </div></div>
+            </div>
+          </section>
+        </div>
+        {% if complaint.status == 'enviado' %}
+        <section class="status-panel detail-span" style="margin-top: .75rem;">
+          <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Acciones</h3></div>
+          <div class="panel-body">
+            <form method="post" action="" style="font-size: 0.95rem;">
+              {% csrf_token %}
+              <div class="field">
+                <div class="f-label">Área manual</div>
+                <select name="assign_area" class="form-control">
+                  <option value="">Selecciona área</option>
+                  {% for area in all_areas %}
+                    <option value="{{ area }}" {% if area == complaint.actor_area %}selected{% endif %}>{{ area }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <div class="f-label">Administrador</div>
+                <select name="assign_to" class="form-control" id="assign_to_select">
+                  <option value="" selected>Selecciona administrador</option>
+                  {% for u in all_admins %}
+                    <option value="{{ u.id }}" data-area="{{ u.area|default:'' }}">{{ u.get_full_name|default:u.username }} · {{ u.area|default:'—' }}</option>
+                  {% empty %}
+                    <option value="">No hay administradores disponibles</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% if severity_choices %}
+              <div class="field">
+                <div class="f-label">Gravedad manual</div>
+                <select name="delegador_severity" class="form-control">
+                  <option value="">Selecciona gravedad</option>
+                  {% for key,label in severity_choices %}
+                    <option value="{{ key }}" {% if key == complaint.severity %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div style="display:flex; gap: .5rem; justify-content:flex-end; margin-top: .5rem;">
+                <button type="submit" name="delegador_update_severity" value="true" class="btn btn-secondary btn-sm">Actualizar gravedad</button>
+              </div>
+              {% endif %}
+              <div style="display:flex; gap: .5rem; justify-content:flex-end; margin-top: .5rem;">
+                <button type="submit" name="accept" value="true" class="btn btn-primary btn-sm">Aceptar y asignar</button>
+              </div>
+              <div class="field" style="margin-top:.5rem;">
+                <div class="f-label">Motivo de rechazo</div>
+                <textarea name="reject_reason" id="reject_reason" rows="3" class="form-control" placeholder="Explica brevemente el motivo"></textarea>
+              </div>
+              <div style="display:flex; gap: .5rem; justify-content:flex-end; margin-top: .5rem;">
+                <button type="submit" name="reject" value="true" class="btn btn-danger btn-sm">Rechazar</button>
+              </div>
+            </form>
+          </div>
+        </section>
+        {% else %}
+        <div class="text-muted" style="font-size:.95rem;">Este caso ya fue procesado por el Delegador.</div>
+        {% endif %}
+        <script>
+          (function(){
+            var areaSel = document.querySelector('select[name="assign_area"]');
+            var adminSel = document.getElementById('assign_to_select');
+            if(!areaSel || !adminSel) return;
+            var all = Array.prototype.slice.call(adminSel.querySelectorAll('option'));
+            function refresh(){
+              var area = (areaSel.value||'').trim();
+              var prev = adminSel.value;
+              adminSel.innerHTML='';
+              var opts = all.filter(function(o){
+                var a = (o.getAttribute('data-area')||'').trim();
+                return !area || a===area;
+              });
+              if(opts.length===0){
+                var op = document.createElement('option');
+                op.value=''; op.textContent='No hay administradores disponibles';
+                adminSel.appendChild(op);
+              } else {
+                opts.forEach(function(o){ adminSel.appendChild(o.cloneNode(true)); });
+                // Reseleccionar si es posible; si no, seleccionar el primero para evitar bloqueo
+                var canKeep = prev && Array.prototype.some.call(adminSel.options, function(o){ return o.value===prev; });
+                if(canKeep){ adminSel.value = prev; }
+                else { adminSel.selectedIndex = 0; }
+              }
+            }
+            refresh();
+            areaSel.addEventListener('change', refresh);
+          })();
+          (function(){
+            var form = document.querySelector('form[action=""]');
+            if(!form) return;
+            var rejectBtn = form.querySelector('button[name="reject"]');
+            var reasonEl = form.querySelector('textarea[name="reject_reason"]');
+            if(!rejectBtn || !reasonEl) return;
+            rejectBtn.addEventListener('click', function(ev){
+              var val = (reasonEl.value||'').trim();
+              if(!val){
+                ev.preventDefault();
+                alert('Debes ingresar el motivo de rechazo.');
+                reasonEl.focus();
+              }
+            });
+          })();
+        </script>
+      </div>
+    </section>
+    {% endif %}
+    {% if not is_delegador %}
+    {% if complaint.action_type != 'consulta' %}
+    <section class="status-panel">
+      <div class="panel-header" style="border-radius:16px; padding:1rem 1.25rem;"><h3 class="panel-title">Chat con el denunciante</h3></div>
+      <div class="panel-body" style="padding: 1.2rem;">
+        <ul class="chat-messages">
+          {% for m in chat_messages %}
+            <li>
+              <div class="time">{{ m.created_at|date:"d/m/Y H:i" }}</div>
+              <div class="text" style="text-align:justify; font-size: 0.85rem; line-height: 1.3;">{{ m.message }}</div>
+            </li>
+          {% empty %}
+            <li class="text-muted" style="font-size: 0.8rem;">Aún no hay mensajes.</li>
+          {% endfor %}
+        </ul>
+        <form method="post" action="{% url 'denuncias:admin_send_chat_message' complaint.id %}" class="chat-form" style="margin-top: 0.5rem;">
+          {% csrf_token %}
+          {{ chat_form.as_p }}
+          <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
+        </form>
+      </div>
+    </section>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

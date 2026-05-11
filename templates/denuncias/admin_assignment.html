@@ -1,0 +1,78 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Áreas de administración{% endblock %}
+
+{% block main_extra_classes %}container--wide{% endblock %}
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Áreas de administración</h2>
+        <p class="help-text">Administradores agrupados por área. El Delegador asigna casos por área.</p>
+      </div>
+      <div class="admin-dashboard-body"></div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:16px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Administradores por área</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+        <table class="complaints-table complaints-table--area" aria-label="Administradores por área">
+          <colgroup>
+            <col style="width:14%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:12%">
+            <col style="width:12%">
+            <col style="width:10%">
+            <col style="width:10%">
+            <col style="width:16%">
+            <col style="width:10%">
+            <col style="width:10%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Área</th>
+              <th>Admins</th>
+              <th>Activos</th>
+              <th>Pendientes delegación</th>
+              <th>Rechazados</th>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Sucursal</th>
+              <th>Activo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for group in area_groups %}
+              {% for u in group.admins %}
+                <tr>
+                  <td>{% if forloop.first %}<strong>{{ group.area }}</strong>{% endif %}</td>
+                  <td>{% if forloop.first %}{{ group.m_admins }}{% endif %}</td>
+                  <td>{% if forloop.first %}{{ group.m_activos }}{% endif %}</td>
+                  <td>{% if forloop.first %}{{ group.m_pendientes }}{% endif %}</td>
+                  <td>{% if forloop.first %}{{ group.m_rechazados }}{% endif %}</td>
+                  <td>{{ u.username }}</td>
+                  <td>{{ u.get_full_name|default:'-' }}</td>
+                  <td>{{ u.email|default:'-' }}</td>
+                  <td>{{ u.branch|default:'—' }}</td>
+                  <td>{% if u.is_active %}Sí{% else %}No{% endif %}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="10" class="text-muted">No hay administradores en esta área.</td></tr>
+              {% endfor %}
+            {% empty %}
+              <tr><td colspan="10" class="text-muted">No hay administradores elegibles.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Delegador{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Delegador</h2>
+        <p class="help-text">Denuncias nuevas pendientes de aceptación o rechazo.</p>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="stat-cards">
+          <div class="stat-card"><div class="stat-value">{{ total_pending }}</div><div class="stat-label">Pendientes</div></div>
+          <div class="stat-card"><div class="stat-value">{{ sin_area_pending }}</div><div class="stat-label">Sin área</div></div>
+          <div class="stat-card"><div class="stat-value">{{ area_breakdown|length }}</div><div class="stat-label">Áreas con pendientes</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Pendientes</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+          <table class="complaints-table" aria-label="Listado de denuncias pendientes">
+            <thead>
+              <tr>
+                <th>Folio</th>
+                <th>Fecha</th>
+                <th>Nombre</th>
+                <th>Estado</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Ver</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in complaints %}
+                <tr>
+                  <td>{{ c.folio }}</td>
+                  <td>{{ c.created_at|date:'Y-m-d H:i' }}</td>
+                  <td>{% if c.name %}{{ c.name }}{% else %}<span class="text-muted">Anónimo</span>{% endif %}</td>
+                  <td>{{ c.get_status_display }}</td>
+                  <td>{{ c.get_category_display|default:'-' }}</td>
+                  <td class="desc-clamp">{{ c.description|default:'-' }}</td>
+                  <td><a href="{% url 'denuncias:admin_complaint_detail' c.id %}" class="btn btn-sm">Revisar</a></td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="7" class="text-muted">No hay denuncias pendientes.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Distribución por área</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+          <table class="complaints-table compact">
+            <thead>
+              <tr>
+                <th>Área</th>
+                <th>Pendientes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in area_breakdown %}
+                <tr>
+                  <td>{{ r.actor_area|default:'Sin área' }}</td>
+                  <td>{{ r.n }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Distribución por categoría</span>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="table-responsive">
+          <table class="complaints-table compact">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Pendientes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in category_breakdown %}
+                <tr>
+                  <td>{{ r.category|default:'Sin categoría' }}</td>
+                  <td>{{ r.n }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

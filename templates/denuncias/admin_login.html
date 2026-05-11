@@ -1,0 +1,76 @@
+{% extends 'denuncias/admin_base.html' %}
+{% load static %}
+
+{% block title %}Acceso de administradores{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <section class="admin-login-card">
+    <header class="admin-login-header">
+      <div class="admin-login-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+      <h1 class="admin-login-title">Acceso de administradores</h1>
+      <p class="admin-login-subtitle">Ingresa tus credenciales para acceder al panel de administración</p>
+    </header>
+
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          {% if message.level_tag == 'error' %}
+            <li class="message {{ message.tags }}">{{ message }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="admin-login-body">
+      <form method="post" action="" class="admin-login-form" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="error">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-group">
+          <label for="id_username" class="form-label">Usuario / Correo electrónico</label>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <div class="error">{{ form.username.errors }}</div>
+          {% endif %}
+        </div>
+        <div class="form-group password-group">
+          <label for="id_password" class="form-label">Contraseña</label>
+          <div class="password-input-wrapper">
+            {{ form.password }}
+            <button type="button" class="password-toggle" aria-label="Mostrar/ocultar contraseña">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          {% if form.password.errors %}
+            <div class="error">{{ form.password.errors }}</div>
+          {% endif %}
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-block">Acceder</button>
+        </div>
+      </form>
+    </div>
+    <div class="admin-login-footer">Si necesitas acceso de administrador, contacta al responsable del sistema.</div>
+  </section>
+</div>
+ 
+<script>
+(function(){
+  var t = document.querySelector('.password-toggle');
+  var i = document.getElementById('id_password');
+  if(t && i){ t.addEventListener('click', function(){ i.type = (i.type === 'password') ? 'text' : 'password'; }); }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="380" viewBox="0 0 1080 380" role="img" aria-label="Ejemplo de folio de seguimiento">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eef6ff" />
+      <stop offset="100%" stop-color="#f8fbff" />
+    </linearGradient>
+    <style>
+      .title { fill: #0b1f3b; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 40px; font-weight: 800; }
+      .box { fill: #ffffff; stroke: #0b1f3b; stroke-width: 4; stroke-dasharray: 12 10; }
+      .folio { fill: #0b1f3b; font-family: 'Courier New', Consolas, monospace; font-size: 96px; font-weight: 800; letter-spacing: 4px; }
+    </style>
+  </defs>
+
+  <!-- Fondo -->
+  <rect x="0" y="0" width="1080" height="380" fill="url(#bg)" />
+
+  <!-- Título -->
+  <text class="title" x="540" y="80" text-anchor="middle">Tu número de folio es:</text>
+
+  <!-- Caja punteada -->
+  <rect class="box" x="24" y="120" rx="16" ry="16" width="1032" height="220" />
+
+  <!-- Folio -->
+  <text class="folio" x="540" y="250" text-anchor="middle">GSI-QLLYFZ</text>
+</svg>

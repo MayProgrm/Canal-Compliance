@@ -1,0 +1,41 @@
+
+def public_download_main_attachment(request, folio):
+    complaint = get_object_or_404(Complaint, folio=folio.upper())
+    if not complaint.attachment:
+        raise Http404("No hay archivo")
+    try:
+        if request.user.is_authenticated:
+            ComplaintLog.objects.create(
+                complaint=complaint,
+                user=request.user,
+                action='file_access_public',
+                details=f"Acceso público a adjunto principal: {complaint.attachment.name}"
+            )
+    except Exception:
+        pass
+    try:
+        response = FileResponse(complaint.attachment)
+        response['Content-Disposition'] = f'inline; filename="{os.path.basename(complaint.attachment.name)}"'
+        return response
+    except FileNotFoundError:
+        raise Http404("El archivo físico no existe")
+
+def public_download_attachment(request, folio, attachment_id):
+    complaint = get_object_or_404(Complaint, folio=folio.upper())
+    attachment = get_object_or_404(ComplaintAttachment, id=attachment_id, complaint=complaint)
+    try:
+        if request.user.is_authenticated:
+            ComplaintLog.objects.create(
+                complaint=complaint,
+                user=request.user,
+                action='file_access_public',
+                details=f"Acceso público a adjunto adicional: {attachment.file.name}"
+            )
+    except Exception:
+        pass
+    try:
+        response = FileResponse(attachment.file)
+        response['Content-Disposition'] = f'inline; filename="{os.path.basename(attachment.file.name)}"'
+        return response
+    except FileNotFoundError:
+        raise Http404("El archivo físico no existe")

@@ -1,0 +1,676 @@
+{% extends 'denuncias/base_public.html' %}
+
+{% block title %}Biblioteca GSI - Canal de Denuncias{% endblock %}
+
+{% block extra_head %}
+<style>
+  .hero-section {
+    padding: 2rem 0 3rem;
+    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  
+  .hero-title-box {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 2.5rem 3rem;
+    border-radius: 16px;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 2;
+  }
+  
+  .hero-title-box h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+  }
+  
+  .hero-subtitle {
+    background: white;
+    padding: 2rem 3rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .hero-subtitle p {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+  }
+  
+.sticky-nav {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+  
+  .nav-container {
+    display: flex;
+    justify-content: center;
+    padding: 1.2rem 0;
+    gap: 1.5rem;
+  }
+  
+  .nav-link {
+    padding: 0.8rem 2rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: 2px solid transparent;
+  }
+  
+  .nav-link:hover {
+    background: var(--background-light);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .nav-link.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  .section {
+    margin-bottom: 4rem;
+  }
+  
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .section-banner {
+    background: var(--primary-color);
+    color: white;
+    padding: 2.5rem 3rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .section-banner h2 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+  }
+  
+  .section-banner p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .section-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+  
+  .section-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .document-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .document-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  }
+  
+  .document-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-color);
+  }
+  
+  .document-icon {
+    width: 70px;
+    height: 70px;
+    background: var(--primary-color);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  }
+  
+  .document-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+  }
+  
+  .document-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  
+  .document-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  
+  .download-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  .download-btn:hover {
+    background: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  }
+  
+  .visual-guides {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-light);
+  }
+  
+  .guides-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .guides-list li {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.8rem 0;
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+  }
+  
+  .guides-list li:hover {
+    background: var(--background-light);
+    margin: 0 -1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    border-radius: 12px;
+  }
+  
+  .guides-list li:last-child {
+    border-bottom: none;
+  }
+  
+  .guide-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .guide-content h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .guide-content p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  
+  .updates-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-light);
+  }
+  
+  .update-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+  }
+  
+  .update-item:hover {
+    background: var(--background-light);
+    margin: 0 -1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    border-radius: 12px;
+  }
+  
+  .update-item:last-child {
+    border-bottom: none;
+  }
+  
+  .update-date {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-right: 2rem;
+    white-space: nowrap;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
+  .update-content h4 {
+    margin: 0 0 0.8rem 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+  
+  .update-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    font-size: 1.05rem;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-content h1 {
+      font-size: 2rem;
+    }
+    
+    .nav-container {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .documents-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .update-item {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .update-date {
+      margin-right: 0;
+    }
+  }
+  
+  /* Animaciones adicionales */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .document-card {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  .document-card:nth-child(1) { animation-delay: 0.1s; }
+  .document-card:nth-child(2) { animation-delay: 0.2s; }
+  .document-card:nth-child(3) { animation-delay: 0.3s; }
+  
+  /* Mejora en los iconos de documentos */
+  .document-icon {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .document-icon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: none;
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+    opacity: 0;
+  }
+  
+  .document-card:hover .document-icon::after {
+    opacity: 1;
+    transform: rotate(45deg) translate(20%, 20%);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-title-box">
+        <h1>Biblioteca GSI</h1>
+      </div>
+      <div class="hero-subtitle">
+        <p>Accede a documentos, guías y actualizaciones del canal de denuncias. Toda la información que necesitas para entender nuestros procesos y políticas.</p>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navegación eliminada por solicitud -->
+
+  <div class="container">
+    <!-- Documentos Principales -->
+    <section id="documentos" class="section">
+      <div class="section-banner">
+        <h2>Documentos principales</h2>
+        <p>Documentos fundamentales que regulan nuestro canal de denuncias y establecen los marcos de actuación institucional.</p>
+      </div>
+      
+      <div class="documents-grid">
+        {% if main_documents %}
+          {% for doc in main_documents %}
+            <div class="document-card">
+              <div class="document-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <h3 class="document-title">{{ doc.title }}</h3>
+              <p class="document-description">{{ doc.description|default:'' }}</p>
+              <div class="document-meta">
+                <span>{% if doc.file %}Archivo{% else %}Sin archivo{% endif %}</span>
+                {% if doc.file %}
+                  <a href="{{ doc.file.url }}" class="download-btn" target="_blank" rel="noopener">Descargar</a>
+                {% else %}
+                  <a href="#" class="download-btn" aria-disabled="true" onclick="return false;">No disponible</a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+        <div class="document-card">
+          <div class="document-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <h3 class="document-title">Guía de clasificación</h3>
+          <p class="document-description">Documento detallado que explica las diferencias entre Queja, Inquietud y Denuncia, con ejemplos prácticos para ayudarte a categorizar correctamente tu reporte.</p>
+          <div class="document-meta">
+            <span>PDF · 1.5 MB</span>
+            <a href="#" class="download-btn">Descargar</a>
+          </div>
+        </div>
+
+        <div class="document-card">
+          <div class="document-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="6" y="3" width="12" height="18" rx="2"></rect>
+              <path d="M9 7h6M9 11h6M9 15h6"/>
+            </svg>
+          </div>
+          <h3 class="document-title">Código de ética</h3>
+          <p class="document-description">Marco fundamental que establece los principios y valores que guían nuestra conducta institucional. Define las expectativas de comportamiento ético para todos los miembros de la organización.</p>
+          <div class="document-meta">
+            <span>PDF · 2.3 MB</span>
+            <a href="#" class="download-btn">Descargar</a>
+          </div>
+        </div>
+        
+        <div class="document-card">
+          <div class="document-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+          </div>
+          <h3 class="document-title">Aviso de privacidad</h3>
+          <p class="document-description">Información detallada sobre cómo recopilamos, utilizamos y protegemos tus datos personales durante el proceso de denuncia. Tu privacidad es nuestra prioridad.</p>
+          <div class="document-meta">
+            <span>PDF · 1.8 MB</span>
+            <a href="#" class="download-btn">Descargar</a>
+          </div>
+        </div>
+        
+        <div class="document-card">
+          <div class="document-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5V6a2 2 0 012-2h10a2 2 0 012 2v13.5"/>
+              <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+            </svg>
+          </div>
+          <h3 class="document-title">Políticas complementarias</h3>
+          <p class="document-description">Conjunto de políticas y procedimientos relacionados con el manejo de denuncias, incluyendo protocolos de investigación y medidas disciplinarias. Documentos fundamentales que regulan nuestro canal de denuncias y establecen los marcos de actuación institucional.</p>
+          <div class="document-meta">
+            <span>PDF · 3.1 MB</span>
+            <a href="#" class="download-btn">Ver documentos</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- Infografías -->
+    <section id="infografias" class="section">
+      <div class="section-banner">
+        <h2>Infografías</h2>
+        <p>Recursos visuales e instructivos para ayudarte a entender mejor nuestros procesos y realizar denuncias de manera efectiva.</p>
+      </div>
+      
+      <div class="visual-guides">
+        <ul class="guides-list">
+          {% if infographics %}
+            {% for info in infographics %}
+              <li>
+                <div class="guide-icon" aria-hidden="true">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="16" rx="2"/>
+                    <path d="M7 8h10M7 12h10M7 16h6"/>
+                  </svg>
+                </div>
+                <div class="guide-content">
+                  <h4>{{ info.title }}</h4>
+                  <p>{{ info.description|default:'' }}</p>
+                  {% if info.file %}
+                    <a class="download-btn" href="{{ info.file.url }}" target="_blank" rel="noopener" style="display:inline-block; margin-top:.5rem;">Ver</a>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          {% else %}
+          <li>
+            <div class="guide-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z"/>
+              </svg>
+            </div>
+            <div class="guide-content">
+              <h4>Pasos para enviar tu reporte</h4>
+              <p>Guía visual paso a paso que te muestra cómo completar el formulario de denuncia de manera correcta y efectiva.</p>
+            </div>
+          </li>
+          <li>
+            <div class="guide-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="guide-content">
+              <h4>Proceso de atención y tiempos estimados</h4>
+              <p>Conoce las etapas por las que pasa tu denuncia desde que la envías hasta su resolución, incluyendo los plazos estimados.</p>
+            </div>
+          </li>
+          <li>
+            <div class="guide-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                <path d="M7 8h10M7 12h10M7 16h6"/>
+              </svg>
+            </div>
+            <div class="guide-content">
+              <h4>Buenas prácticas para adjuntar evidencia</h4>
+              <p>Aprende cómo preparar y presentar evidencia digital de manera que respalde eficazmente tu denuncia.</p>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </section>
+
+    <!-- Actualizaciones -->
+    <section id="actualizaciones" class="section">
+      <div class="section-banner">
+        <h2>Actualizaciones recientes</h2>
+        <p>Mantente informado sobre las mejoras y nuevas funcionalidades de nuestro canal de denuncias.</p>
+      </div>
+      
+      <div class="updates-section">
+        {% if recent_updates %}
+          {% for upd in recent_updates %}
+            <div class="update-item">
+              <div class="update-date">{{ upd.published_on|date:"d M Y"|default:"" }}</div>
+              <div class="update-content">
+                <h4>{{ upd.title }}</h4>
+                <p>{{ upd.description|default:'' }}</p>
+                {% if upd.file %}
+                  <a class="download-btn" href="{{ upd.file.url }}" target="_blank" rel="noopener" style="display:inline-block; margin-top:.5rem;">Ver archivo</a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+        <div class="update-item">
+          <div class="update-date">12 Ene 2026</div>
+          <div class="update-content">
+            <h4>Nueva categorización de reportes</h4>
+            <p>Implementamos un nuevo sistema de clasificación (Queja, Inquietud, Denuncia) para agilizar la atención y resolución de cada caso según su naturaleza.</p>
+          </div>
+        </div>
+
+        <div class="update-item">
+          <div class="update-date">25 Oct 2025</div>
+          <div class="update-content">
+            <h4>Verificación de integridad de archivos</h4>
+            <p>Implementamos un nuevo sistema de verificación que garantiza la autenticidad y integridad de todos los archivos adjuntos a las denuncias, proporcionando mayor seguridad en el proceso.</p>
+          </div>
+        </div>
+        
+        <div class="update-item">
+          <div class="update-date">15 Oct 2025</div>
+          <div class="update-content">
+            <h4>Mejora en la criptografía de end-to-end</h4>
+            <p>Actualizamos nuestros protocolos de cifrado para ofrecer un nivel de seguridad aún mayor en todas las comunicaciones del canal de denuncias.</p>
+          </div>
+        </div>
+        
+        <div class="update-item">
+          <div class="update-date">01 Oct 2025</div>
+          <div class="update-content">
+            <h4>Nueva interfaz de usuario</h4>
+            <p>Rediseñamos completamente la interfaz del canal para hacerla más intuitiva, accesible y fácil de usar para todos nuestros usuarios.</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <!-- Navegación con botones eliminada, sin script asociado -->
+{% endblock %}
+  /* Visual shapes like home hero */
+  .hero-section .hero-visual { position: absolute; top: 0; right: 0; width: 50%; height: 100%; z-index: -1; pointer-events: none; }
+  .hero-section .hero-shapes { position: relative; width: 100%; height: 100%; }
+.hero-section .shape { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.10); }
+  .hero-section .shape-1 { width: 180px; height: 180px; top: 15%; right: 12%; animation: float 6s ease-in-out infinite; }
+  .hero-section .shape-2 { width: 140px; height: 140px; top: 55%; right: 32%; animation: float 8s ease-in-out infinite reverse; }
+  .hero-section .shape-3 { width: 100px; height: 100px; top: 35%; right: 52%; animation: float 10s ease-in-out infinite; }

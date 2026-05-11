@@ -1,0 +1,30 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Perfil de usuario{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card-pro">
+    <div class="card-header">
+      <span class="card-title">Perfil del usuario</span>
+    </div>
+    <div class="card-body">
+      <div class="profile-grid">
+        <div class="profile-item"><label>Nombre</label><span>{{ target_user.get_full_name|default:target_user.username }}</span></div>
+        <div class="profile-item"><label>Correo</label><span>{{ target_user.email|default:"—" }}</span></div>
+        <div class="profile-item"><label>Empresa</label><span>{{ target_user.company|default:"—" }}</span></div>
+        <div class="profile-item"><label>Rol</label><span>{{ target_user.role|default:"—" }}</span></div>
+        <div class="profile-item"><label>Área</label><span>{{ target_user.area|default:"—" }}</span></div>
+        <div class="profile-item"><label>Sucursal</label><span>{{ target_user.branch|default:"—" }}</span></div>
+        <div class="profile-item"><label>Matrícula</label><span>{{ target_user.matricula|default:"—" }}</span></div>
+        <div class="profile-item"><label>Teléfono</label><span>{{ target_user.phone_number|default:"—" }}</span></div>
+        <div class="profile-item"><label>Orden de asignación</label><span>{{ target_user.assignment_position|default:"—" }}</span></div>
+        <div class="profile-item"><label>Estado</label><span>{% if target_user.is_active %}Activo{% else %}Inactivo{% endif %}</span></div>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <a class="btn" href="{% url 'denuncias:dashboard' %}">Volver al dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

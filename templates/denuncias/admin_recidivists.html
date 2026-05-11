@@ -1,0 +1,179 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="admin-hero">
+    <h1>Reincidentes</h1>
+    <p class="text-muted">Catálogo de coincidencias por matrícula y nombre.</p>
+  </div>
+
+  <nav class="tabs-pro" aria-label="Secciones de administración">
+    <a class="tab-pro" href="{% url 'denuncias:admin_settings' %}">Configuración</a>
+    <a class="tab-pro" href="{% url 'denuncias:admin_export' %}">Exportación</a>
+    {% if request.user.is_superuser %}
+      <a class="tab-pro" href="{% url 'denuncias:admin_roles' %}">Roles</a>
+    {% endif %}
+    <a class="tab-pro" href="{% url 'denuncias:admin_cases' %}">Casos</a>
+    <a class="tab-pro" href="{% url 'denuncias:admin_metrics_config' %}">Config. métricas</a>
+  </nav>
+
+  {% with aidc=recidivists.by_actor_id|length anmc=recidivists.by_actor_name|length repc=recidivists.by_reporter_id|length %}
+  <div class="controls" style="margin-top:1rem; display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+    <div class="view-switch" role="tablist" aria-label="Ver por grupo">
+      <button type="button" class="pill {% if aidc %}active{% endif %}" data-group="by_actor_id">Por matrícula del actor</button>
+      <button type="button" class="pill {% if anmc and not aidc %}active{% endif %}" data-group="by_actor_name">Por nombre del actor</button>
+      <button type="button" class="pill {% if not aidc and not anmc and repc %}active{% endif %}" data-group="by_reporter_id">Por matrícula del denunciante</button>
+    </div>
+    <input class="search-input" type="search" placeholder="Buscar clave o folio..." id="searchBox" aria-label="Buscar">
+  </div>
+
+  <section id="group-by_actor_id" class="group-section {% if not aidc %}is-hidden{% endif %}" aria-labelledby="pill-by_actor_id" style="margin-top:1rem;">
+    {% for r in recidivists.by_actor_id %}
+    <article class="card-pro rec-card" data-key="{{ r.key }}">
+      <div class="card-header">Matrícula: <strong>{{ r.key }}</strong> <span class="count-badge" title="Coincidencias">{{ r.count }}</span></div>
+      <div class="card-body">
+        {% if r.complaints %}
+        <a href="#" class="btn btn-sm btn-outline" data-toggle>Ver denuncias</a>
+        <div class="complaints" style="display:none; margin-top:.75rem;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Folio</th><th>Estado</th><th>Ver</th></tr>
+              </thead>
+              <tbody>
+                {% for c in r.complaints %}
+                <tr>
+                  <td class="folio">{{ c.folio }}</td>
+                  <td>{{ c.get_status_display }}</td>
+                  <td><a class="btn btn-sm btn-primary" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Abrir</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted">Sin denuncias asociadas.</p>
+        {% endif %}
+      </div>
+    </article>
+    {% empty %}
+    <div class="card-pro"><div class="card-body"><p class="text-muted">No hay registros por matrícula del actor.</p></div></div>
+    {% endfor %}
+  </section>
+
+  <section id="group-by_actor_name" class="group-section {% if not anmc %}is-hidden{% endif %}" aria-labelledby="pill-by_actor_name" style="margin-top:1rem;">
+    {% for r in recidivists.by_actor_name %}
+    <article class="card-pro rec-card" data-key="{{ r.key }}">
+      <div class="card-header">Nombre del actor: <strong>{{ r.key }}</strong> <span class="count-badge" title="Coincidencias">{{ r.count }}</span></div>
+      <div class="card-body">
+        {% if r.complaints %}
+        <a href="#" class="btn btn-sm btn-outline" data-toggle>Ver denuncias</a>
+        <div class="complaints" style="display:none; margin-top:.75rem;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Folio</th><th>Estado</th><th>Ver</th></tr>
+              </thead>
+              <tbody>
+                {% for c in r.complaints %}
+                <tr>
+                  <td class="folio">{{ c.folio }}</td>
+                  <td>{{ c.get_status_display }}</td>
+                  <td><a class="btn btn-sm btn-primary" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Abrir</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted">Sin denuncias asociadas.</p>
+        {% endif %}
+      </div>
+    </article>
+    {% empty %}
+    <div class="card-pro"><div class="card-body"><p class="text-muted">No hay registros por nombre del actor.</p></div></div>
+    {% endfor %}
+  </section>
+
+  <section id="group-by_reporter_id" class="group-section {% if not repc %}is-hidden{% endif %}" aria-labelledby="pill-by_reporter_id" style="margin-top:1rem;">
+    {% for r in recidivists.by_reporter_id %}
+    <article class="card-pro rec-card" data-key="{{ r.key }}">
+      <div class="card-header">Matrícula del denunciante: <strong>{{ r.key }}</strong> <span class="count-badge" title="Coincidencias">{{ r.count }}</span></div>
+      <div class="card-body">
+        {% if r.complaints %}
+        <a href="#" class="btn btn-sm btn-outline" data-toggle>Ver denuncias</a>
+        <div class="complaints" style="display:none; margin-top:.75rem;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr><th>Folio</th><th>Estado</th><th>Ver</th></tr>
+              </thead>
+              <tbody>
+                {% for c in r.complaints %}
+                <tr>
+                  <td class="folio">{{ c.folio }}</td>
+                  <td>{{ c.get_status_display }}</td>
+                  <td><a class="btn btn-sm btn-primary" href="{% url 'denuncias:admin_complaint_detail' c.id %}">Abrir</a></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <p class="text-muted">Sin denuncias asociadas.</p>
+        {% endif %}
+      </div>
+    </article>
+    {% empty %}
+    <div class="card-pro"><div class="card-body"><p class="text-muted">No hay registros por matrícula del denunciante.</p></div></div>
+    {% endfor %}
+  </section>
+  {% endwith %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('click', function(ev){
+    const btn = ev.target.closest('[data-toggle]');
+    if(!btn) return;
+    ev.preventDefault();
+    const box = btn.parentElement.querySelector('.complaints');
+    if(!box) return;
+    const isOpen = box.style.display === 'block';
+    box.style.display = isOpen ? 'none' : 'block';
+    btn.textContent = isOpen ? 'Ver denuncias' : 'Ocultar denuncias';
+  });
+  const pills = document.querySelectorAll('.pill');
+  pills.forEach(p => p.addEventListener('click', () => {
+    pills.forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    const group = p.getAttribute('data-group');
+    document.querySelectorAll('[id^="group-"]').forEach(sec => {
+      sec.classList.toggle('is-hidden', sec.id !== 'group-' + group);
+    });
+    const s = document.getElementById('searchBox');
+    if(s){ s.value=''; filterCards(''); }
+  }));
+  const searchInput = document.getElementById('searchBox');
+  if(searchInput){
+    searchInput.addEventListener('input', function(){
+      filterCards(this.value.trim().toLowerCase());
+    });
+  }
+  function filterCards(q){
+    const current = document.querySelector('[id^="group-"]:not(.is-hidden)') || document.querySelector('#group-by_actor_id');
+    current.querySelectorAll('.rec-card').forEach(card => {
+      const key = (card.getAttribute('data-key')||'').toLowerCase();
+      let hit = key.includes(q);
+      if(!hit && q){
+        card.querySelectorAll('.folio').forEach(f => { if(f.textContent.toLowerCase().includes(q)) hit = true; });
+      }
+      card.style.display = (!q || hit) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}
