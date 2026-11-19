@@ -1,4 +1,5 @@
 import json
+import shutil
 from urllib.parse import urlparse
 
 from django.contrib.auth import get_user_model
@@ -285,6 +286,77 @@ class EvidenceDownloadTests(TemporaryMediaTestCase, ComplaintPayloadMixin):
             args=[self.complaint.id, evidence.id],
         )
         self.assertEqual(self.client.get(url).status_code, 200)
+
+
+class EvidenceViewerTests(TemporaryMediaTestCase):
+    """La evidencia solo se visualiza: nunca se entrega como descarga."""
+
+    def setUp(self):
+        super().setUp()
+        self.complaint = Complaint.objects.create(description='Caso con evidencia')
+        self.analyst = make_staff('analista_evidencia')
+        self.complaint.assigned_to = self.analyst
+        self.complaint.save(update_fields=['assigned_to'])
+        self.client.force_login(self.analyst)
+
+    def _evidence(self, filename, content=b'%PDF-1.4\nx'):
+        return EvidenceItem.objects.create(
+            complaint=self.complaint, kind='Documento', description='Evidencia',
+            file=SimpleUploadedFile(filename, content, content_type='application/octet-stream'),
+        )
+
+    def test_evidencia_se_sirve_inline_y_no_como_descarga(self):
+        evidence = self._evidence('ev.pdf')
+        url = reverse('denuncias:admin_download_evidence', args=[self.complaint.id, evidence.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response['Content-Disposition'].startswith('inline'))
+
+    def test_visor_muestra_marca_de_agua_del_investigador(self):
+        evidence = self._evidence('ev.pdf')
+        url = reverse('denuncias:admin_view_evidence', args=[self.complaint.id, evidence.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'analista_evidencia')
+        self.assertContains(response, 'Solo visualización')
+
+    def test_formato_no_visualizable_no_se_entrega(self):
+        evidence = self._evidence('comprimido.zip', b'PK\x03\x04x')
+        url = reverse('denuncias:admin_download_evidence', args=[self.complaint.id, evidence.id])
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_vista_previa_pdf_tiene_prioridad_sobre_el_original(self):
+        evidence = self._evidence('contrato.docx', b'contenido binario')
+        evidence.preview_pdf = SimpleUploadedFile('preview.pdf', b'%PDF-1.4\npreview')
+        evidence.save(update_fields=['preview_pdf'])
+        url = reverse('denuncias:admin_download_evidence', args=[self.complaint.id, evidence.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+    def test_analista_no_asignado_no_puede_ver_la_evidencia(self):
+        evidence = self._evidence('ev.pdf')
+        self.client.force_login(make_staff('analista_ajeno'))
+        url = reverse('denuncias:admin_view_evidence', args=[self.complaint.id, evidence.id])
+        self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_el_acceso_a_la_evidencia_queda_en_la_bitacora(self):
+        evidence = self._evidence('ev.pdf')
+        url = reverse('denuncias:admin_download_evidence', args=[self.complaint.id, evidence.id])
+        self.client.get(url)
+        self.assertTrue(
+            ComplaintLog.objects.filter(complaint=self.complaint, action='file_access').exists()
+        )
+
+    def test_documento_de_oficina_se_convierte_a_pdf(self):
+        from .services.pdf_preview import build_preview
+
+        if not (shutil.which('soffice') or shutil.which('libreoffice')):
+            self.skipTest('LibreOffice no esta disponible en este entorno')
+        evidence = self._evidence('memorandum.rtf', b'{\\rtf1\\ansi\\deff0 Hola evidencia}')
+        self.assertTrue(build_preview(evidence))
+        evidence.refresh_from_db()
+        self.assertTrue(evidence.preview_pdf.name.endswith('.pdf'))
 
 
 class ReporterLookupChatTests(TestCase):

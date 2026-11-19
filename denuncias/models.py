@@ -13,6 +13,9 @@ def attachment_upload_to(instance, filename):
         ext = ''
     return f'attachments/{uuid.uuid4().hex}{ext}'
 
+def evidence_preview_upload_to(instance, filename):
+    return f'evidence_previews/{uuid.uuid4().hex}.pdf'
+
 def resource_upload_to(instance, filename):
     try:
         ext = os.path.splitext(filename)[1].lower()
@@ -188,6 +191,7 @@ class EvidenceItem(models.Model):
     obtained_by = models.CharField(max_length=120, blank=True, null=True, verbose_name='Obtenida/cargada por')
     related_fact = models.TextField(blank=True, null=True, verbose_name='Relación con hecho específico')
     file = models.FileField(upload_to=attachment_upload_to, blank=True, null=True, verbose_name='Archivo')
+    preview_pdf = models.FileField(upload_to=evidence_preview_upload_to, blank=True, null=True, verbose_name='Vista previa PDF')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

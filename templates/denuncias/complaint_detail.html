@@ -295,7 +295,7 @@
                   {% if ev.kind %}<span class="inv-tag">{{ ev.kind }}</span>{% endif %}{{ ev.description }}
                 </div>
                 {% if ev.file %}
-                <div class="inv-history__note"><a href="{% url 'denuncias:admin_download_evidence' complaint.id ev.id %}" target="_blank" rel="noopener">Ver archivo</a></div>
+                <div class="inv-history__note"><a href="{% url 'denuncias:admin_view_evidence' complaint.id ev.id %}" target="_blank" rel="noopener">Ver archivo</a></div>
                 {% endif %}
                 {% if ev.related_fact %}
                 <div class="inv-history__note">{{ ev.related_fact }}</div>

@@ -22,6 +22,10 @@ sudo apt update && sudo apt upgrade -y
 
 sudo apt install -y python3 python3-pip python3-venv nginx postgresql postgresql-contrib supervisor git
 
+# LibreOffice convierte Word/Excel/PowerPoint a PDF para que las evidencias
+# solo se visualicen en el panel (nunca se descarguen).
+sudo apt install -y libreoffice-writer libreoffice-calc libreoffice-impress fonts-dejavu-core
+
 sudo adduser canal_denuncias
 sudo usermod -aG sudo canal_denuncias
 ```

@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin/denuncia/<int:complaint_id>/adjunto-principal/', views.admin_download_main_attachment, name='admin_download_main_attachment'),
     path('admin/denuncia/<int:complaint_id>/adjunto/<int:attachment_id>/', views.admin_download_attachment, name='admin_download_attachment'),
     path('admin/denuncia/<int:complaint_id>/evidencia/<int:evidence_id>/', views.admin_download_evidence, name='admin_download_evidence'),
+    path('admin/denuncia/<int:complaint_id>/evidencia/<int:evidence_id>/ver/', views.admin_view_evidence, name='admin_view_evidence'),
     path('admin/denuncia/<int:complaint_id>/chat/', views.admin_send_chat_message, name='admin_send_chat_message'),
     path('admin/configuracion/', views.admin_settings, name='admin_settings'),
     path('admin/sesiones/', views.admin_sessions, name='admin_sessions'),

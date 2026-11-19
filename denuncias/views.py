@@ -35,6 +35,7 @@ from .services.complaints import (
     get_complaint_for_reporter,
 )
 from .services.iso_protocol import apply_iso_protocol, resolve_incident_family, FAMILY_LABELS
+from .services.pdf_preview import build_preview, viewer_kind
 try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import letter
@@ -959,19 +960,65 @@ def admin_download_attachment(request, complaint_id, attachment_id):
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
 
+def _evidence_permitted(request, complaint):
+    """Superusuario y Delegador acceden a todo; el resto solo a sus casos."""
+    is_delegador = (getattr(request.user, 'role', '') == 'Delegador' or request.user.username == 'Delegador')
+    if request.user.is_superuser or is_delegador:
+        return True
+    return complaint.assigned_to == request.user
+
+def _evidence_source(evidence):
+    """Devuelve el archivo a mostrar y su tipo de visor.
+
+    Si el original no se puede previsualizar se usa la vista previa PDF
+    generada al subirlo (Word, Excel, PowerPoint).
+    """
+    if evidence.preview_pdf:
+        return evidence.preview_pdf, 'pdf'
+    return evidence.file, viewer_kind(evidence.file.name)
+
+def _evidence_watermark(request):
+    user = request.user
+    name = (user.get_full_name() or '').strip() or user.username
+    return f'{name} · {timezone.localtime():%d/%m/%Y %H:%M}'
+
+@user_passes_test(is_admin, login_url='denuncias:admin_login')
+def admin_view_evidence(request, complaint_id, evidence_id):
+    """Muestra la evidencia dentro del panel, con marca de agua."""
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    if not _evidence_permitted(request, complaint):
+        raise Http404("No autorizado")
+
+    evidence = get_object_or_404(EvidenceItem, id=evidence_id, complaint=complaint)
+    if not evidence.file:
+        raise Http404("Archivo no encontrado")
+
+    source, kind = _evidence_source(evidence)
+
+    return render(request, 'denuncias/evidence_viewer.html', {
+        'complaint': complaint,
+        'evidence': evidence,
+        'view_kind': kind,
+        'source_name': os.path.basename(source.name),
+        'watermark': _evidence_watermark(request),
+        'stream_url': reverse('denuncias:admin_download_evidence', args=[complaint.id, evidence.id]),
+    })
+
 @user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_download_evidence(request, complaint_id, evidence_id):
     complaint = get_object_or_404(Complaint, id=complaint_id)
-    
-    is_delegador = (getattr(request.user, 'role', '') == 'Delegador' or request.user.username == 'Delegador')
-    if not request.user.is_superuser and not is_delegador:
-        if complaint.assigned_to != request.user:
-            raise Http404("No autorizado")
+
+    if not _evidence_permitted(request, complaint):
+        raise Http404("No autorizado")
 
     evidence = get_object_or_404(EvidenceItem, id=evidence_id, complaint=complaint)
     
     if not evidence.file:
         raise Http404("Archivo no encontrado")
+
+    source, kind = _evidence_source(evidence)
+    if kind == 'none':
+        raise Http404("Este formato no puede visualizarse.")
 
     try:
         ComplaintLog.objects.create(
@@ -984,13 +1031,17 @@ def admin_download_evidence(request, complaint_id, evidence_id):
         pass
 
     try:
-        return FileResponse(
-            evidence.file,
-            as_attachment=True,
-            filename=os.path.basename(evidence.file.name),
+        response = FileResponse(
+            source,
+            as_attachment=False,
+            filename=os.path.basename(source.name),
         )
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
+
+    # Permite incrustar el archivo en el visor del panel (mismo origen).
+    response.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
+    return response
 
 @user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_send_chat_message(request, complaint_id):
@@ -2413,6 +2464,7 @@ def admin_complaint_detail(request, complaint_id):
                 ev.complaint = complaint
                 ev.uploaded_by = request.user
                 ev.save()
+                build_preview(ev)
                 messages.success(request, 'Evidencia agregada.')
                 return redirect('denuncias:admin_complaint_detail', complaint_id=complaint.id)
 
