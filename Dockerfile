@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-RUN adduser --disabled-password --gecos '' appuser \
+RUN mkdir -p /app/staticfiles /app/media \
+    && adduser --disabled-password --gecos '' appuser \
     && chown -R appuser:appuser /app
 USER appuser
 
