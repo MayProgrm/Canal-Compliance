@@ -1,0 +1,39 @@
+# Gradle
+.gradle/
+build/
+app/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Ruta del SDK local (contiene rutas de la máquina, no debe subirse)
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Kotlin
+.kotlin/
+
+# Firmas y claves de compilación (NUNCA versionar)
+*.jks
+*.keystore
+keystore.properties
+release/
+
+# Artefactos generados
+*.apk
+*.aab
+*.aar
+*.ap_
+*.dex
+*.class
+output.json
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

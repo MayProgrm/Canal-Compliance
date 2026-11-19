@@ -1,0 +1,12 @@
+# Normaliza los finales de línea del repositorio a LF.
+# Evita diffs ruidosos por CRLF/LF y problemas al desplegar en Linux.
+* text=auto eol=lf
+
+# Archivos binarios: no convertirlos nunca
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary

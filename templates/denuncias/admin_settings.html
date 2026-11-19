@@ -13,7 +13,21 @@
   
 
   <div id="top-tab-general">
-  <section class="settings-grid">
+  <section class="settings-gallery">
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="10" width="7" height="11" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Panel</h2>
+        <p>Vista general del canal: denuncias recientes, consultas y filtros.</p>
+      </div>
+      <div class="settings-meta">
+        Vista completa · {{ total_complaints|default:'—' }} registros
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:dashboard' %}">Abrir panel</a></div>
+      </div>
+    </article>
+
     <article class="settings-card">
       <div class="settings-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="17" y="13" width="4" height="8"/></svg>
@@ -144,6 +158,22 @@
         <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_metrics_config' %}">Abrir configuración</a></div>
       </div>
     </article>
+
+    {% if request.user.is_superuser %}
+    <article class="settings-card">
+      <div class="settings-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      <div class="settings-content">
+        <h2>Sesiones y auditoría</h2>
+        <p>Inicio y fin de sesión por usuario, con calendario y métricas.</p>
+      </div>
+      <div class="settings-meta">
+        Control de accesos
+        <div class="settings-actions"><a class="btn btn-primary btn-sm" href="{% url 'denuncias:admin_sessions' %}">Abrir sesiones</a></div>
+      </div>
+    </article>
+    {% endif %}
   </section>
   </div>
 
@@ -266,7 +296,7 @@
         </ul>
       </div>
     </div>
-    <script>
+    <script nonce="{{ csp_nonce }}">
       (function(){
         var btns = document.querySelectorAll('#investigation-section button[data-tab]');
         var panes = {
@@ -300,7 +330,7 @@
   </div>
   </div>
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
   (function(){
     var panes = {
       general: document.getElementById('top-tab-general'),

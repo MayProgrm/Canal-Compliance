@@ -1,9 +1,11 @@
+<input type="hidden" id="chatbot-csrf-token" value="{{ csrf_token }}">
+
 <div id="chatbot-tooltip" class="chatbot-tooltip">
     ¿Necesitas ayuda o puedo orientarte en algo?
-    <span class="tooltip-close" onclick="closeTooltip(event)">×</span>
+    <span class="tooltip-close">×</span>
 </div>
 
-<div id="chatbot-launcher" class="chatbot-launcher" onclick="toggleChatbot()">
+<div id="chatbot-launcher" class="chatbot-launcher">
     <div class="chatbot-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -12,7 +14,7 @@
 </div>
 
 <div id="chatbot-widget" class="chatbot-widget" style="display: none;">
-    <div class="chatbot-header" onclick="toggleChatbot()">
+    <div class="chatbot-header">
         <div style="display: flex; align-items: center; gap: 8px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -26,8 +28,8 @@
             <!-- Messages will appear here -->
         </div>
         <div class="chatbot-input-area">
-            <input type="text" id="chatbot-input" placeholder="Escribe tu duda..." onkeypress="handleChatInput(event)">
-            <button onclick="sendChatMessage()">Enviar</button>
+            <input type="text" id="chatbot-input" placeholder="Escribe tu duda...">
+            <button type="button">Enviar</button>
         </div>
     </div>
 </div>
@@ -238,9 +240,28 @@
     }
 </style>
 
-<script>
+<script nonce="{{ csp_nonce }}">
     let isChatOpen = false;
     let hasInitialized = false;
+
+    // Vincula los controles sin atributos inline (requisito de la CSP con nonce).
+    function bindChatbotControls() {
+        const launcher = document.getElementById('chatbot-launcher');
+        const header = document.querySelector('#chatbot-widget .chatbot-header');
+        const tooltipClose = document.querySelector('#chatbot-tooltip .tooltip-close');
+        const input = document.getElementById('chatbot-input');
+        const sendBtn = document.querySelector('.chatbot-input-area button');
+        if (launcher) launcher.addEventListener('click', toggleChatbot);
+        if (header) header.addEventListener('click', toggleChatbot);
+        if (tooltipClose) tooltipClose.addEventListener('click', closeTooltip);
+        if (sendBtn) sendBtn.addEventListener('click', sendChatMessage);
+        if (input) input.addEventListener('keypress', handleChatInput);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindChatbotControls);
+    } else {
+        bindChatbotControls();
+    }
 
     // Show tooltip after 5 seconds
     setTimeout(() => {
@@ -277,14 +298,27 @@
         }
     }
 
+    function getCsrfToken() {
+        const el = document.getElementById('chatbot-csrf-token');
+        return el ? el.value : '';
+    }
+
+    // Envía una petición al chatbot incluyendo el token CSRF (el endpoint está protegido por CSRF).
+    function postChatbot(payload) {
+        return fetch('/denuncias/chatbot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify(payload),
+        });
+    }
+
     function initChat() {
         showTyping();
         // Send a hidden init message to get the welcome menu
-        fetch('/denuncias/chatbot/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'init', init: true })
-        })
+        postChatbot({ message: 'init', init: true })
         .then(response => response.json())
         .then(data => {
             setTimeout(() => {
@@ -320,6 +354,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
             },
             body: JSON.stringify({ message: message })
         })
@@ -351,7 +386,10 @@
 
         fetch('/denuncias/chatbot/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
             body: JSON.stringify({ message: value })
         })
         .then(response => response.json())
@@ -403,19 +441,36 @@
         }
     }
 
+    // Construye el contenido del mensaje como nodos DOM (sin innerHTML) para evitar XSS.
+    function renderMessageContent(text) {
+        const fragment = document.createDocumentFragment();
+        const parts = String(text == null ? '' : text).split(/\*\*(.*?)\*\*/g);
+        parts.forEach((part, index) => {
+            if (!part) return;
+            const isBold = index % 2 === 1;
+            part.split('\n').forEach((line, lineIndex) => {
+                if (lineIndex > 0) {
+                    fragment.appendChild(document.createElement('br'));
+                }
+                const node = isBold ? document.createElement('b') : document.createTextNode('');
+                if (isBold) {
+                    node.textContent = line;
+                    fragment.appendChild(node);
+                } else {
+                    fragment.appendChild(document.createTextNode(line));
+                }
+            });
+        });
+        return fragment;
+    }
+
     function addMessage(text, sender) {
         const container = document.getElementById('chatbot-messages');
         const div = document.createElement('div');
         div.className = `message ${sender}`;
-        
-        // Simple Markdown parsing
-        let html = text
-            .replace(/\n/g, '<br>')
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-            .replace(/•/g, '&bull;');
-            
-        div.innerHTML = html;
-        
+
+        div.appendChild(renderMessageContent(text));
+
         // Insert before typing indicator if it exists
         const typingDiv = document.getElementById('typing-indicator');
         if (typingDiv) {
@@ -423,7 +478,7 @@
         } else {
             container.appendChild(div);
         }
-        
+
         // Smart Scroll:
         // If it's a bot message, we want to ensure the TOP of the message is visible
         if (sender === 'bot') {

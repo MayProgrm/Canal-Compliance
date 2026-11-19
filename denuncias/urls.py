@@ -30,6 +30,7 @@ urlpatterns = [
     path('admin/denuncia/<int:complaint_id>/evidencia/<int:evidence_id>/', views.admin_download_evidence, name='admin_download_evidence'),
     path('admin/denuncia/<int:complaint_id>/chat/', views.admin_send_chat_message, name='admin_send_chat_message'),
     path('admin/configuracion/', views.admin_settings, name='admin_settings'),
+    path('admin/sesiones/', views.admin_sessions, name='admin_sessions'),
     path('admin/estadisticas/', views.admin_stats, name='admin_stats'),
     path('admin/estadisticas/excel/', views.admin_stats_export_excel, name='admin_stats_export_excel'),
     path('admin/roles/', views.admin_roles, name='admin_roles'),

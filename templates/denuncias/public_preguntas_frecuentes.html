@@ -6,27 +6,52 @@
 <style>
 /* Compact FAQ styles */
 .faq-hero {
-  background: var(--primary-color);
+  background: var(--brand-gradient);
   color: white;
-  padding: 2.5rem 0;
+  padding: 3rem 0 3.25rem;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 
+.faq-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 18% 22%, rgba(255,255,255,.16), transparent 45%),
+              radial-gradient(circle at 82% 88%, rgba(255,255,255,.10), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.faq-hero-content { position: relative; z-index: 1; }
+
+.faq-hero-badge {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.32);
+  color: #fff;
+  font-size: .74rem; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  padding: .34rem .9rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: 1rem;
+}
+.faq-hero-badge svg { width: 14px; height: 14px; }
+
 .faq-hero-content h1 {
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 700;
   margin-bottom: 0.8rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 8px rgba(0,0,0,.12);
 }
 
 .faq-hero-subtitle {
-  font-size: 1rem;
-  opacity: 0.9;
-  max-width: 600px;
+  font-size: 1.05rem;
+  color: rgba(255,255,255,.9);
+  max-width: 640px;
   margin: 0 auto;
 }
 
@@ -44,11 +69,11 @@
 .section-header {
   text-align: center;
   margin-bottom: 2.5rem;
-  background: var(--primary-color);
+  background: var(--brand-gradient);
   color: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 8px 22px rgba(5,24,56,.12);
-  padding: 3rem 2rem;
+  box-shadow: 0 10px 26px rgba(5,24,56,.14);
+  padding: 2.25rem 2rem;
   position: relative;
   overflow: hidden;
 }
@@ -60,12 +85,13 @@
   left: 0;
   right: 0;
   height: 100%;
-  background: linear-gradient(45deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  background: radial-gradient(circle at 12% 18%, rgba(255,255,255,.16), transparent 45%),
+              radial-gradient(circle at 88% 85%, rgba(255,255,255,.10), transparent 50%);
   pointer-events: none;
 }
 
 .section-header h2 {
-  font-size: 2rem;
+  font-size: 1.9rem;
   color: #ffffff;
   margin-bottom: 0.8rem;
   font-weight: 700;
@@ -74,7 +100,7 @@
 
 .section-header p {
   color: rgba(255,255,255,0.9);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   max-width: 800px;
   margin: 0 auto;
   line-height: 1.6;
@@ -371,11 +397,72 @@
     padding: 1rem;
   }
 }
+
+.faq-hero {
+  margin: 1.2rem auto 2rem;
+  padding: clamp(2.2rem, 5vw, 4rem) 1.5rem;
+  border-radius: 32px;
+  background: linear-gradient(125deg, #08294c 0%, #07558d 58%, #0a7db4 100%);
+  box-shadow: 0 20px 46px rgba(6, 45, 82, .2);
+  text-align: center;
+}
+
+.faq-hero-content { max-width: 790px; margin: 0 auto; }
+.faq-hero-content h1 { font-size: clamp(2.1rem, 5vw, 3.35rem); letter-spacing: -.04em; }
+.main-content .faq-hero-content h1,
+.main-content .faq-hero-subtitle { text-align: center; }
+.faq-hero-subtitle { margin: 0 auto; line-height: 1.7; }
+.faq-container { max-width: 1040px; padding: 0; }
+.faq-section { margin-bottom: 2.5rem; }
+
+.faq-section .section-header {
+  margin-bottom: 1rem;
+  padding: 1.35rem 1.5rem;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.faq-section .section-header h2 { font-size: clamp(1.25rem, 2.5vw, 1.7rem); }
+.faq-section .section-header p { margin: 0; max-width: 100%; }
+.main-content .faq-section .section-header h2,
+.main-content .faq-section .section-header p { text-align: center; }
+.faq-items { gap: .7rem; }
+.faq-item {
+  border: 1px solid #e1e9f1;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(20, 44, 72, .055);
+}
+.faq-details[open] { border-left: 3px solid #1682bd; }
+.faq-summary { padding: 1.1rem 1.25rem; font-weight: 700; }
+.faq-details[open] .faq-summary { color: #075a99; background: #f7fbff; }
+.faq-answer { padding: 0 1.25rem 1.2rem; line-height: 1.65; }
+.faq-answer p:last-child { margin-bottom: 0; }
+.faq-summary:focus-visible { outline: 3px solid rgba(22, 128, 196, .3); outline-offset: -3px; }
+.file-formats { padding: 1rem; border-radius: 12px; background: #f3f8fc; }
+.resources-grid { gap: 1rem; }
+.resource-card { border-radius: 16px; border-color: #e1e9f1; }
+
+/* Lectura profesional: títulos centrados y respuestas alineadas a la izquierda */
+.main-content .faq-container p,
+.main-content .faq-container li,
+.main-content .faq-answer p { text-align: left; }
+
+@media (max-width: 640px) {
+  .faq-hero { padding: 2rem 1.2rem; border-radius: 24px; }
+  .faq-container { padding: 0; }
+  .faq-section .section-header { padding: 1.1rem; border-radius: 17px; }
+  .faq-summary { padding: .95rem; }
+  .faq-answer { padding: 0 .95rem 1rem; }
+}
 </style>
 <div class="faq-hero">
   <div class="faq-hero-content">
+    <span class="faq-hero-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Centro de ayuda
+    </span>
     <h1>Preguntas frecuentes</h1>
-    <p class="faq-hero-subtitle">Resolvemos tus dudas sobre el proceso de reporte, la privacidad y el seguimiento de casos.</p>
+    <p class="faq-hero-subtitle">Encuentra respuestas sobre los tipos de reporte, el envío de información, la consulta del estado y los archivos que puedes adjuntar.</p>
   </div>
   <div class="hero-visual">
     <div class="hero-shapes">
@@ -401,9 +488,8 @@
             <span class="faq-icon"></span>
           </summary>
           <div class="faq-answer">
-            <p>Puedes reportar situaciones clasificadas en tres categorías principales:</p>
+            <p>Puedes reportar situaciones clasificadas en dos categorías principales:</p>
             <ul>
-              <li><strong>Queja:</strong> Manifestación de insatisfacción respecto a procesos internos, servicios administrativos o condiciones laborales (p. ej., deficiencias en servicios, errores administrativos).</li>
               <li><strong>Inquietud:</strong> Consulta o duda sobre la interpretación de normativas o situaciones ambiguas (p. ej., conflictos de interés, dudas éticas).</li>
               <li><strong>Denuncia:</strong> Reporte formal sobre actos graves que violan la ley o el Código de Ética (p. ej., fraude, corrupción, acoso, discriminación).</li>
             </ul>
@@ -419,11 +505,11 @@
             <span class="faq-icon"></span>
           </summary>
           <div class="faq-answer">
-            <p>Sí. Nuestro sistema te permite enviar tu reporte de forma completamente anónima. Cuando eliges esta opción:</p>
+            <p>Puedes seleccionar la opción de reporte anónimo en el formulario. Si eliges esta modalidad, revisa que la descripción y los archivos no incluyan datos que puedan identificarte.</p>
             <ul>
-              <li>El sistema oculta automáticamente los campos de datos personales.</li>
-              <li>No se registra ninguna información que pueda identificarte.</li>
-              <li>La investigación se realiza con la misma seriedad y profesionalismo.</li>
+              <li>Omite nombres, datos de contacto y otros detalles personales que no sean necesarios.</li>
+              <li>Revisa también el contenido de los documentos o imágenes que adjuntes.</li>
+              <li>Describe los hechos con la información necesaria para que puedan ser comprendidos.</li>
             </ul>
           </div>
         </details>
@@ -490,7 +576,7 @@
   <div class="faq-section">
     <div class="section-header">
       <h2>Privacidad y protección</h2>
-      <p>Tu seguridad y confidencialidad son nuestra máxima prioridad.</p>
+      <p>Revisa qué información se solicita y cómo se utiliza en el aviso de privacidad correspondiente.</p>
     </div>
     
     <div class="faq-items">
@@ -501,12 +587,11 @@
             <span class="faq-icon"></span>
           </summary>
           <div class="faq-answer">
-            <p>Implementamos medidas rigurosas de protección:</p>
+            <p>El aviso de privacidad de cada empresa explica el tratamiento de los datos personales relacionados con el reporte:</p>
             <ul>
-              <li><strong>Cifrado de datos:</strong> Toda la información se transmite y almacena de forma segura.</li>
-              <li><strong>Acceso restringido:</strong> Solo personal autorizado puede acceder a la información.</li>
-              <li><strong>Divulgación limitada:</strong> Compartimos información únicamente cuando es estrictamente necesario para la investigación.</li>
-              <li><strong>Cumplimiento normativo:</strong> Operamos bajo estrictas normas de protección de datos personales.</li>
+              <li>Consulta el aviso correspondiente a COMETRA, GRUMER, SEGURITEC, SEPSA, TAMEME o TECNOVAL.</li>
+              <li>Ahí encontrarás qué datos se recaban, para qué se utilizan y cómo ejercer tus derechos.</li>
+              <li>La opción anónima está disponible en el formulario; evita incluir datos personales si la eliges.</li>
             </ul>
           </div>
         </details>
@@ -519,12 +604,10 @@
             <span class="faq-icon"></span>
           </summary>
           <div class="faq-answer">
-            <p>No. Mantenemos una política estricta de <strong>no represalias</strong> que incluye:</p>
+            <p>Los reportes de buena fe deben tratarse conforme a las políticas aplicables. Si consideras que hubo represalias relacionadas con un reporte, comunícalo para que pueda revisarse.</p>
             <ul>
-              <li><strong>Prohibición explícita:</strong> Cualquier forma de represalia está prohibida y será sancionada.</li>
-              <li><strong>Protección al reportante:</strong> Implementamos medidas para proteger a quienes reportan de buena fe.</li>
-              <li><strong>Investigación inmediata:</strong> Cualquier indicio de represalia se investiga de forma prioritaria.</li>
-              <li><strong>Medidas correctivas:</strong> Las represalias conllevan sanciones disciplinarias severas.</li>
+              <li>Incluye cuándo ocurrió y qué personas o hechos están relacionados.</li>
+              <li>Evita compartir datos ajenos al asunto que se reporta.</li>
             </ul>
           </div>
         </details>
@@ -648,7 +731,7 @@
   </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
   document.addEventListener('DOMContentLoaded', () => {
     const details = document.querySelectorAll('.faq-details');
     details.forEach(detail => {

@@ -102,7 +102,7 @@
 </div>
 {% comment %} Datos para la gráfica {% endcomment %}
 {{ monthly_metrics|json_script:"monthly-data" }}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   var svg = document.getElementById('monthlyLineChart');
   if(!svg) return;

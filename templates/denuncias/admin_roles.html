@@ -29,10 +29,8 @@
     padding-top: .75rem;
   }
   .roles-users-card .table-responsive {
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #fff;
+    overflow: visible;
+    background: transparent;
     max-width: 1180px;
     margin: 0 auto;
   }
@@ -40,7 +38,12 @@
     table-layout: auto;
     margin: 0;
     width: 100%;
+    overflow: visible;
   }
+  .roles-users-card .complaints-table thead th:first-child { border-top-left-radius: 12px; }
+  .roles-users-card .complaints-table thead th:last-child { border-top-right-radius: 12px; }
+  .roles-users-card .complaints-table tbody tr:last-child td:first-child { border-bottom-left-radius: 12px; }
+  .roles-users-card .complaints-table tbody tr:last-child td:last-child { border-bottom-right-radius: 12px; }
   .roles-users-card .complaints-table th,
   .roles-users-card .complaints-table td {
     padding: .4rem .55rem;
@@ -86,6 +89,52 @@
     font-size: .8rem;
     border-radius: 10px;
   }
+  .roles-pwd {
+    position: relative;
+    display: inline-block;
+  }
+  .roles-pwd > summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+  }
+  .roles-pwd > summary::-webkit-details-marker { display: none; }
+  .roles-pwd[open] > summary {
+    background: #eaf2ff;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+  .roles-pwd-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + .4rem);
+    z-index: 40;
+    width: 240px;
+    background: #fff;
+    border: 1px solid #dbe7f8;
+    border-radius: 12px;
+    box-shadow: 0 18px 34px -14px rgba(5,24,56,.40);
+    padding: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    text-align: left;
+  }
+  .roles-pwd-panel .form-control {
+    width: 100%;
+    padding: .45rem .6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: .85rem;
+    background: #f8fafc;
+  }
+  .roles-pwd-panel .form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15);
+  }
+  .roles-pwd-panel .btn { width: 100%; }
   .roles-create-card .admin-dashboard-body {
     padding-top: 1rem;
   }
@@ -147,82 +196,79 @@
     </div>
 
     <div class="admin-dashboard-card roles-users-card" style="margin-top:16px;">
-        <div class="admin-dashboard-header admin-dashboard-header--light">
-          <span class="card-title">Usuarios administrativos</span>
-        </div>
-        <div class="admin-dashboard-body admin-dashboard-body--flush">
-          <div class="table-responsive">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Usuarios administrativos</span>
+      </div>
+      <div class="admin-dashboard-body admin-dashboard-body--flush">
+        <div class="table-responsive">
           <table class="complaints-table complaints-table--admins complaints-table--blue" aria-label="Usuarios administrativos">
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th>Nombre</th>
-              <th>Correo</th>
-              <th>Rol</th>
-              <th>Acceso</th>
-              <th>Req. actualización</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for u in admins %}
+            <thead>
               <tr>
-                <td>{{ u.username }}</td>
-                <td>{{ u.get_full_name|default:'-' }}</td>
-                <td>{{ u.email|default:'-' }}</td>
-                <td>
-                  {% if u.is_superuser %}
-                    <span class="badge">Superusuario</span>
-                  {% elif u.username == 'Delegador' or u.role == 'Delegador' %}
-                    <span class="badge">Delegador</span>
-                  {% else %}
-                    <span class="badge">Staff</span>
-                  {% endif %}
-                </td>
-                <td>{% if u.is_active %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge">Inactivo</span>{% endif %}</td>
-                <td>{% if u.require_data_update %}<span class="badge">Sí</span>{% else %}<span class="badge">No</span>{% endif %}</td>
-                <td>
-                  <div class="roles-actions">
-                    {% if u.is_superuser or u.username == 'Delegador' or u.role == 'Delegador' %}
-                      <button class="btn btn-primary btn-sm" disabled>Protegido</button>
+                <th>Usuario</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Acceso</th>
+                <th>Req. actualización</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in admins %}
+                <tr>
+                  <td>{{ u.username }}</td>
+                  <td>{{ u.get_full_name|default:'-' }}</td>
+                  <td>{{ u.email|default:'-' }}</td>
+                  <td>
+                    {% if u.is_superuser %}
+                      <span class="badge badge-superuser">Superusuario</span>
+                    {% elif u.role == 'Delegador' or u.username == 'Delegador' %}
+                      <span class="badge badge-delegador">Delegador</span>
+                    {% elif u.role|lower == 'actualizador' %}
+                      <span class="badge badge-actualizador">Actualizador</span>
                     {% else %}
-                      <a class="btn btn-secondary btn-sm" href="{% url 'denuncias:admin_edit_user_profile' u.id %}">Editar</a>
-                      <form method="post" action="{% url 'denuncias:admin_toggle_user_active' u.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary btn-sm">{% if u.is_active %}Deshabilitar{% else %}Habilitar{% endif %}</button>
-                      </form>
-                      <form method="post" action="{% url 'denuncias:admin_toggle_require_data_update' u.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary btn-sm">{% if u.require_data_update %}Quitar req.{% else %}Req. update{% endif %}</button>
-                      </form>
-                      <details style="display:inline-block;">
-                        <summary class="btn btn-secondary btn-sm" style="list-style:none; cursor:pointer;">Contraseña</summary>
-                        <div style="margin-top:.5rem; min-width:240px;">
-                          <form method="post" action="{% url 'denuncias:admin_set_user_password' u.id %}" novalidate>
-                            {% csrf_token %}
-                            <div class="form-group" style="margin-bottom:.5rem;">
-                              <input name="password1" type="password" class="form-control" placeholder="Nueva contraseña" required>
-                            </div>
-                            <div class="form-group" style="margin-bottom:.5rem;">
-                              <input name="password2" type="password" class="form-control" placeholder="Confirmar contraseña" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-                          </form>
-                        </div>
-                      </details>
+                      <span class="badge badge-admin">Analista</span>
                     {% endif %}
-                  </div>
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7" class="text-muted">No hay usuarios administrativos.</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      </div>
+                  </td>
+                  <td>{% if u.is_active %}<span class="badge badge-success">Activo</span>{% else %}<span class="badge">Inactivo</span>{% endif %}</td>
+                  <td>{% if u.require_data_update %}<span class="badge">Sí</span>{% else %}<span class="badge">No</span>{% endif %}</td>
+                  <td>
+                    <div class="roles-actions">
+                      {% if u.is_superuser or u.username == 'Delegador' or u.role == 'Delegador' %}
+                        <button class="btn btn-primary btn-sm" disabled>Protegido</button>
+                      {% else %}
+                        <a class="btn btn-secondary btn-sm" href="{% url 'denuncias:user_profile_detail' u.id %}">Editar</a>
+                        <form method="post" action="{% url 'denuncias:admin_toggle_user_active' u.id %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-primary btn-sm">{% if u.is_active %}Deshabilitar{% else %}Habilitar{% endif %}</button>
+                        </form>
+                        <form method="post" action="{% url 'denuncias:admin_toggle_require_data_update' u.id %}">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-secondary btn-sm">{% if u.require_data_update %}Quitar req.{% else %}Req. update{% endif %}</button>
+                        </form>
+                        <details class="roles-pwd">
+                          <summary class="btn btn-secondary btn-sm">Contraseña</summary>
+                          <div class="roles-pwd-panel">
+                            <form method="post" action="{% url 'denuncias:admin_set_user_password' u.id %}" novalidate>
+                              {% csrf_token %}
+                              <input name="password1" type="password" class="form-control" placeholder="Nueva contraseña" required>
+                              <input name="password2" type="password" class="form-control" placeholder="Confirmar contraseña" required>
+                              <button type="submit" class="btn btn-primary btn-sm">Guardar contraseña</button>
+                            </form>
+                          </div>
+                        </details>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="7" class="text-muted">No hay usuarios administrativos.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -231,7 +277,7 @@
         <span class="card-title">Crear usuario</span>
       </div>
       <div class="admin-dashboard-body">
-        <p class="help-text" style="margin-top:0;">Completa los datos del nuevo usuario administrativo y define su acceso inicial.</p>
+        <p class="help-text" style="margin-top:0;">Completa los datos del nuevo usuario administrativo y define su rol y acceso inicial.</p>
         <form method="post" action="{% url 'denuncias:admin_create_admin_user' %}" novalidate class="roles-create-shell">
           {% csrf_token %}
           {% for h in create_form.hidden_fields %}{{ h }}{% endfor %}
@@ -263,6 +309,12 @@
               <label for="{{ create_form.phone_number.id_for_label }}" class="form-label">{{ create_form.phone_number.label }}</label>
               {{ create_form.phone_number }}
               {% for err in create_form.phone_number.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+            </div>
+            <div>
+              <label for="{{ create_form.role.id_for_label }}" class="form-label">{{ create_form.role.label }}</label>
+              {{ create_form.role }}
+              <div class="help-text" style="margin-top:.25rem;">Determina el panel y los permisos del usuario: analista, delegador o actualizador.</div>
+              {% for err in create_form.role.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
             </div>
             <div class="roles-span-2">
               <label for="{{ create_form.password1.id_for_label }}" class="form-label">{{ create_form.password1.label }}</label>

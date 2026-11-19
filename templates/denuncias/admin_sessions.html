@@ -1,0 +1,145 @@
+{% extends 'denuncias/admin_base.html' %}
+
+{% block title %}Registro de sesiones{% endblock %}
+{% block main_extra_classes %}container--wide{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-bg">
+  <div class="container">
+
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>Registro de sesiones</h2>
+        <p class="help-text">Inicio y fin de sesión por usuario, con calendario y métricas de actividad para fines de auditoría.</p>
+      </div>
+      <div class="admin-dashboard-body">
+        <form method="get" class="filters-enhanced" aria-label="Filtros de sesiones">
+          <div class="filters-grid">
+            <div>
+              <label for="session-user">Usuario</label>
+              <select id="session-user" name="user" class="input">
+                <option value="">Todos los usuarios</option>
+                {% for u in users %}
+                <option value="{{ u.id }}" {% if selected_user and selected_user.id == u.id %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label for="session-month">Mes</label>
+              <input type="month" id="session-month" name="month" class="input" value="{{ year }}-{{ month|stringformat:'02d' }}" />
+            </div>
+            <div class="filter-actions">
+              <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-value">{{ metrics.sessions }}</div>
+        <div class="stat-label">Sesiones en {{ month_label }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ metrics.total_time }}</div>
+        <div class="stat-label">Tiempo total registrado</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ metrics.avg_time }}</div>
+        <div class="stat-label">Duración promedio</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ metrics.active }}</div>
+        <div class="stat-label">Sesiones sin cierre</div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card">
+      <div class="admin-dashboard-header">
+        <span class="card-title">
+          {% if selected_user %}Actividad de {{ selected_user.get_full_name|default:selected_user.username }}{% else %}Actividad general{% endif %}
+          · {{ month_label }}
+        </span>
+        <div class="calendar-nav">
+          <a class="btn btn-outline btn-sm" href="?month={{ prev_month }}{% if selected_user %}&user={{ selected_user.id }}{% endif %}">‹ Anterior</a>
+          {% if not is_current_month %}
+          <a class="btn btn-outline btn-sm" href="?{% if selected_user %}user={{ selected_user.id }}{% endif %}">Hoy</a>
+          {% endif %}
+          <a class="btn btn-outline btn-sm" href="?month={{ next_month }}{% if selected_user %}&user={{ selected_user.id }}{% endif %}">Siguiente ›</a>
+        </div>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="session-calendar">
+          {% for label in weekday_labels %}
+          <div class="session-calendar__head">{{ label }}</div>
+          {% endfor %}
+          {% for week in weeks %}
+            {% for day in week %}
+            <div class="session-calendar__day {% if not day.in_month %}is-out{% endif %} {% if day.is_today %}is-today{% endif %} {% if day.count %}has-activity{% endif %}">
+              <span class="day-num">{{ day.date.day }}</span>
+              {% if day.count and day.in_month %}
+              <span class="day-badge">{{ day.count }} sesión{{ day.count|pluralize:"es" }}</span>
+              {% if day.duration %}<span class="day-time">{{ day.duration }}</span>{% endif %}
+              {% endif %}
+            </div>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-two">
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header"><span class="card-title">Resumen por usuario · {{ month_label }}</span></div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table" aria-label="Resumen de sesiones por usuario">
+              <thead>
+                <tr><th>Usuario</th><th>Sesiones</th><th>Tiempo</th></tr>
+              </thead>
+              <tbody>
+                {% for row in user_summary %}
+                <tr>
+                  <td>{{ row.user.get_full_name|default:row.user.username }}</td>
+                  <td>{{ row.count }}</td>
+                  <td>{{ row.time }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-muted">Sin actividad registrada en el periodo.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-dashboard-card">
+        <div class="admin-dashboard-header"><span class="card-title">Últimas sesiones registradas</span></div>
+        <div class="admin-dashboard-body admin-dashboard-body--flush">
+          <div class="table-responsive">
+            <table class="complaints-table" aria-label="Últimas sesiones">
+              <thead>
+                <tr><th>Usuario</th><th>Inicio</th><th>Fin</th><th>Duración</th></tr>
+              </thead>
+              <tbody>
+                {% for row in recent_rows %}
+                <tr>
+                  <td>{{ row.user.get_full_name|default:row.user.username }}</td>
+                  <td>{{ row.login_at|date:"d/m/Y H:i" }}</td>
+                  <td>{% if row.active %}<span class="chip chip--live">En curso</span>{% else %}{{ row.logout_at|date:"d/m/Y H:i"|default:"-" }}{% endif %}</td>
+                  <td>{{ row.duration }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">Sin sesiones registradas.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

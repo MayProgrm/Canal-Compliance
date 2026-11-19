@@ -6,7 +6,7 @@
 <section class="hero">
   <div class="hero-content">
     <h1 class="hero-title">Canal GSI: Gestión segura e íntegra</h1>
-    <p class="hero-subtitle">Espacio seguro y confidencial para reportar lo que importa.</p>
+    <p class="hero-subtitle">Un espacio para comunicar inquietudes o reportar situaciones que puedan incumplir el Código de Ética y las políticas internas.</p>
     <div class="hero-actions">
       <a class="btn btn-primary btn-large" href="{% url 'denuncias:submit_complaint' %}">
         <span>¡Quiero denunciar!</span>
@@ -14,6 +14,9 @@
           <line x1="5" y1="12" x2="19" y2="12"/>
           <polyline points="12,5 19,12 12,19"/>
         </svg>
+      </a>
+      <a class="btn btn-ghost btn-large" href="{% url 'denuncias:lookup_complaint' %}">
+        Consultar denuncia
       </a>
     </div>
   </div>
@@ -29,47 +32,47 @@
 <section class="process-steps">
   <div class="section-header">
     <h2 class="section-title">Cómo funciona</h2>
-    <p class="section-subtitle">Proceso simple y transparente para garantizar tu seguridad y confidencialidad.</p>
+    <p class="section-subtitle">Información práctica para identificar el tipo de reporte y preparar los datos necesarios.</p>
   </div>
-  
+
   <div class="steps-container">
     <div class="step-card">
       <div class="step-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1"/></svg>
       </div>
       <div class="step-content">
-        <h3>¿Qué es?</h3>
-        <p>Canal seguro para reportar incumplimientos al Código de Ética y Conducta, disponible 24/7.</p>
+        <h3>¿Qué es este canal?</h3>
+        <p>Es un medio para comunicar una inquietud o reportar posibles incumplimientos al Código de Ética y a las políticas internas.</p>
       </div>
     </div>
-    
+
     <div class="step-card">
       <div class="step-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
       </div>
       <div class="step-content">
-        <h3>Procedimiento para informar</h3>
-        <p>Utiliza este formulario web o los canales alternativos. Tu reporte será encriptado.</p>
+        <h3>Elige el tipo de reporte</h3>
+        <p>Selecciona <strong>Inquietud</strong> si buscas orientación preventiva o <strong>Denuncia</strong> para informar hechos concretos que consideras irregulares.</p>
       </div>
     </div>
-    
+
     <div class="step-card">
       <div class="step-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h12l6 6v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7l6 6h12"/></svg>
       </div>
       <div class="step-content">
-        <h3>Genera tu reporte</h3>
-        <p>Proporciona detalles clave: qué, quién, cuándo y dónde. Puedes adjuntar evidencias de forma segura.</p>
+        <h3>Prepara la información</h3>
+        <p>Describe qué ocurrió, cuándo y dónde, y quiénes participaron. Si tienes documentos u otros antecedentes pertinentes, puedes adjuntarlos.</p>
       </div>
     </div>
-    
+
     <div class="step-card">
       <div class="step-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
       </div>
       <div class="step-content">
-        <h3>Consulta y da seguimiento</h3>
-        <p>Recibe un folio único para consultar el estatus y chatear anónimamente con los investigadores.</p>
+        <h3>Después de enviar</h3>
+        <p>Guarda el folio y la contraseña que se generan al enviar el reporte. Los necesitarás para consultar su estado, leer respuestas o agregar información.</p>
       </div>
     </div>
   </div>
@@ -80,23 +83,10 @@
     <h2 class="section-title">Tipos de Reporte</h2>
     <p class="section-subtitle">Identifica la categoría adecuada para tu situación.</p>
   </div>
-  
-  <div class="steps-container" style="grid-template-columns: repeat(3, 1fr);">
-    <div class="step-card type-card">
-      <div class="step-icon type-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="8"/></svg>
-      </div>
-      <div class="step-content">
-        <h3>Queja</h3>
-        <p>Manifestación de insatisfacción respecto a procesos internos, servicios administrativos o condiciones laborales que, sin ser delitos, afectan el ambiente de trabajo o el bienestar del colaborador.</p>
-        <ul class="example-list">
-          <li><strong>Deficiencias en servicios:</strong> Reportes sobre falta recurrente de insumos básicos en áreas comunes o mal estado de las instalaciones.</li>
-          <li><strong>Procesos administrativos:</strong> Errores continuos no resueltos en trámites internos o falta de claridad en procedimientos operativos.</li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="step-card type-card">
+
+  <div class="report-types-grid">
+    <div class="type-card">
+      <span class="type-badge">Orientación preventiva</span>
       <div class="step-icon type-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="13" x2="12.01" y2="13"/><line x1="12" y1="9" x2="12" y2="9"/></svg>
       </div>
@@ -108,9 +98,13 @@
           <li><strong>Interpretación normativa:</strong> Dudas sobre cómo aplicar correctamente el Código de Conducta en situaciones complejas con equipos de trabajo.</li>
         </ul>
       </div>
+      <div class="type-cta">
+        <a class="btn btn-secondary" href="{% url 'denuncias:submit_complaint' %}?tipo=inquietud">Plantear una inquietud</a>
+      </div>
     </div>
-    
-    <div class="step-card type-card">
+
+    <div class="type-card">
+      <span class="type-badge type-badge--strong">Reporte formal</span>
       <div class="step-icon type-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
@@ -122,36 +116,23 @@
           <li><strong>Acoso y discriminación:</strong> Situaciones de hostigamiento laboral, acoso sexual o discriminación por género, raza o religión.</li>
         </ul>
       </div>
+      <div class="type-cta">
+        <a class="btn btn-primary" href="{% url 'denuncias:submit_complaint' %}?tipo=denuncia">Presentar una denuncia</a>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="features-section">
-  <div class="features-container">
-    <div class="feature-card">
-      <div class="feature-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h3>Seguridad garantizada</h3>
-      <p>Tu identidad está protegida con los más altos estándares de seguridad y confidencialidad.</p>
+<section class="cta-band">
+  <div class="cta-band-inner">
+    <div class="cta-band-text">
+      <h2>¿Listo para dar el primer paso?</h2>
+      <p>La información que compartas ayuda a identificar situaciones y orientar acciones.</p>
     </div>
-    
-    <div class="feature-card">
-      <div class="feature-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
-      </div>
-    <h3>Proceso confiable</h3>
-      <p>Cada reporte es revisado de manera objetiva y profesional por nuestro equipo especializado.</p>
-    </div>
-    
-    <div class="feature-card">
-      <div class="feature-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27,6.96 12,12.01 20.73,6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-      </div>
-      <h3>Soporte integral</h3>
-      <p>Recibe acompañamiento y seguimiento personalizado durante todo el proceso.</p>
+    <div class="cta-band-actions">
+      <a class="btn btn-ghost-light btn-large" href="{% url 'denuncias:submit_complaint' %}">¡Quiero denunciar!</a>
+      <a class="btn btn-ghost btn-large" href="{% url 'denuncias:lookup_complaint' %}">Consultar denuncia</a>
     </div>
   </div>
 </section>
- 
 {% endblock %}

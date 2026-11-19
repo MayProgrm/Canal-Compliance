@@ -7,18 +7,30 @@
 {% block content %}
 <div class="admin-dashboard-bg">
   <div class="container">
-    <div class="admin-dashboard-card" style="margin-top:16px;">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
       <div class="admin-dashboard-header admin-dashboard-header--light">
         <h2>Panel del actualizador</h2>
-        <p class="help-text">Gestiona la Biblioteca GSI y los avisos de privacidad sin usar el administrador de Django.</p>
+        <p class="help-text">Bienvenid@, {{ request.user.get_full_name|default:request.user.username }}. Gestiona la Biblioteca GSI y los avisos de privacidad sin usar el administrador de Django.</p>
       </div>
-      <div class="admin-dashboard-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+      <div class="admin-dashboard-body">
+        <div class="stat-cards">
+          <div class="stat-card"><div class="stat-value">{{ resources_total }}</div><div class="stat-label">Recursos totales</div></div>
+          <div class="stat-card"><div class="stat-value">{{ docs_total }}</div><div class="stat-label">Documentos</div></div>
+          <div class="stat-card"><div class="stat-value">{{ infographics_total }}</div><div class="stat-label">Infografías</div></div>
+          <div class="stat-card"><div class="stat-value">{{ updates_total }}</div><div class="stat-label">Actualizaciones</div></div>
+          <div class="stat-card"><div class="stat-value">{{ privacy_total }}</div><div class="stat-label">Avisos de privacidad</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-body" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; padding-top:1rem;">
         <a class="admin-card-link" href="{% url 'denuncias:actualizador_library' %}" style="text-decoration:none;">
           <div class="card-pro" style="height:100%;">
             <div class="card-header"><span class="card-title">Biblioteca GSI</span></div>
             <div class="card-body">
               <div class="help-text" style="margin:0;">Recursos totales: {{ resources_total }}</div>
-              <div class="help-text" style="margin:.25rem 0 0;">Crea, edita y elimina documentos, infografías y actualizaciones.</div>
+              <div class="help-text" style="margin:.25rem 0 0;">Crea, edita y elimina documentos, infografías y actualizaciones recientes.</div>
             </div>
           </div>
         </a>
@@ -27,7 +39,7 @@
             <div class="card-header"><span class="card-title">Avisos de privacidad</span></div>
             <div class="card-body">
               <div class="help-text" style="margin:0;">Avisos configurados: {{ privacy_total }}</div>
-              <div class="help-text" style="margin:.25rem 0 0;">Sube y actualiza PDFs por empresa.</div>
+              <div class="help-text" style="margin:.25rem 0 0;">Sube y actualiza los PDFs por empresa.</div>
             </div>
           </div>
         </a>

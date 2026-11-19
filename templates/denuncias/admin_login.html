@@ -19,16 +19,6 @@
       <p class="admin-login-subtitle">Ingresa tus credenciales para acceder al panel de administración</p>
     </header>
 
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}
-          {% if message.level_tag == 'error' %}
-            <li class="message {{ message.tags }}">{{ message }}</li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    {% endif %}
-
     <div class="admin-login-body">
       <form method="post" action="" class="admin-login-form" novalidate>
         {% csrf_token %}
@@ -65,12 +55,4 @@
     <div class="admin-login-footer">Si necesitas acceso de administrador, contacta al responsable del sistema.</div>
   </section>
 </div>
- 
-<script>
-(function(){
-  var t = document.querySelector('.password-toggle');
-  var i = document.getElementById('id_password');
-  if(t && i){ t.addEventListener('click', function(){ i.type = (i.type === 'password') ? 'text' : 'password'; }); }
-})();
-</script>
 {% endblock %}

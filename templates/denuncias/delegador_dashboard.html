@@ -7,14 +7,19 @@
   <div class="container">
     <div class="admin-dashboard-card" style="margin-top:.75rem;">
       <div class="admin-dashboard-header admin-dashboard-header--light">
-        <h2>Delegador</h2>
-        <p class="help-text">Denuncias nuevas pendientes de aceptación o rechazo.</p>
+        <h2>Cola de asignación</h2>
+        <p class="help-text">Bienvenid@, {{ request.user.get_full_name|default:request.user.username }}. Revisa las denuncias nuevas pendientes de aceptación o rechazo y asígnalas al área correspondiente.</p>
       </div>
       <div class="admin-dashboard-body">
         <div class="stat-cards">
           <div class="stat-card"><div class="stat-value">{{ total_pending }}</div><div class="stat-label">Pendientes</div></div>
           <div class="stat-card"><div class="stat-value">{{ sin_area_pending }}</div><div class="stat-label">Sin área</div></div>
           <div class="stat-card"><div class="stat-value">{{ area_breakdown|length }}</div><div class="stat-label">Áreas con pendientes</div></div>
+        </div>
+        <div class="dashboard-quicklinks">
+          <a class="btn btn-outline btn-sm" href="{% url 'denuncias:admin_rejected' %}">Rechazados</a>
+          <a class="btn btn-outline btn-sm" href="{% url 'denuncias:admin_archive' %}">Archivo</a>
+          <a class="btn btn-outline btn-sm" href="{% url 'denuncias:user_profile' %}">Mi perfil</a>
         </div>
       </div>
     </div>
@@ -73,8 +78,8 @@
             <tbody>
               {% for r in area_breakdown %}
                 <tr>
-                  <td>{{ r.actor_area|default:'Sin área' }}</td>
-                  <td>{{ r.n }}</td>
+                  <td>{{ r.area }}</td>
+                  <td>{{ r.count }}</td>
                 </tr>
               {% empty %}
                 <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>
@@ -101,8 +106,8 @@
             <tbody>
               {% for r in category_breakdown %}
                 <tr>
-                  <td>{{ r.category|default:'Sin categoría' }}</td>
-                  <td>{{ r.n }}</td>
+                  <td>{{ r.category }}</td>
+                  <td>{{ r.count }}</td>
                 </tr>
               {% empty %}
                 <tr><td colspan="2" class="text-muted">Sin datos.</td></tr>

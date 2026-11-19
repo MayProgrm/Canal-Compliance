@@ -4,32 +4,37 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.http import JsonResponse, Http404, HttpResponse, FileResponse
 import mimetypes
 import os
+import calendar
+from datetime import date, timedelta
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q, F, Case, When, IntegerField, Count, Sum, Max
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
+from django.utils.html import format_html
 from django.conf import settings
 from django.utils.dateparse import parse_date, parse_time
 import logging
 from io import BytesIO
 from .utils import validate_totp_token
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
-try:
-    from ratelimit.decorators import ratelimit
-except Exception:
-    def ratelimit(**kwargs):
-        def _decorator(func):
-            return func
-        return _decorator
-from .models import Complaint, PageViewStat, ChatMessage, ReporterNote, ComplaintAttachment, PageViewLog, ComplaintLog, PrivacyNotice, ResourceItem
-from .forms import ComplaintForm, ComplaintLookupForm, AdminRegistrationForm, AdminLoginForm, AdminSetUserPasswordForm, VerificationCodeForm, ComplaintResponseForm, ChatMessageForm, ReporterNoteForm, UserProfileForm, StyledPasswordChangeForm, InvestigationPlanForm, EvidenceItemForm, FindingForm, CaseReportForm, ResourceItemForm, PrivacyNoticeForm
+from django_ratelimit.decorators import ratelimit
+from .models import Complaint, PageViewStat, ChatMessage, ReporterNote, ComplaintAttachment, PageViewLog, ComplaintLog, PrivacyNotice, ResourceItem, InvestigationProcedure, UserSessionAudit
+from .forms import ComplaintForm, ComplaintLookupForm, AdminRegistrationForm, AdminLoginForm, AdminSetUserPasswordForm, VerificationCodeForm, ComplaintResponseForm, ChatMessageForm, ReporterNoteForm, UserProfileForm, StyledPasswordChangeForm, InvestigationPlanForm, EvidenceItemForm, FindingForm, CaseReportForm, ResourceItemForm, PrivacyNoticeForm, InvestigationProcedureForm
 from .models import InvestigationPlan, EvidenceItem, Finding, CaseReport
+from .services.complaints import (
+    persist_new_complaint,
+    resolve_category,
+    chat_enabled_for,
+    mask_email,
+    mask_phone,
+    get_complaint_for_reporter,
+)
+from .services.iso_protocol import apply_iso_protocol, resolve_incident_family, FAMILY_LABELS
 try:
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import letter
@@ -50,94 +55,6 @@ import io
 
 def _ensure_default_library_items():
     marker_title = '__LIBRARY_SEEDED__'
-    if ResourceItem.objects.filter(title=marker_title).exists():
-        return
-    defaults = [
-        {
-            'kind': 'main_doc',
-            'sort_order': 10,
-            'title': 'Guía de clasificación',
-            'description': 'Documento detallado que explica las diferencias entre Queja, Inquietud y Denuncia, con ejemplos prácticos para ayudarte a categorizar correctamente tu reporte.',
-        },
-        {
-            'kind': 'main_doc',
-            'sort_order': 20,
-            'title': 'Código de ética',
-            'description': 'Marco fundamental que establece los principios y valores que guían nuestra conducta institucional. Define las expectativas de comportamiento ético para todos los miembros de la organización.',
-        },
-        {
-            'kind': 'main_doc',
-            'sort_order': 30,
-            'title': 'Aviso de privacidad',
-            'description': 'Información detallada sobre cómo recopilamos, utilizamos y protegemos tus datos personales durante el proceso de denuncia. Tu privacidad es nuestra prioridad.',
-        },
-        {
-            'kind': 'main_doc',
-            'sort_order': 40,
-            'title': 'Políticas complementarias',
-            'description': 'Conjunto de políticas y procedimientos relacionados con el manejo de denuncias, incluyendo protocolos de investigación y medidas disciplinarias. Documentos fundamentales que regulan nuestro canal de denuncias y establecen los marcos de actuación institucional.',
-        },
-        {
-            'kind': 'infographic',
-            'sort_order': 10,
-            'title': 'Pasos para enviar tu reporte',
-            'description': 'Guía visual paso a paso que te muestra cómo completar el formulario de denuncia de manera correcta y efectiva.',
-        },
-        {
-            'kind': 'infographic',
-            'sort_order': 20,
-            'title': 'Proceso de atención y tiempos estimados',
-            'description': 'Conoce las etapas por las que pasa tu denuncia desde que la envías hasta su resolución, incluyendo los plazos estimados.',
-        },
-        {
-            'kind': 'infographic',
-            'sort_order': 30,
-            'title': 'Buenas prácticas para adjuntar evidencia',
-            'description': 'Aprende cómo preparar y presentar evidencia digital de manera que respalde eficazmente tu denuncia.',
-        },
-        {
-            'kind': 'update',
-            'sort_order': 10,
-            'published_on': '2026-01-12',
-            'title': 'Nueva categorización de reportes',
-            'description': 'Implementamos un nuevo sistema de clasificación (Queja, Inquietud, Denuncia) para agilizar la atención y resolución de cada caso según su naturaleza.',
-        },
-        {
-            'kind': 'update',
-            'sort_order': 20,
-            'published_on': '2025-10-25',
-            'title': 'Verificación de integridad de archivos',
-            'description': 'Implementamos un nuevo sistema de verificación que garantiza la autenticidad y integridad de todos los archivos adjuntos a las denuncias, proporcionando mayor seguridad en el proceso.',
-        },
-        {
-            'kind': 'update',
-            'sort_order': 30,
-            'published_on': '2025-10-15',
-            'title': 'Nueva interfaz de usuario',
-            'description': 'Rediseñamos la interfaz para ofrecer una experiencia más clara y accesible. Ahora puedes navegar la biblioteca, enviar reportes y consultar el estado con mayor facilidad.',
-        },
-    ]
-    to_create = []
-    for d in defaults:
-        kind = d['kind']
-        title = d['title']
-        exists = ResourceItem.objects.filter(kind=kind, title__iexact=title).exists()
-        if exists:
-            continue
-        obj = ResourceItem(
-            kind=kind,
-            title=title,
-            description=d.get('description'),
-            sort_order=d.get('sort_order', 0),
-            is_published=True,
-        )
-        if kind == 'update':
-            published_on = parse_date(d.get('published_on') or '')
-            if published_on:
-                obj.published_on = published_on
-        to_create.append(obj)
-    if to_create:
-        ResourceItem.objects.bulk_create(to_create)
     ResourceItem.objects.get_or_create(kind='update', title=marker_title, defaults={'is_published': False, 'sort_order': 999999})
 
 def _build_monthly_metrics():
@@ -236,6 +153,7 @@ def public_updates(request):
         {'main_documents': main_documents, 'infographics': infographics, 'recent_updates': recent_updates},
     )
 
+@ratelimit(key='ip', rate='3/m', method='POST', block=False)
 def public_submit_complaint(request):
     try:
         company_codes = [c for c, _ in getattr(PrivacyNotice, 'COMPANY_CHOICES', [])]
@@ -250,10 +168,17 @@ def public_submit_complaint(request):
     attempts = request.session.get('submit_attempts', [])
     now_ts = now.timestamp()
     attempts = [ts for ts in attempts if now_ts - ts < 60]
-    if request.method == 'POST' and len(attempts) >= 3:
+    if request.method == 'POST' and (
+        len(attempts) >= 3 or getattr(request, 'limited', False)
+    ):
         messages.error(request, 'Has alcanzado el límite de envíos. Inténtalo de nuevo en unos segundos.')
         form = ComplaintForm(request.POST, request.FILES)
-        return render(request, 'denuncias/public_enviar_denuncia.html', {'form': form, 'privacy_notices': privacy_notices})
+        return render(
+            request,
+            'denuncias/public_enviar_denuncia.html',
+            {'form': form, 'privacy_notices': privacy_notices},
+            status=429,
+        )
     if request.method == 'POST':
         form = ComplaintForm(request.POST, request.FILES)
         if form.is_valid():
@@ -267,122 +192,48 @@ def public_submit_complaint(request):
                 return render(request, 'denuncias/public_enviar_denuncia.html', {'form': form, 'privacy_notices': privacy_notices})
 
             complaint = form.save(commit=False)
-            
-            action = form.cleaned_data.get('action_type')
-            if action == 'queja':
-                complaint.category = form.cleaned_data.get('queja_category')
-            elif action == 'inquietud':
-                complaint.category = form.cleaned_data.get('inquietud_category')
-            complaint.privacy_policies_opened = privacy_opened[:255]
-                
-            password = form.cleaned_data.get('password')
-            if password:
-                complaint.set_password(password)
-            complaint.save()
-            state = (request.POST.get('inc_state') or '').strip()
-            branch = (request.POST.get('inc_branch') or '').strip()
-            date_str = (request.POST.get('inc_date') or '').strip()
-            time_str = (request.POST.get('inc_time') or '').strip()
-            knows_actor_raw = (request.POST.get('inc_knows_actor') or '').strip().lower()
-            role = (request.POST.get('inc_role') or '').strip()
-            has_witness_raw = (request.POST.get('inc_has_witness') or '').strip().lower()
-            actor_name = (request.POST.get('actor_name') or '').strip()
-            actor_matricula = (request.POST.get('actor_matricula') or '').strip()
-            actor_area = (request.POST.get('actor_area') or '').strip()
-            updates = []
-            if state:
-                complaint.incident_state = state
-                updates.append('incident_state')
-            if branch:
-                complaint.incident_branch = branch
-                updates.append('incident_branch')
-            if date_str:
-                d = parse_date(date_str)
-                if d:
-                    complaint.incident_date = d
-                    updates.append('incident_date')
-            if time_str:
-                t = parse_time(time_str)
-                if t:
-                    complaint.incident_time = t
-                    updates.append('incident_time')
-            if knows_actor_raw in ('si', 'no'):
-                complaint.knows_actor = knows_actor_raw == 'si'
-                updates.append('knows_actor')
-            if role:
-                complaint.reporter_role = role
-                updates.append('reporter_role')
-            if has_witness_raw in ('si', 'no'):
-                complaint.has_witnesses = has_witness_raw == 'si'
-                updates.append('has_witnesses')
-            if actor_name:
-                complaint.actor_name = actor_name
-                updates.append('actor_name')
-            if actor_matricula:
-                complaint.actor_matricula = actor_matricula
-                updates.append('actor_matricula')
-            if actor_area:
-                complaint.actor_area = actor_area
-                updates.append('actor_area')
-            if updates:
-                complaint.save(update_fields=updates)
-            try:
-                delegador = _get_delegador()
-                if delegador:
-                    complaint.assigned_to = delegador
-                    complaint.save(update_fields=['assigned_to'])
-                    try:
-                        ComplaintLog.objects.create(complaint=complaint, user=delegador, action='delegation_pending', details='Asignado al Delegador para revisión previa a la delegación')
-                    except Exception:
-                        pass
-            except Exception:
-                logging.exception('Error asignando denuncia al Delegador')
-            try:
-                opt = {'recurrence': (form.cleaned_data.get('recurrence') or '').strip(), 'recurrence_since': (form.cleaned_data.get('recurrence_since') or '').strip(), 'immediate_risk': (form.cleaned_data.get('immediate_risk') or '').strip(), 'previous_report': (form.cleaned_data.get('previous_report') or '').strip(), 'previous_report_channel': (form.cleaned_data.get('previous_report_channel') or '').strip(), 'contact_preference': (form.cleaned_data.get('contact_preference') or '').strip(), 'share_permission': (form.cleaned_data.get('share_permission') or '').strip(), 'impact_notes': (form.cleaned_data.get('impact_notes') or '').strip()}
-                parts = []
-                if opt['recurrence']:
-                    parts.append(f"Repetición: {('Sí' if opt['recurrence'] == 'si' else 'No')}")
-                if opt['recurrence_since']:
-                    parts.append(f"Desde: {opt['recurrence_since']}")
-                if opt['immediate_risk']:
-                    parts.append(f"Riesgo inmediato: {('Sí' if opt['immediate_risk'] == 'si' else 'No')}")
-                if opt['previous_report']:
-                    parts.append(f"Reportado antes: {('Sí' if opt['previous_report'] == 'si' else 'No')}")
-                if opt['previous_report_channel']:
-                    parts.append(f"Canal previo: {opt['previous_report_channel']}")
-                if opt['contact_preference']:
-                    pref_map = {'email': 'Correo', 'phone': 'Celular', 'whatsapp': 'Whatsapp', 'any': 'Cualquier medio'}
-                    parts.append(f"Preferencia de contacto: {pref_map.get(opt['contact_preference'], opt['contact_preference'])}")
-                if opt['share_permission']:
-                    parts.append(f"Autoriza compartir con RRHH: {('Sí' if opt['share_permission'] == 'si' else 'No')}")
-                if opt['impact_notes']:
-                    parts.append(f"Impacto: {opt['impact_notes']}")
-                if parts:
-                    summary_text = '; '.join(parts)
-                    complaint.reporter_notes_summary = summary_text[:2000]
-                    complaint.save(update_fields=['reporter_notes_summary'])
-                    try:
-                        ReporterNote.objects.create(complaint=complaint, content=summary_text)
-                    except Exception:
-                        pass
-            except Exception:
-                pass
-            files = form.cleaned_data.get('attachments') or []
-            if files:
-                files = files[:5]
-                for idx, f in enumerate(files):
-                    if idx == 0 and (not complaint.attachment):
-                        complaint.attachment = f
-                    else:
-                        ComplaintAttachment.objects.create(complaint=complaint, file=f)
-                complaint.save(update_fields=['attachment'])
+            complaint.category = resolve_category(
+                form.cleaned_data.get('action_type'),
+                form.cleaned_data.get('category'),
+                form.cleaned_data.get('queja_category'),
+                form.cleaned_data.get('inquietud_category'),
+            )
+            incident = {
+                'state': (request.POST.get('inc_state') or '').strip(),
+                'branch': (request.POST.get('inc_branch') or '').strip(),
+                'date': (request.POST.get('inc_date') or '').strip(),
+                'time': (request.POST.get('inc_time') or '').strip(),
+                'knows_actor': (request.POST.get('inc_knows_actor') or '').strip().lower(),
+                'role': (request.POST.get('inc_role') or '').strip(),
+                'has_witnesses': (request.POST.get('inc_has_witness') or '').strip().lower(),
+                'actor_name': (request.POST.get('actor_name') or '').strip(),
+                'actor_matricula': (request.POST.get('actor_matricula') or '').strip(),
+                'actor_area': (request.POST.get('actor_area') or '').strip(),
+            }
+            optional = {}
+            if request.POST.get('extra_choice') == 'si':
+                optional = {
+                    'recurrence': (form.cleaned_data.get('recurrence') or '').strip(),
+                    'recurrence_since': (form.cleaned_data.get('recurrence_since') or '').strip(),
+                    'immediate_risk': (form.cleaned_data.get('immediate_risk') or '').strip(),
+                    'previous_report': (form.cleaned_data.get('previous_report') or '').strip(),
+                    'previous_report_channel': (form.cleaned_data.get('previous_report_channel') or '').strip(),
+                    'contact_preference': (form.cleaned_data.get('contact_preference') or '').strip(),
+                    'share_permission': (form.cleaned_data.get('share_permission') or '').strip(),
+                    'impact_notes': (form.cleaned_data.get('impact_notes') or '').strip(),
+                }
+            complaint = persist_new_complaint(
+                complaint,
+                files=form.cleaned_data.get('attachments'),
+                request=request,
+                optional=optional,
+                password=form.cleaned_data.get('password'),
+                privacy_opened=privacy_opened,
+                incident=incident,
+            )
             messages.success(request, f'Tu reporte ha sido enviado exitosamente. Tu folio es: {complaint.folio}')
             attempts.append(now.timestamp())
             request.session['submit_attempts'] = attempts
-            try:
-                _notify_delegador_new_complaint(request, complaint)
-            except Exception:
-                logging.exception('Fallo al notificar por correo al Delegador')
             try:
                 from django.urls import reverse
                 lookup_base = request.build_absolute_uri(reverse('denuncias:lookup_complaint'))
@@ -406,9 +257,6 @@ def public_submit_complaint(request):
     stat, _ = PageViewStat.objects.get_or_create(route_name='submit_complaint', defaults={'count': 0})
     PageViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1, last_viewed=timezone.now())
     return render(request, 'denuncias/public_enviar_denuncia.html', {'form': form, 'privacy_notices': privacy_notices})
-
-if getattr(settings, 'DEBUG', False):
-    public_submit_complaint = csrf_exempt(public_submit_complaint)
 
 @require_GET
 def complaint_submitted(request):
@@ -517,35 +365,6 @@ def _notify_admins_new_complaint(request, complaint: Complaint) -> None:
     ]
     send_mail(subject, "\n".join(body_lines), getattr(dj_settings, 'DEFAULT_FROM_EMAIL', 'no-reply@localhost'), recipients, fail_silently=True)
 
-def _get_delegador():
-    User = get_user_model()
-    u = User.objects.filter(username='Delegador', is_staff=True, is_active=True).first()
-    if not u:
-        u = User.objects.filter(role='Delegador', is_staff=True, is_active=True).first()
-    return u
-
-def _notify_delegador_new_complaint(request, complaint: Complaint) -> None:
-    delegador = _get_delegador()
-    if not delegador or not (delegador.email or '').strip():
-        return
-    from django.core.mail import send_mail
-    from django.urls import reverse
-    from django.conf import settings as dj_settings
-    detail_url = request.build_absolute_uri(reverse('denuncias:admin_complaint_detail', kwargs={'complaint_id': complaint.id}))
-    subject = f"Nuevo ticket para delegación · Folio {complaint.folio}"
-    body_lines = [
-        f"Folio: {complaint.folio}",
-        f"Estado: {complaint.get_status_display()}",
-        f"Categoría: {complaint.get_category_display() if complaint.category else '-'}",
-        f"Gravedad: {complaint.get_severity_display()}",
-        f"Área relacionada: {complaint.actor_area or '-'}",
-        f"Avisos de privacidad abiertos: {getattr(complaint, 'privacy_policies_opened', '') or '-'}",
-        f"Creada: {complaint.created_at:%Y-%m-%d %H:%M}",
-        "",
-        f"Revisar y delegar: {detail_url}",
-    ]
-    send_mail(subject, "\n".join(body_lines), getattr(dj_settings, 'DEFAULT_FROM_EMAIL', 'no-reply@localhost'), [delegador.email], fail_silently=True)
-
 def _notify_admin_assigned(request, complaint: Complaint, admin_user) -> None:
     if not admin_user or not (admin_user.email or '').strip():
         return
@@ -566,49 +385,54 @@ def _notify_admin_assigned(request, complaint: Complaint, admin_user) -> None:
     ]
     send_mail(subject, "\n".join(body_lines), getattr(dj_settings, 'DEFAULT_FROM_EMAIL', 'no-reply@localhost'), [admin_user.email], fail_silently=True)
 
+@ratelimit(key='ip', rate='20/m', method='POST', block=False)
 def public_lookup_complaint(request):
     complaint = None
     folio_qs = (request.GET.get('folio') or request.POST.get('folio') or '').strip().upper()
+    if folio_qs and not folio_qs.startswith('GSI-'):
+        folio_qs = f'GSI-{folio_qs}'
     is_authenticated = request.session.get(f'auth_folio_{folio_qs}') is True
 
     if request.method == 'POST':
         form = ComplaintLookupForm(request.POST)
-        if form.is_valid():
+        if getattr(request, 'limited', False):
+            messages.error(request, 'Demasiados intentos de consulta. Espera unos segundos e inténtalo de nuevo.')
+        elif form.is_valid():
             folio = form.cleaned_data['folio'].upper()
             password = form.cleaned_data.get('password')
-            try:
-                complaint = Complaint.objects.select_related('assigned_to').get(folio=folio)
-                
-                if complaint.password:
-                    if not password:
-                        form.add_error('password', 'Esta denuncia está protegida. Ingresa tu contraseña.')
-                        complaint = None
-                    elif not complaint.check_password(password):
-                        form.add_error('password', 'Contraseña incorrecta.')
-                        complaint = None
-                    else:
-                        request.session[f'auth_folio_{folio}'] = True
-                        is_authenticated = True
-                else:
-                    request.session[f'auth_folio_{folio}'] = True
-                    is_authenticated = True
-                
-                if complaint:
-                    Complaint.objects.filter(pk=complaint.pk).update(lookup_count=F('lookup_count') + 1)
-                    complaint.refresh_from_db(fields=['lookup_count'])
-                    try:
-                        if complaint.lookup_count >= 2:
-                            stat, _ = PageViewStat.objects.get_or_create(route_name='lookup_complaint', defaults={'count': 0})
-                            PageViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1, last_viewed=timezone.now())
-                        PageViewLog.objects.create(route_name='lookup_complaint')
-                    except Exception:
-                        pass
-            except Complaint.DoesNotExist:
+            complaint, error = get_complaint_for_reporter(folio, password)
+            if error == 'password_required':
+                form.add_error('password', 'Esta denuncia está protegida. Ingresa tu contraseña.')
+            elif error == 'invalid_password':
+                form.add_error('password', 'Contraseña incorrecta.')
+            elif error == 'not_found':
                 messages.error(request, 'No se encontró ninguna denuncia con ese folio.')
+            else:
+                request.session[f'auth_folio_{folio}'] = True
+                is_authenticated = True
+                Complaint.objects.filter(pk=complaint.pk).update(lookup_count=F('lookup_count') + 1)
+                complaint.refresh_from_db(fields=['lookup_count'])
+                try:
+                    if complaint.lookup_count >= 2:
+                        stat, _ = PageViewStat.objects.get_or_create(route_name='lookup_complaint', defaults={'count': 0})
+                        PageViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1, last_viewed=timezone.now())
+                    PageViewLog.objects.create(route_name='lookup_complaint')
+                except Exception:
+                    pass
+                from urllib.parse import urlencode
+                qs = urlencode({'folio': complaint.folio})
+                return redirect(f"{reverse('denuncias:lookup_complaint')}?{qs}")
+        if complaint is None and folio_qs and request.session.get(f'auth_folio_{folio_qs}') is True:
+            try:
+                complaint = Complaint.objects.select_related('assigned_to').get(folio=folio_qs)
+            except Complaint.DoesNotExist:
+                complaint = None
     else:
         folio_qs = (request.GET.get('folio') or '').strip().upper()
-        form = ComplaintLookupForm(initial={'folio': folio_qs})
-        if folio_qs:
+        if folio_qs and not folio_qs.startswith('GSI-'):
+            folio_qs = f'GSI-{folio_qs}'
+        form = ComplaintLookupForm(initial={'folio': folio_qs or 'GSI-'})
+        if folio_qs and request.session.get(f'auth_folio_{folio_qs}') is True:
             try:
                 complaint = Complaint.objects.select_related('assigned_to').get(folio=folio_qs)
             except Complaint.DoesNotExist:
@@ -622,7 +446,7 @@ def public_lookup_complaint(request):
         reporter_name = (complaint.name or '').strip()
         if reporter_name:
             show_reporter_name = not admin_display_name or reporter_name != (admin_display_name or '').strip()
-    chat_enabled = bool(complaint and (complaint.status == 'info_adicional' or (complaint.action_type == 'consulta' and complaint.status not in ['resuelto', 'rechazado', 'archivado'])))
+    chat_enabled = chat_enabled_for(complaint)
     chat_messages = ChatMessage.objects.filter(complaint=complaint).order_by('created_at') if complaint else []
     reporter_notes = ReporterNote.objects.filter(complaint=complaint).order_by('created_at') if complaint else []
     optional_items = []
@@ -631,16 +455,8 @@ def public_lookup_complaint(request):
             optional_items = [s.strip() for s in complaint.reporter_notes_summary.split(';') if s.strip()]
         except Exception:
             optional_items = [(complaint.reporter_notes_summary or '').strip()]
-    masked_email = None
-    masked_phone = None
-    if complaint:
-        if complaint.email:
-            local, _, domain = complaint.email.partition('@')
-            masked_local = local[:1] + '***' if local else ''
-            masked_email = masked_local + ('@' + domain if domain else '')
-        if complaint.phone:
-            digits = ''.join((ch for ch in complaint.phone if ch.isdigit()))
-            masked_phone = '*** *** **' + digits[-2:] if len(digits) >= 2 else '***'
+    masked_email = mask_email(getattr(complaint, 'email', None))
+    masked_phone = mask_phone(getattr(complaint, 'phone', None))
     return render(request, 'denuncias/public_consultar_denuncia.html', {'form': form, 'complaint': complaint, 'show_reporter_name': show_reporter_name, 'chat_enabled': chat_enabled, 'chat_messages': chat_messages, 'reporter_notes': reporter_notes, 'chat_form': ChatMessageForm(), 'note_form': ReporterNoteForm(), 'masked_email': masked_email, 'masked_phone': masked_phone, 'optional_items': optional_items})
 
 def submit_chat_message(request, folio):
@@ -655,7 +471,7 @@ def submit_chat_message(request, folio):
         qs = urlencode({'folio': folio})
         return redirect(f"{reverse('denuncias:lookup_complaint')}?{qs}")
     complaint = get_object_or_404(Complaint, folio=folio)
-    if complaint.status != 'info_adicional' and not (complaint.action_type == 'consulta' and complaint.status not in ['resuelto', 'rechazado', 'archivado']):
+    if not chat_enabled_for(complaint):
         messages.error(request, 'El chat no está habilitado para el estado actual de la denuncia.')
         from urllib.parse import urlencode
         qs = urlencode({'folio': complaint.folio})
@@ -690,8 +506,6 @@ def admin_register(request, code):
     invite_code = code
     secret = getattr(settings, 'ADMIN_INVITE_SECRET', None)
     expected_code = getattr(settings, 'ADMIN_INVITE_CODE', None)
-    if getattr(settings, 'DEBUG', False):
-        logging.getLogger('denuncias').warning(f"[admin_register] DEBUG secret={('SET' if secret else 'EMPTY')} expected_code={expected_code!r} invite_code={invite_code!r}")
     valid = False
     if secret:
         valid = validate_totp_token(invite_code, secret, timestep=60, digits=8, window=1)
@@ -715,6 +529,7 @@ def admin_register(request, code):
         form = AdminRegistrationForm()
     return render(request, 'denuncias/admin_register.html', {'form': form})
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def admin_verify(request, user_id):
     User = get_user_model()
     user = get_object_or_404(User, id=user_id)
@@ -729,14 +544,6 @@ def admin_verify(request, user_id):
         form = VerificationCodeForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data['code']
-            if getattr(settings, 'DEBUG', False):
-                user.is_verified = True
-                user.verification_code = None
-                user.verification_code_expires = None
-                user.save()
-                login(request, user)
-                messages.success(request, 'Verificación exitosa. Bienvenido al panel de administración.')
-                return redirect('denuncias:admin_dashboard')
             if user.verification_code == code and user.verification_code_expires and (timezone.now() < user.verification_code_expires):
                 user.is_verified = True
                 user.verification_code = None
@@ -752,6 +559,7 @@ def admin_verify(request, user_id):
 
 def logout_view(request):
     if request.user.is_authenticated:
+        record_logout(request)
         logout(request)
         messages.success(request, 'Sesión cerrada correctamente.')
     login_url = reverse('denuncias:login')
@@ -791,8 +599,9 @@ def login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user is not None and user.is_staff:
+        if _is_verified_admin_user(user):
             login(request, user)
+            record_login(request, user)
             try:
                 del request.session['admin_login_gate_ok']
             except Exception:
@@ -802,13 +611,13 @@ def login_view(request):
             if getattr(user, 'is_staff', False) and (getattr(user, 'role', '') == 'Delegador' or user.username == 'Delegador'):
                 return redirect('denuncias:delegador_queue')
             if (getattr(user, 'role', '') or '').strip().lower() == 'actualizador':
-                return redirect(reverse('admin:index'))
+                return redirect('denuncias:actualizador_dashboard')
             return redirect('denuncias:dashboard')
         else:
-            messages.error(request, 'Usuario o contraseña inválidos o sin permisos de acceso.')
+            messages.error(request, AdminLoginForm.GENERIC_LOGIN_ERROR)
     return render(request, 'denuncias/login.html', {'next': next_url})
 
-@ratelimit(key='ip', rate='5/m', method='POST', block=True)
+@ratelimit(key='ip', rate='5/m', method='POST', block=False)
 def admin_login(request):
     force = (request.GET.get('force') or '').strip().lower() in {'1', 'true', 'yes', 'on'}
     if request.method == 'GET' and not force and request.user.is_authenticated and getattr(request.user, 'is_staff', False):
@@ -823,6 +632,10 @@ def admin_login(request):
     attempts = request.session.get('login_attempts', [])
     now_ts = now.timestamp()
     attempts = [ts for ts in attempts if now_ts - ts < 60]
+    if request.method == 'POST' and getattr(request, 'limited', False):
+        messages.error(request, 'Demasiados intentos de inicio de sesión. Espera unos segundos e inténtalo de nuevo.')
+        form = AdminLoginForm(request.POST)
+        return render(request, 'denuncias/admin_login.html', {'form': form}, status=429)
     if request.method == 'GET':
         next_url = request.GET.get('next', '').strip()
         if next_url:
@@ -833,14 +646,16 @@ def admin_login(request):
         return render(request, 'denuncias/admin_login.html', {'form': form})
     if request.method == 'POST':
         if request.user.is_authenticated:
+            record_logout(request)
             logout(request)
         form = AdminLoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
-            if user and getattr(user, 'is_staff', False):
+            if _is_verified_admin_user(user):
                 login(request, user)
+                record_login(request, user)
                 request.session['login_attempts'] = []
                 next_url = request.session.pop('admin_next', '')
                 if next_url and next_url.startswith('/denuncias/'):
@@ -851,6 +666,10 @@ def admin_login(request):
                     return redirect('denuncias:actualizador_dashboard')
                 return redirect('denuncias:admin_dashboard')
             else:
+                form.add_error(
+                    'password',
+                    AdminLoginForm.GENERIC_LOGIN_ERROR,
+                )
                 attempts.append(now_ts)
                 request.session['login_attempts'] = attempts
         else:
@@ -860,27 +679,34 @@ def admin_login(request):
         form = AdminLoginForm()
     return render(request, 'denuncias/admin_login.html', {'form': form})
 
-if getattr(settings, 'DEBUG', False):
-    admin_login = csrf_exempt(admin_login)
-
 def admin_logout(request):
     logout(request)
     messages.success(request, 'Has cerrado sesión exitosamente.')
     return redirect('denuncias:admin_login')
 
+def _is_verified_admin_user(user):
+    dev_bypass = (
+        getattr(settings, 'DEBUG', False)
+        and getattr(settings, 'ADMIN_DEV_BYPASS', False)
+    )
+    return bool(
+        getattr(user, 'is_authenticated', False)
+        and getattr(user, 'is_staff', False)
+        and (
+            getattr(user, 'is_verified', False)
+            or dev_bypass
+        )
+    )
+
 def is_admin(user):
-    from django.conf import settings
-    dev_bypass = getattr(settings, 'ADMIN_DEV_BYPASS', False) or getattr(settings, 'DEBUG', False)
-    if not (user.is_authenticated and user.is_staff and (getattr(user, 'is_verified', False) or dev_bypass)):
+    if not _is_verified_admin_user(user):
         return False
     if user.is_superuser:
         return True
     return (getattr(user, 'role', '') or '').strip().lower() != 'actualizador'
 
 def is_actualizador(user):
-    from django.conf import settings
-    dev_bypass = getattr(settings, 'ADMIN_DEV_BYPASS', False) or getattr(settings, 'DEBUG', False)
-    if not (user.is_authenticated and user.is_staff and (getattr(user, 'is_verified', False) or dev_bypass)):
+    if not _is_verified_admin_user(user):
         return False
     if user.is_superuser:
         return True
@@ -892,13 +718,67 @@ def is_actualizador(user):
     except Exception:
         return False
 
+def _client_ip(request):
+    if getattr(settings, 'USE_X_FORWARDED_FOR', False):
+        xff = request.META.get('HTTP_X_FORWARDED_FOR') or ''
+        parts = [p.strip() for p in xff.split(',') if p.strip()]
+        if parts:
+            trusted = int(getattr(settings, 'TRUSTED_PROXY_COUNT', 1) or 1)
+            index = max(len(parts) - trusted, 0)
+            return parts[index]
+    return request.META.get('REMOTE_ADDR')
+
+def record_login(request, user):
+    if user is None or not getattr(user, 'is_authenticated', False):
+        return
+    try:
+        ip = _client_ip(request)
+        UserSessionAudit.objects.create(
+            user=user,
+            login_at=timezone.now(),
+            session_key=(request.session.session_key or '')[:64],
+            ip_address=ip if ip else None,
+            user_agent=(request.META.get('HTTP_USER_AGENT') or '')[:255],
+        )
+    except Exception:
+        pass
+
+def record_logout(request):
+    if not getattr(request.user, 'is_authenticated', False):
+        return
+    try:
+        audit = (
+            UserSessionAudit.objects.filter(user=request.user, logout_at__isnull=True)
+            .order_by('-login_at')
+            .first()
+        )
+        if audit:
+            audit.logout_at = timezone.now()
+            audit.save(update_fields=['logout_at'])
+    except Exception:
+        pass
+
+def _format_duration(seconds):
+    seconds = int(seconds or 0)
+    if seconds <= 0:
+        return '—'
+    hours, rem = divmod(seconds, 3600)
+    minutes = rem // 60
+    if hours:
+        return f'{hours}h {minutes:02d}m'
+    return f'{minutes}m'
+
 @user_passes_test(is_actualizador, login_url='denuncias:admin_login')
 def actualizador_dashboard(request):
+    resources = ResourceItem.objects.exclude(title='__LIBRARY_SEEDED__')
     return render(
         request,
         'denuncias/actualizador_dashboard.html',
         {
-            'resources_total': ResourceItem.objects.exclude(title='__LIBRARY_SEEDED__').count(),
+            'resources_total': resources.count(),
+            'docs_total': resources.filter(kind='main_doc').count(),
+            'infographics_total': resources.filter(kind='infographic').count(),
+            'updates_total': resources.filter(kind='update').count(),
             'privacy_total': PrivacyNotice.objects.count(),
         },
     )
@@ -1015,9 +895,10 @@ def admin_dashboard(request):
 def admin_download_main_attachment(request, complaint_id):
     complaint = get_object_or_404(Complaint, id=complaint_id)
     
-    # ISO 27001: Access Control
     is_delegador = (getattr(request.user, 'role', '') == 'Delegador' or request.user.username == 'Delegador')
-    if not request.user.is_superuser and not is_delegador:
+    if is_delegador:
+        raise PermissionDenied("El Delegador no tiene acceso a los adjuntos.")
+    if not request.user.is_superuser:
         if complaint.assigned_to != request.user:
             raise Http404("No autorizado")
 
@@ -1035,18 +916,22 @@ def admin_download_main_attachment(request, complaint_id):
         pass
 
     try:
-        response = FileResponse(complaint.attachment)
-        response['Content-Disposition'] = f'inline; filename="{os.path.basename(complaint.attachment.name)}"'
-        return response
+        return FileResponse(
+            complaint.attachment,
+            as_attachment=True,
+            filename=os.path.basename(complaint.attachment.name),
+        )
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
 
-@login_required(login_url='denuncias:admin_login')
+@user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_download_attachment(request, complaint_id, attachment_id):
     complaint = get_object_or_404(Complaint, id=complaint_id)
     
     is_delegador = (getattr(request.user, 'role', '') == 'Delegador' or request.user.username == 'Delegador')
-    if not request.user.is_superuser and not is_delegador:
+    if is_delegador:
+        raise PermissionDenied("El Delegador no tiene acceso a los adjuntos.")
+    if not request.user.is_superuser:
         if complaint.assigned_to != request.user:
             raise Http404("No autorizado")
 
@@ -1066,13 +951,15 @@ def admin_download_attachment(request, complaint_id, attachment_id):
         pass
 
     try:
-        response = FileResponse(attachment.file)
-        response['Content-Disposition'] = f'inline; filename="{os.path.basename(attachment.file.name)}"'
-        return response
+        return FileResponse(
+            attachment.file,
+            as_attachment=True,
+            filename=os.path.basename(attachment.file.name),
+        )
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
 
-@login_required(login_url='denuncias:admin_login')
+@user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_download_evidence(request, complaint_id, evidence_id):
     complaint = get_object_or_404(Complaint, id=complaint_id)
     
@@ -1097,9 +984,11 @@ def admin_download_evidence(request, complaint_id, evidence_id):
         pass
 
     try:
-        response = FileResponse(evidence.file)
-        response['Content-Disposition'] = f'inline; filename="{os.path.basename(evidence.file.name)}"'
-        return response
+        return FileResponse(
+            evidence.file,
+            as_attachment=True,
+            filename=os.path.basename(evidence.file.name),
+        )
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
 
@@ -1121,9 +1010,6 @@ def admin_send_chat_message(request, complaint_id):
         messages.error(request, 'No se pudo enviar el mensaje.')
     return redirect('denuncias:admin_complaint_detail', complaint_id=complaint.id)
 
-if getattr(settings, 'DEBUG', False):
-    admin_send_chat_message = csrf_exempt(admin_send_chat_message)
-
 @user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='admin_login')
 def admin_reset_complaints(request):
     if request.method != 'POST':
@@ -1131,14 +1017,13 @@ def admin_reset_complaints(request):
     if not getattr(settings, 'DEBUG', False):
         messages.error(request, 'Acción no permitida en producción.')
         return redirect('denuncias:admin_dashboard')
-    if not getattr(settings, 'DEBUG', False):
-        if request.POST.get('confirm') != 'CONFIRMAR':
-            messages.error(request, 'Escribe CONFIRMAR para ejecutar esta acción.')
-            return redirect('denuncias:admin_dashboard')
-        admin_password = (request.POST.get('admin_password') or '').strip()
-        if not admin_password or (not request.user.check_password(admin_password)):
-            messages.error(request, 'Contraseña de administrador inválida.')
-            return redirect('denuncias:admin_dashboard')
+    if request.POST.get('confirm') != 'CONFIRMAR':
+        messages.error(request, 'Escribe CONFIRMAR para ejecutar esta acción.')
+        return redirect('denuncias:admin_dashboard')
+    admin_password = (request.POST.get('admin_password') or '').strip()
+    if not admin_password or (not request.user.check_password(admin_password)):
+        messages.error(request, 'Contraseña de administrador inválida.')
+        return redirect('denuncias:admin_dashboard')
     qs = Complaint.objects.all()
     for c in qs.iterator():
         if c.attachment:
@@ -1191,7 +1076,7 @@ def admin_reset_monthly_metrics(request):
     return redirect('denuncias:admin_metrics_config')
 
 def dashboard(request):
-    if not request.user.is_authenticated or not request.user.is_staff:
+    if not _is_verified_admin_user(request.user):
         login_url = reverse('denuncias:admin_login')
         token_cfg = getattr(settings, 'ADMIN_LOGIN_TOKEN', '')
         qs = f'next={request.path}'
@@ -1200,6 +1085,8 @@ def dashboard(request):
         return redirect(f'{login_url}?{qs}')
     if getattr(request.user, 'role', '') == 'Delegador' or request.user.username == 'Delegador':
         return redirect('denuncias:delegador_queue')
+    if (getattr(request.user, 'role', '') or '').strip().lower() == 'actualizador':
+        return redirect('denuncias:actualizador_dashboard')
     stat, _ = PageViewStat.objects.get_or_create(route_name='dashboard', defaults={'count': 0})
     PageViewStat.objects.filter(pk=stat.pk).update(count=F('count') + 1, last_viewed=timezone.now())
     try:
@@ -1209,11 +1096,7 @@ def dashboard(request):
     
     base_complaints = Complaint.objects.select_related('assigned_to').all()
     if not request.user.is_superuser:
-        area = (getattr(request.user, 'area', None) or '').strip()
-        if area:
-            base_complaints = base_complaints.filter(Q(assigned_to=request.user) | Q(status='admitido', assigned_to__area=area))
-        else:
-            base_complaints = base_complaints.filter(assigned_to=request.user)
+        base_complaints = base_complaints.filter(assigned_to=request.user)
             
     stats = {'total': base_complaints.count()}
     status_counts = {}
@@ -1272,6 +1155,12 @@ def dashboard(request):
 
     monthly_metrics = _build_monthly_metrics()
 
+    status_labels = dict(Complaint.STATUS_CHOICES)
+    severity_labels = dict(Complaint.SEVERITY_CHOICES)
+    category_labels = dict(Complaint.CATEGORY_CHOICES)
+
+    active_filters = sum(1 for v in [status_filter, category_filter, severity_filter, search_query, date_from, date_to] if v)
+
     return render(request, 'denuncias/dashboard.html', {
         'denuncias': denuncias,
         'consultas': consultas,
@@ -1279,8 +1168,21 @@ def dashboard(request):
         'mini_cards': mini_cards,
         'total_complaints': stats['total'],
         'active_complaints': active_count,
-        'page_obj': None 
-    }) 
+        'status_choices': Complaint.STATUS_CHOICES,
+        'severity_choices': Complaint.SEVERITY_CHOICES,
+        'category_choices': Complaint.CATEGORY_CHOICES,
+        'status_filter': status_filter,
+        'severity_filter': severity_filter,
+        'category_filter': category_filter,
+        'status_filter_label': status_labels.get(status_filter, status_filter),
+        'severity_filter_label': severity_labels.get(severity_filter, severity_filter),
+        'category_filter_label': category_labels.get(category_filter, category_filter),
+        'search_query': search_query,
+        'date_from': date_from,
+        'date_to': date_to,
+        'active_filters': active_filters,
+        'page_obj': None
+    })
 
 def public_download_main_attachment(request, folio):
     folio = folio.upper()
@@ -1300,9 +1202,11 @@ def public_download_main_attachment(request, folio):
     except Exception:
         pass
     try:
-        response = FileResponse(complaint.attachment)
-        response['Content-Disposition'] = f'inline; filename="{os.path.basename(complaint.attachment.name)}"'
-        return response
+        return FileResponse(
+            complaint.attachment,
+            as_attachment=True,
+            filename=os.path.basename(complaint.attachment.name),
+        )
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
 
@@ -1323,17 +1227,18 @@ def public_download_attachment(request, folio, attachment_id):
     except Exception:
         pass
     try:
-        response = FileResponse(attachment.file)
-        response['Content-Disposition'] = f'inline; filename="{os.path.basename(attachment.file.name)}"'
-        return response
+        return FileResponse(
+            attachment.file,
+            as_attachment=True,
+            filename=os.path.basename(attachment.file.name),
+        )
     except FileNotFoundError:
         raise Http404("El archivo físico no existe")
 
-@csrf_exempt
+@ratelimit(key='ip', rate='30/m', method='POST', block=True)
 def public_chatbot(request):
     return _unused_chatbot(request)
 
-@csrf_exempt
 def _unused_chatbot(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -1394,7 +1299,10 @@ def _unused_chatbot(request):
         )
     }
 
-    if is_init or message in ['menu', 'inicio', 'hola', 'buenos dias', 'buenas tardes', 'buenas noches', 'saludos']:
+    is_greeting = bool(re.match(
+        r'^(hola|buenas|buenos d|buen d|saludos|hey|hello|hi|qué tal|que tal)\b', message
+    )) and len(message.split()) <= 4
+    if is_init or message in ['menu', 'inicio', 'hola', 'buenos dias', 'buenas tardes', 'buenas noches', 'saludos'] or is_greeting:
         response_data['response'] = "¡Hola! Soy el asistente virtual del Canal de Denuncias. Estoy aquí para orientarte de manera confidencial y profesional. ¿En qué puedo ayudarte hoy?"
         response_data['options'] = main_menu
         return JsonResponse(response_data)
@@ -1510,7 +1418,6 @@ def _unused_chatbot(request):
     def polish_spanish(text):
         if not isinstance(text, str):
             return text
-        t = text
         repl = {
             ' mexico ': ' México ',
             'mexico ': 'México ',
@@ -1520,12 +1427,22 @@ def _unused_chatbot(request):
             'anonimo': 'anónimo',
             'Anonimo': 'Anónimo'
         }
-        t = re.sub(r'\s+', ' ', t)
-        for a, b in repl.items():
-            t = t.replace(a, b)
-        sents = split_sentences(t)
-        t = ' '.join(format_sentence(s) for s in sents)
-        return t
+        lines = []
+        for raw_line in text.split('\n'):
+            line = re.sub(r'\s+', ' ', raw_line).strip()
+            if not line:
+                lines.append('')
+                continue
+            for a, b in repl.items():
+                line = line.replace(a, b)
+            polished = []
+            for s in split_sentences(line):
+                if re.search(r'[0-9A-Za-zÁÉÍÓÚÑáéíóúñ]$', s):
+                    polished.append(format_sentence(s))
+                else:
+                    polished.append(s[0].upper() + s[1:] if s else s)
+            lines.append(' '.join(polished))
+        return re.sub(r'\n{3,}', '\n\n', '\n'.join(lines))
 
     def retrieve_snippets(q, k=2):
         qn = normalize(q)
@@ -1678,6 +1595,34 @@ def _unused_chatbot(request):
         'faq_categorias_inquietud': {
             'keywords': ['tipos de inquietud', 'categorias de inquietud', 'temas de inquietud', 'ejemplos inquietud'],
             'weight': 1.5
+        },
+        'site_navegacion': {
+            'keywords': ['secciones', 'que tiene la pagina', 'opciones del sitio', 'donde encuentro', 'apartados', 'menu del sitio', 'para que sirve cada', 'como funciona la pagina', 'que puedo hacer aqui', 'necesito ayuda', 'ayuda', 'no se usar'],
+            'weight': 1.5
+        },
+        'site_folio': {
+            'keywords': ['folio', 'formato del folio', 'numero de folio', 'empieza con gsi', 'prefijo gsi', 'donde esta mi folio', 'clave de seguimiento', 'ticket'],
+            'weight': 2
+        },
+        'site_avisos_privacidad': {
+            'keywords': ['aviso de privacidad', 'avisos de privacidad', 'privacidad', 'tratamiento de datos', 'cometra', 'grumer', 'seguritec', 'sepsa', 'tameme', 'tecnoval'],
+            'weight': 1.5
+        },
+        'site_datos_personales': {
+            'keywords': ['telefono o red', 'numero de empleado', 'matricula', 'solo numeros', 'numerico', '10 digitos', 'datos del denunciado', 'datos de contacto'],
+            'weight': 2
+        },
+        'site_preguntas_adicionales': {
+            'keywords': ['preguntas adicionales', 'preguntas extra', 'preguntas opcionales', 'contestar mas preguntas'],
+            'weight': 2
+        },
+        'site_app': {
+            'keywords': ['aplicacion movil', 'app', 'android', 'descargar app', 'celular', 'telefono movil', 'ios'],
+            'weight': 1.5
+        },
+        'site_empresas': {
+            'keywords': ['que empresas', 'empresas del grupo', 'companias', 'a que empresa', 'organizaciones participantes'],
+            'weight': 1.5
         }
     }
 
@@ -1685,7 +1630,9 @@ def _unused_chatbot(request):
                        'info_derechos', 'info_proceso', 'info_evidencia', 'info_recomendaciones',
                        'faq_anonimato', 'faq_represalias', 'faq_password', 'faq_human_contact',
                        'faq_denuncia_def', 'faq_queja_def', 'faq_inquietud_def',
-                       'faq_categorias_denuncia', 'faq_categorias_queja', 'faq_categorias_inquietud']
+                       'faq_categorias_denuncia', 'faq_categorias_queja', 'faq_categorias_inquietud',
+                       'site_navegacion', 'site_folio', 'site_avisos_privacidad', 'site_datos_personales',
+                       'site_preguntas_adicionales', 'site_app', 'site_empresas']
     
     detected_intent = None
     
@@ -1747,18 +1694,22 @@ def _unused_chatbot(request):
             "Para realizar una denuncia, selecciona la opción **'¡Quiero denunciar!'** en el menú superior o haz clic abajo.\n\n"
             "• Es un proceso 100% seguro.\n"
             "• Puedes elegir hacerlo de forma **anónima**.\n"
-            "• Recibirás un folio y contraseña."
+            "• Recibirás un folio (inicia con GSI-) y una contraseña para consultar."
         )
         response_data['options'] = [{'text': '🔙 Menú Principal', 'value': 'menu'}]
 
     elif detected_intent == 'menu_consultar':
         response_data['response'] = (
-            "Para ver cómo va tu denuncia, usa la opción **'Consultar estado'**.\n\n"
+            "Para ver cómo va tu reporte, entra a **'Consultar denuncia'**.\n\n"
             "Necesitas:\n"
-            "1. Tu **Número de Folio**.\n"
-            "2. Tu **Contraseña** (la que te dio el sistema al crear el reporte)."
+            "1. Tu **folio**, que siempre inicia con **GSI-**.\n"
+            "2. Tu **contraseña**, la que se generó al enviar el reporte.\n\n"
+            "Ahí podrás ver el **estatus del ticket**, revisar los **mensajes del investigador** y enviar información nueva cuando lo necesites."
         )
-        response_data['options'] = [{'text': '🔙 Menú Principal', 'value': 'menu'}]
+        response_data['options'] = [
+            {'text': '🔍 Consultar denuncia', 'value': 'menu_consultar'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
 
     elif detected_intent == 'faq_password':
         response_data['response'] = (
@@ -1787,7 +1738,9 @@ def _unused_chatbot(request):
             "• **¿Quién?** Nombres de implicados y testigos.\n"
             "• **¿Cuándo?** Fechas y horas aproximadas.\n"
             "• **¿Dónde?** Lugar exacto del incidente.\n\n"
-            "📎 **Archivos:** Puedes adjuntar fotos, videos, correos (PDF/imagen), audios o documentos. ¡Son clave para la investigación!"
+            "📎 **Archivos:** Puedes adjuntar varios archivos (fotos, videos, correos, audios o documentos). "
+            "Formatos aceptados: PDF, DOC, DOCX, JPG, JPEG, PNG, GIF, TXT, RTF, ODT, ODS, ODP, XLS, XLSX, PPT y PPTX, "
+            "con un máximo de 10MB por archivo."
         )
         response_data['options'] = [{'text': '🔙 Volver a Guía', 'value': 'menu_guia'}]
 
@@ -1991,6 +1944,111 @@ def _unused_chatbot(request):
         response_data['response'] = knowledge_base['cats_inquietud']
         response_data['options'] = [{'text': '🔙 Menú Principal', 'value': 'menu'}]
 
+    elif detected_intent == 'site_navegacion':
+        response_data['response'] = (
+            "🧭 **Qué puedes hacer en este canal**\n"
+            "• **¡Quiero denunciar!**: registrar una denuncia o una inquietud.\n"
+            "• **Consultar denuncia**: ver tu estatus, el estatus del ticket y los mensajes del investigador.\n"
+            "• **Guía de uso**: cómo llenar el formulario y cuándo es Inquietud o Denuncia.\n"
+            "• **Preguntas frecuentes**: dudas sobre anonimato, contraseña y tiempos.\n"
+            "• **Biblioteca GSI**: documentos, avisos de privacidad, infografías y novedades.\n\n"
+            "¿Sobre cuál de estas secciones quieres orientación?"
+        )
+        response_data['options'] = [
+            {'text': '🚨 Quiero denunciar', 'value': 'menu_denunciar'},
+            {'text': '🔍 Consultar denuncia', 'value': 'menu_consultar'},
+            {'text': '📘 Guía de uso', 'value': 'menu_guia'},
+            {'text': '📚 Biblioteca GSI', 'value': 'menu_biblioteca'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
+    elif detected_intent == 'site_folio':
+        response_data['response'] = (
+            "🔖 **Tu folio y tu contraseña**\n"
+            "Al enviar tu reporte el sistema genera un folio que **siempre inicia con GSI-** (por ejemplo, GSI-2026-0001), junto con una contraseña de consulta.\n"
+            "• El folio es el identificador de tu ticket y con él consultas el estatus.\n"
+            "• En el portal, el campo ya trae el prefijo GSI- para que solo escribas el consecutivo.\n"
+            "• Guarda folio y contraseña: son tu única llave de acceso.\n"
+            "• Si pierdes la contraseña de un reporte anónimo no se puede recuperar; tendrías que crear uno nuevo."
+        )
+        response_data['options'] = [
+            {'text': '🔍 Consultar denuncia', 'value': 'menu_consultar'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
+    elif detected_intent == 'site_avisos_privacidad':
+        response_data['response'] = (
+            "🔒 **Avisos de privacidad**\n"
+            "En la sección **Avisos y consentimientos** del formulario puedes leer y aceptar el aviso que corresponde a tu empresa:\n"
+            "• Aviso de privacidad COMETRA\n"
+            "• Aviso de privacidad GRUMER\n"
+            "• Aviso de privacidad SEGURITEC\n"
+            "• Aviso de privacidad SEPSA\n"
+            "• Aviso de privacidad TAMEME\n"
+            "• Aviso de privacidad TECNOVAL\n\n"
+            "Al aceptar el aviso de tu empresa tu reporte queda registrado conforme al tratamiento de datos personales aplicable. También puedes consultarlos en la Biblioteca GSI."
+        )
+        response_data['options'] = [
+            {'text': '🚨 Ir al formulario', 'value': 'menu_denunciar'},
+            {'text': '📚 Biblioteca GSI', 'value': 'menu_biblioteca'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
+    elif detected_intent == 'site_datos_personales':
+        response_data['response'] = (
+            "📇 **Datos de contacto y del denunciado**\n"
+            "• **Teléfono o Red**: solo números, hasta 10 dígitos.\n"
+            "• **Número de empleado** del denunciante: solo números, hasta 10 dígitos.\n"
+            "• **Matrícula del denunciado**: solo números, hasta 10 dígitos.\n\n"
+            "El sistema no acepta letras ni símbolos en estos campos. Si eliges enviar tu reporte como **Anónimo**, no se solicitan tus datos personales."
+        )
+        response_data['options'] = [
+            {'text': '🚨 Quiero denunciar', 'value': 'menu_denunciar'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
+    elif detected_intent == 'site_preguntas_adicionales':
+        response_data['response'] = (
+            "➕ **Preguntas adicionales**\n"
+            "Primero el sistema te pregunta **si deseas contestarlas**:\n"
+            "• **Sí, responder**: se despliegan las preguntas extra (si el hecho se repite, riesgo inmediato, reportes previos, medio de contacto, autorización para compartir detalles y notas de impacto).\n"
+            "• **No por ahora**: se omiten y puedes enviar tu reporte directamente.\n\n"
+            "Son opcionales; contestarlas ayuda a que la investigación sea más precisa."
+        )
+        response_data['options'] = [
+            {'text': '🚨 Quiero denunciar', 'value': 'menu_denunciar'},
+            {'text': '📘 Ver guía', 'value': 'menu_guia'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
+    elif detected_intent == 'site_app':
+        response_data['response'] = (
+            "📱 **Aplicación móvil**\n"
+            "La app del canal permite:\n"
+            "• Enviar una denuncia o inquietud.\n"
+            "• Consultar tu folio y ver el **estatus del ticket**.\n"
+            "• Mantener disponible el **chat con el investigador** en todo momento para agregar información.\n\n"
+            "Usa el mismo folio y contraseña que en la versión web."
+        )
+        response_data['options'] = [
+            {'text': '🔍 Consultar denuncia', 'value': 'menu_consultar'},
+            {'text': '🚨 Quiero denunciar', 'value': 'menu_denunciar'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
+    elif detected_intent == 'site_empresas':
+        response_data['response'] = (
+            "🏢 **Empresas que usan el canal**\n"
+            "El canal atiende reportes de las seis empresas del grupo:\n"
+            "• COMETRA\n• GRUMER\n• SEGURITEC\n• SEPSA\n• TAMEME\n• TECNOVAL\n\n"
+            "Cada una cuenta con su propio aviso de privacidad, disponible en el formulario y en la Biblioteca GSI."
+        )
+        response_data['options'] = [
+            {'text': '🚨 Quiero denunciar', 'value': 'menu_denunciar'},
+            {'text': '📚 Biblioteca GSI', 'value': 'menu_biblioteca'},
+            {'text': '🔙 Menú Principal', 'value': 'menu'}
+        ]
+
     else:
         time_kws = ['tiempo', 'dura', 'duracion', 'tarda', 'demora', 'horas', 'dias', 'investigacion']
         if any(kw in msg_norm for kw in time_kws):
@@ -2085,17 +2143,34 @@ def _unused_chatbot(request):
                     response_data['options'] = filtered + [{'text': '🔙 Menú Principal', 'value': 'menu'}]
                 else:
                     response_data['response'] = (
-                        "Disculpa, no logré entender completamente tu consulta. "
-                        "Soy una inteligencia artificial en entrenamiento.\n\n"
-                        "Por favor, intenta reformular tu pregunta con otras palabras o selecciona una opción del menú."
+                        "No encontré una respuesta exacta para eso, pero puedo orientarte sobre estos temas del canal:\n\n"
+                        "• Cómo usar cada sección del sitio\n"
+                        "• Tu folio (inicia con GSI-) y tu contraseña\n"
+                        "• Avisos de privacidad de las empresas\n"
+                        "• Datos de contacto y del denunciado\n"
+                        "• Preguntas adicionales del formulario\n"
+                        "• Evidencia y formatos permitidos\n"
+                        "• Estatus del ticket y mensajes del investigador\n"
+                        "• Aplicación móvil\n\n"
+                        "Elige una opción o reformula tu pregunta con otras palabras."
                     )
-                    response_data['options'] = main_menu
+                    response_data['options'] = [
+                        {'text': '🧭 Secciones del sitio', 'value': 'site_navegacion'},
+                        {'text': '🔖 Folio y contraseña', 'value': 'site_folio'},
+                        {'text': '🔒 Avisos de privacidad', 'value': 'site_avisos_privacidad'},
+                        {'text': '📇 Datos de contacto', 'value': 'site_datos_personales'},
+                        {'text': '➕ Preguntas adicionales', 'value': 'site_preguntas_adicionales'},
+                        {'text': '📎 Evidencia', 'value': 'info_evidencia'},
+                        {'text': '📱 App móvil', 'value': 'site_app'},
+                        {'text': '🔙 Menú Principal', 'value': 'menu'}
+                    ]
     try:
         url_map = {
             'menu_denunciar': reverse('denuncias:submit_complaint'),
             'menu_consultar': reverse('denuncias:lookup_complaint'),
             'menu_guia': reverse('denuncias:guide'),
-            'menu_faq': reverse('denuncias:faq')
+            'menu_faq': reverse('denuncias:faq'),
+            'menu_biblioteca': reverse('denuncias:updates')
         }
         if response_data.get('options'):
             for opt in response_data['options']:
@@ -2114,6 +2189,46 @@ def _unused_chatbot(request):
 
 def settings_view(request):
     return redirect('denuncias:admin_settings')
+
+ISO_PROCEDURE_STEPS = [
+    {'field': 'step_recepcion', 'n': 1, 'title': 'Recepción y registro',
+     'desc': 'Toda denuncia, queja o inquietud se registra de forma trazable con folio, fecha y canal de entrada.',
+     'ref': 'ISO 37301 · 8.4 Comunicación / 7.5 Información documentada'},
+    {'field': 'step_admisibilidad', 'n': 2, 'title': 'Admisibilidad y triaje',
+     'desc': 'Se evalúa si el asunto es competencia del sistema de cumplimiento y se clasifica por gravedad y riesgo.',
+     'ref': 'ISO 37301 · 4.1 y 6.1 Enfoque basado en riesgos'},
+    {'field': 'step_designacion', 'n': 3, 'title': 'Designación del equipo investigador',
+     'desc': 'Se nombra al responsable o equipo con competencia, autoridad y recursos suficientes para investigar.',
+     'ref': 'ISO 37301 · 5.3 Roles, responsabilidades y autoridades / 7.2 Competencia'},
+    {'field': 'step_independencia', 'n': 4, 'title': 'Independencia y conflicto de interés',
+     'desc': 'Se verifica la ausencia de conflicto de interés y la imparcialidad de quien investiga.',
+     'ref': 'ISO 37301 · 5.1 Liderazgo y compromiso'},
+    {'field': 'step_plan', 'n': 5, 'title': 'Plan de investigación documentado',
+     'desc': 'Se define objetivo, alcance, metodología, actividades, plazos y fechas clave.',
+     'ref': 'ISO 37301 · 7.5 Información documentada / 8.1 Planificación y control operacional'},
+    {'field': 'step_evidencias', 'n': 6, 'title': 'Recolección y preservación de evidencia',
+     'desc': 'Se obtienen, protegen y custodian las evidencias documentales, digitales y testimoniales.',
+     'ref': 'ISO 37301 · 8.1 Control operacional'},
+    {'field': 'step_analisis', 'n': 7, 'title': 'Análisis de evidencia y hallazgos',
+     'desc': 'La evidencia se analiza y se documentan los hallazgos con su grado de confirmación y riesgo.',
+     'ref': 'ISO 37301 · 9.1 Seguimiento, medición, análisis y evaluación'},
+    {'field': 'step_causa_raiz', 'n': 8, 'title': 'Análisis de causa raíz',
+     'desc': 'Se determina la causa raíz del incumplimiento para evitar su recurrencia.',
+     'ref': 'ISO 37301 · 10.2 No conformidad y acción correctiva'},
+    {'field': 'step_conclusion', 'n': 9, 'title': 'Conclusión de la investigación',
+     'desc': 'Se emite la determinación fundada, parcialmente fundada, no fundada o no concluyente.',
+     'ref': 'ISO 37301 · 8.4 / 9.1'},
+    {'field': 'step_acciones', 'n': 10, 'title': 'Acciones correctivas y no represalia',
+     'desc': 'Se definen acciones correctivas, disciplinarias y garantías de no represalia para el denunciante.',
+     'ref': 'ISO 37301 · 10.1 Mejora / 10.2 Acción correctiva'},
+    {'field': 'step_seguimiento', 'n': 11, 'title': 'Seguimiento y verificación de eficacia',
+     'desc': 'Se verifica que las acciones implementadas sean eficaces y se monitorea el cierre.',
+     'ref': 'ISO 37301 · 9.1 Seguimiento y medición / 10.2'},
+    {'field': 'step_cierre', 'n': 12, 'title': 'Cierre y conservación de registros',
+     'desc': 'El expediente se cierra y la información documentada se conserva con controles de confidencialidad.',
+     'ref': 'ISO 37301 · 7.5 Información documentada'},
+]
+
 @user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_complaint_detail(request, complaint_id):
     complaint = get_object_or_404(Complaint, id=complaint_id)
@@ -2126,11 +2241,49 @@ def admin_complaint_detail(request, complaint_id):
 
     plan, _ = InvestigationPlan.objects.get_or_create(complaint=complaint)
     report, _ = CaseReport.objects.get_or_create(complaint=complaint)
+    procedure, _ = InvestigationProcedure.objects.get_or_create(complaint=complaint)
+    try:
+        procedure = apply_iso_protocol(complaint)
+    except Exception:
+        pass
 
     plan_form = InvestigationPlanForm(instance=plan)
     evidence_form = EvidenceItemForm()
     finding_form = FindingForm()
     report_form = CaseReportForm(instance=report)
+    procedure_form = InvestigationProcedureForm(instance=procedure)
+
+    iso_checklist = []
+    for step in ISO_PROCEDURE_STEPS:
+        iso_checklist.append({
+            'n': step['n'],
+            'title': step['title'],
+            'desc': step['desc'],
+            'ref': step['ref'],
+            'field': procedure_form[step['field']],
+            'checked': bool(getattr(procedure, step['field'])),
+        })
+
+    protocol_family = procedure.protocol_family or resolve_incident_family(complaint.category or '')
+    protocol_family_label = FAMILY_LABELS.get(protocol_family, FAMILY_LABELS['general'])
+    iso_extra_checklist = []
+    base_count = len(ISO_PROCEDURE_STEPS)
+    for idx, step in enumerate(procedure.extra_steps or [], start=1):
+        checked = bool(step.get('done'))
+        key = step.get('key', '')
+        iso_extra_checklist.append({
+            'n': base_count + idx,
+            'key': key,
+            'title': step.get('title', ''),
+            'desc': step.get('desc', ''),
+            'ref': step.get('ref', ''),
+            'checked': checked,
+            'field': format_html(
+                '<input type="checkbox" name="extra_step_{}"{}>',
+                key,
+                ' checked' if checked else '',
+            ),
+        })
 
     if request.method == 'POST':
         if 'update_status' in request.POST and not is_delegador:
@@ -2191,7 +2344,6 @@ def admin_complaint_detail(request, complaint_id):
             except: pass
             return redirect('denuncias:admin_complaint_detail', complaint_id=complaint.id)
         
-        # Delegador: rechazar
         elif 'reject' in request.POST and is_delegador and complaint.status == 'enviado':
             reason = (request.POST.get('reject_reason') or '').strip()
             complaint.status = 'rechazado'
@@ -2281,6 +2433,20 @@ def admin_complaint_detail(request, complaint_id):
                 messages.success(request, 'Informe del caso actualizado.')
                 return redirect('denuncias:admin_complaint_detail', complaint_id=complaint.id)
 
+        elif 'submit_procedure' in request.POST:
+            procedure_form = InvestigationProcedureForm(request.POST, instance=procedure)
+            if procedure_form.is_valid():
+                procedure = procedure_form.save()
+                updated_steps = []
+                for step in (procedure.extra_steps or []):
+                    item = dict(step)
+                    item['done'] = ('extra_step_%s' % item.get('key', '')) in request.POST
+                    updated_steps.append(item)
+                procedure.extra_steps = updated_steps
+                procedure.save(update_fields=['extra_steps'])
+                messages.success(request, 'Procedimiento ISO 37301 actualizado.')
+                return redirect('denuncias:admin_complaint_detail', complaint_id=complaint.id)
+
     chat_messages = ChatMessage.objects.filter(complaint=complaint).order_by('created_at')
     logs = ComplaintLog.objects.filter(complaint=complaint).order_by('-timestamp')
     reporter_notes = ReporterNote.objects.filter(complaint=complaint).order_by('-created_at')
@@ -2310,14 +2476,153 @@ def admin_complaint_detail(request, complaint_id):
         'evidence_form': evidence_form,
         'finding_form': finding_form,
         'report_form': report_form,
+        'procedure': procedure,
+        'procedure_form': procedure_form,
+        'iso_checklist': iso_checklist,
+        'iso_extra_checklist': iso_extra_checklist,
+        'protocol_family_label': protocol_family_label,
         'evidences': evidences,
         'findings': findings,
     }
     return render(request, 'denuncias/complaint_detail.html', context)
 
-@user_passes_test(is_admin, login_url='denuncias:admin_login')
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='denuncias:admin_login')
 def admin_settings(request):
-    return render(request, 'denuncias/admin_settings.html')
+    User = get_user_model()
+    investigation_complaints = (
+        Complaint.objects.select_related('assigned_to', 'investigation_plan', 'case_report')
+        .prefetch_related('evidence_items', 'findings')
+        .order_by('-created_at')
+    )
+    context = {
+        'total_complaints': Complaint.objects.count(),
+        'total_routes_tracked': PageViewStat.objects.count(),
+        'total_superusers': User.objects.filter(is_superuser=True).count(),
+        'staff_admins': User.objects.filter(is_staff=True, is_superuser=False).count(),
+        'investigation_complaints': investigation_complaints,
+    }
+    return render(request, 'denuncias/admin_settings.html', context)
+
+MONTH_NAMES_ES = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+
+def _local_dt(value):
+    if value is None:
+        return None
+    return timezone.localtime(value) if timezone.is_aware(value) else value
+
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='denuncias:admin_login')
+def admin_sessions(request):
+    User = get_user_model()
+    users = list(User.objects.filter(is_staff=True).order_by('username').distinct())
+
+    selected_user = None
+    selected_user_id = (request.GET.get('user') or '').strip()
+    if selected_user_id:
+        try:
+            selected_user = User.objects.get(id=int(selected_user_id), is_staff=True)
+        except (User.DoesNotExist, ValueError, TypeError):
+            selected_user = None
+
+    today = timezone.localdate()
+    month_param = (request.GET.get('month') or '').strip()
+    try:
+        year, month = (int(part) for part in month_param.split('-'))
+        if not (1 <= month <= 12):
+            raise ValueError
+    except (ValueError, TypeError):
+        year, month = today.year, today.month
+
+    month_start = date(year, month, 1)
+    month_end = date(year, month, calendar.monthrange(year, month)[1])
+
+    all_month = list(
+        UserSessionAudit.objects.select_related('user')
+        .filter(login_at__date__gte=month_start, login_at__date__lte=month_end)
+        .order_by('login_at')
+    )
+    scoped = [a for a in all_month if not selected_user or a.user_id == selected_user.id]
+
+    day_map = {}
+    total_seconds = 0
+    open_sessions = 0
+    for audit in scoped:
+        local_login = _local_dt(audit.login_at)
+        if not local_login:
+            continue
+        entry = day_map.setdefault(local_login.date(), {'count': 0, 'seconds': 0})
+        entry['count'] += 1
+        entry['seconds'] += audit.duration_seconds
+        total_seconds += audit.duration_seconds
+        if audit.is_active:
+            open_sessions += 1
+
+    weeks = []
+    for week in calendar.Calendar(firstweekday=0).monthdatescalendar(year, month):
+        row = []
+        for day in week:
+            info = day_map.get(day, {'count': 0, 'seconds': 0})
+            row.append({
+                'date': day,
+                'in_month': day.month == month,
+                'is_today': day == today,
+                'count': info['count'],
+                'duration': _format_duration(info['seconds']) if info['seconds'] else '',
+            })
+        weeks.append(row)
+
+    closed_count = sum(1 for a in scoped if a.logout_at)
+    avg_seconds = int(total_seconds / closed_count) if closed_count else 0
+
+    per_user = {}
+    for audit in all_month:
+        key = audit.user_id
+        bucket = per_user.setdefault(key, {'user': audit.user, 'count': 0, 'seconds': 0})
+        bucket['count'] += 1
+        bucket['seconds'] += audit.duration_seconds
+    user_summary = sorted(per_user.values(), key=lambda r: r['seconds'], reverse=True)
+
+    recent_qs = UserSessionAudit.objects.select_related('user')
+    if selected_user:
+        recent_qs = recent_qs.filter(user=selected_user)
+    recent_rows = []
+    for audit in recent_qs.order_by('-login_at')[:40]:
+        recent_rows.append({
+            'user': audit.user,
+            'login_at': _local_dt(audit.login_at),
+            'logout_at': _local_dt(audit.logout_at),
+            'duration': _format_duration(audit.duration_seconds),
+            'active': audit.is_active,
+            'ip': audit.ip_address or '—',
+        })
+
+    prev_month = month_start - timedelta(days=1)
+    next_month = month_end + timedelta(days=1)
+
+    context = {
+        'users': users,
+        'selected_user': selected_user,
+        'year': year,
+        'month': month,
+        'month_label': f"{MONTH_NAMES_ES[month].capitalize()} {year}",
+        'prev_month': f'{prev_month.year}-{prev_month.month:02d}',
+        'next_month': f'{next_month.year}-{next_month.month:02d}',
+        'is_current_month': (year == today.year and month == today.month),
+        'weekday_labels': ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+        'weeks': weeks,
+        'metrics': {
+            'sessions': len(scoped),
+            'total_time': _format_duration(total_seconds),
+            'avg_time': _format_duration(avg_seconds),
+            'active': open_sessions,
+        },
+        'user_summary': [
+            {'user': r['user'], 'count': r['count'], 'time': _format_duration(r['seconds'])}
+            for r in user_summary
+        ],
+        'recent_rows': recent_rows,
+    }
+    return render(request, 'denuncias/admin_sessions.html', context)
 
 @user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_stats(request):
@@ -2411,6 +2716,7 @@ def admin_create_admin_user(request):
     user.is_staff = True
     user.is_superuser = False
     user.is_active = True
+    user.role = (form.cleaned_data.get('role') or '').strip()
     if hasattr(user, 'is_verified'):
         user.is_verified = True
         if hasattr(user, 'verification_code'):
@@ -2469,11 +2775,11 @@ def admin_rejected(request):
         },
     )
 
-@user_passes_test(is_admin, login_url='denuncias:admin_login')
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='denuncias:admin_login')
 def admin_assignment(request):
     return render(request, 'denuncias/admin_assignment.html')
 
-@user_passes_test(is_admin, login_url='denuncias:admin_login')
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='denuncias:admin_login')
 def admin_metrics_config(request):
     stats = PageViewStat.objects.aggregate(total=Sum('count'), last=Max('last_viewed'))
     return render(
@@ -2546,15 +2852,7 @@ def admin_edit_user_profile(request, user_id):
     if user.is_superuser:
         messages.error(request, 'El superusuario está protegido.')
         return redirect('denuncias:admin_roles')
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Perfil actualizado.')
-            return redirect('denuncias:admin_edit_user_profile', user_id=user.id)
-    else:
-        form = UserProfileForm(instance=user)
-    return render(request, 'denuncias/admin_edit_user_profile.html', {'target_user': user, 'profile_form': form})
+    return redirect('denuncias:user_profile_detail', user_id=user.id)
 
 @user_passes_test(is_admin, login_url='denuncias:admin_login')
 def admin_export_excel(request):
@@ -2566,12 +2864,12 @@ def admin_stats_export_excel(request):
     messages.info(request, "Funcionalidad de exportación pendiente de restauración.")
     return redirect('denuncias:admin_stats')
 
-@user_passes_test(is_admin, login_url='denuncias:admin_login')
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='denuncias:admin_login')
 def admin_distribute_areas(request):
     messages.info(request, "Distribución de áreas pendiente de restauración.")
     return redirect('denuncias:admin_assignment')
 
-@user_passes_test(is_admin, login_url='denuncias:admin_login')
+@user_passes_test(lambda u: u.is_authenticated and u.is_superuser, login_url='denuncias:admin_login')
 def admin_update_assignment_order(request):
     messages.info(request, "Actualización de orden pendiente de restauración.")
     return redirect('denuncias:admin_assignment')
@@ -2708,7 +3006,7 @@ def public_ticket_qr(request, folio):
     return HttpResponse(buffer, content_type="image/png")
 
 def delegador_queue(request):
-    if not request.user.is_authenticated or not request.user.is_staff:
+    if not _is_verified_admin_user(request.user):
         return redirect('denuncias:admin_login')
     if not (getattr(request.user, 'role', '') == 'Delegador' or request.user.username == 'Delegador'):
         return redirect('denuncias:admin_dashboard')
@@ -2723,13 +3021,21 @@ def delegador_queue(request):
     sin_area_pending = complaints.filter(actor_area__isnull=True).count() + complaints.filter(actor_area='').count()
     area_breakdown = []
     try:
-        areas = complaints.values_list('actor_area', flat=True)
-        area_set = sorted({a for a in areas if a})
+        area_set = sorted({(a or '').strip() for a in complaints.values_list('actor_area', flat=True) if (a or '').strip()})
         for area in area_set:
-            cnt = complaints.filter(actor_area=area).count()
-            area_breakdown.append({'area': area, 'count': cnt})
+            area_breakdown.append({'area': area, 'count': complaints.filter(actor_area=area).count()})
+        if sin_area_pending:
+            area_breakdown.append({'area': 'Sin área', 'count': sin_area_pending})
     except Exception:
         area_breakdown = []
+    category_labels = dict(Complaint.CATEGORY_CHOICES)
+    category_breakdown = [
+        {
+            'category': category_labels.get(row['category'], row['category']) if row['category'] else 'Sin categoría',
+            'count': row['n'],
+        }
+        for row in complaints.values('category').annotate(n=Count('id')).order_by('-n', 'category')
+    ]
     User = get_user_model()
     all_admins = User.objects.filter(is_staff=True, is_active=True).exclude(username='Delegador').order_by('assignment_position', 'id')
     all_areas = sorted({(u.area or '').strip() for u in all_admins if (u.area or '').strip()})
@@ -2738,9 +3044,45 @@ def delegador_queue(request):
         'total_pending': total_pending,
         'sin_area_pending': sin_area_pending,
         'area_breakdown': area_breakdown,
+        'category_breakdown': category_breakdown,
         'all_admins': all_admins,
         'all_areas': all_areas,
     })
 
 def user_profile(request, user_id=None):
-    return render(request, 'denuncias/admin_edit_user_profile.html') # Fallback
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return redirect('denuncias:admin_login')
+    User = get_user_model()
+    if user_id is None:
+        target_user = request.user
+        is_own_profile = True
+    else:
+        if not request.user.is_superuser:
+            messages.error(request, 'No tienes permisos para consultar otros perfiles.')
+            return redirect('denuncias:user_profile')
+        target_user = get_object_or_404(User, id=user_id)
+        is_own_profile = target_user.id == request.user.id
+
+    can_edit_role = request.user.is_superuser and not target_user.is_superuser
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=target_user)
+        if not can_edit_role:
+            form.fields.pop('role', None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+            if is_own_profile:
+                return redirect('denuncias:user_profile')
+            return redirect('denuncias:user_profile_detail', user_id=target_user.id)
+    else:
+        form = UserProfileForm(instance=target_user)
+        if not can_edit_role:
+            form.fields.pop('role', None)
+
+    return render(request, 'denuncias/user_profile.html', {
+        'target_user': target_user,
+        'profile_form': form,
+        'is_own_profile': is_own_profile,
+        'can_edit_role': can_edit_role,
+    })

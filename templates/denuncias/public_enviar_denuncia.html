@@ -9,8 +9,17 @@
     .privacy-policy-choice + .privacy-policy-choice { border-top: 1px solid #e2e8f0; }
   </style>
   <div class="complaint-form-header">
-    <h2>Enviar un reporte</h2>
-    <p class="help-text">Completa el formulario para enviar tu reporte. Los campos marcados con (*) son obligatorios.</p>
+    <span class="cfh-badge">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4h8l4 4v12H4V4z"/><path d="M8 4v5h8V4M8 14h8M8 17h5"/></svg>
+      Formulario de reporte
+    </span>
+    <h2>Quiero denunciar</h2>
+    <p class="help-text">Comparte la información necesaria para registrar una denuncia o inquietud. Completa las preguntas que correspondan.</p>
+    <div class="form-intro-points" aria-label="Información del formulario">
+      <span>Denuncia o Inquietud</span>
+      <span>Evidencia opcional</span>
+      <span>Guarda tu folio y contraseña</span>
+    </div>
   </div>
   <div id="warnOverlay" aria-modal="true" role="dialog" class="{% if form.is_bound %}is-hidden{% endif %}" style="position:fixed; inset:0; background:rgba(5,24,56,.62); display:flex; align-items:center; justify-content:center; z-index:9999;">
     <div style="max-width:640px; width:90%; background:#fff; border-radius:12px; box-shadow:0 12px 28px rgba(5,24,56,.25); overflow:hidden;">
@@ -56,7 +65,7 @@
             No se ha configurado el PDF de este aviso todavía.
           </div>
           <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff;">
-            <iframe id="privacyPolicyPdfFrame" title="Aviso de privacidad (PDF)" src="about:blank" style="width:100%; height:60vh; min-height:360px; border:0;"></iframe>
+            <iframe id="privacyPolicyPdfFrame" title="Aviso de privacidad (PDF)" src="about:blank" style="width:100%; height:48vh; min-height:280px; border:0;"></iframe>
           </div>
           <div style="margin-top:.75rem; display:flex; flex-direction:column; gap:.5rem;">
             <label class="form-label" style="display:flex; gap:.5rem; align-items:flex-start;">
@@ -67,9 +76,10 @@
               <input type="checkbox" id="privacyPolicyAcceptCheck">
               <span>Sí consiento que mis datos personales sean tratados conforme a todas las <strong>finalidades secundarias</strong> referidas en los términos de este Aviso de Privacidad Integral.</span>
             </label>
-            <div style="display:flex; justify-content:flex-end; margin-top:.25rem;">
-              <button type="button" class="btn btn-primary" id="privacyPoliciesAcceptBtn" disabled>Aceptar y continuar</button>
-            </div>
+          </div>
+          <div style="position:sticky; bottom:0; z-index:2; display:flex; justify-content:flex-end; gap:.5rem; flex-wrap:wrap; margin-top:.75rem; padding:.7rem 0 .35rem; background:#fff; border-top:1px solid #e2e8f0;">
+            <button type="button" class="btn btn-secondary" id="privacyPoliciesRejectBtn">Rechazar</button>
+            <button type="button" class="btn btn-primary" id="privacyPoliciesAcceptBtn" disabled>Aceptar y continuar</button>
           </div>
         </div>
       </div>
@@ -90,8 +100,8 @@
 
     <div class="complaint-form-body">
       <section class="form-section" id="section-report">
-        <h3>Antes de continuar</h3>
-        <p class="help-text">Elige las opciones que mejor describen tu caso. Al seleccionar, se mostrarán las secciones siguientes en esta misma pantalla.</p>
+        <h3>Datos para iniciar tu reporte</h3>
+        <p class="help-text">Selecciona la acción, tu relación con la empresa y cómo deseas enviar el reporte. Las preguntas se mostrarán según tus respuestas.</p>
         <div class="form-row">
           <div class="form-col">
             <label for="{{ form.action_type.id_for_label }}" class="form-label required-field">¿Qué acción vas a realizar?</label>
@@ -129,7 +139,7 @@
     <div id="formSections" class="{% if form.is_bound %}{% else %}is-hidden{% endif %}">
       <section class="form-section is-hidden" id="section-personal">
         <h3>Tus datos</h3>
-        <p class="help-text">Incluye tu información si deseas seguimiento. Se oculta automáticamente si eliges reporte anónimo.</p>
+        <p class="help-text">Esta sección aparece si eliges enviar el reporte con tus datos. Al seleccionar Anónimo, se omite.</p>
         <div class="form-row">
           <div class="form-col">
             <label for="{{ form.name.id_for_label }}" class="form-label required-field">Nombre y apellidos</label>
@@ -144,7 +154,7 @@
         </div>
         <div class="form-row">
           <div class="form-col">
-            <label for="{{ form.phone.id_for_label }}" class="form-label required-field">Teléfono</label>
+            <label for="{{ form.phone.id_for_label }}" class="form-label required-field">Teléfono o Red</label>
             {{ form.phone }}
             {% if form.phone.errors %}<div class="validation-error">{% for err in form.phone.errors %}{{ err }}{% endfor %}</div>{% endif %}
           </div>
@@ -172,12 +182,6 @@
             {{ form.category }}
             {% if form.category.errors %}<div class="validation-error">{% for err in form.category.errors %}{{ err }}{% endfor %}</div>{% endif %}
             <p class="help-text">Selecciona la categoría que mejor describa el incidente.</p>
-          </div>
-          <div class="form-col is-hidden" id="col-category-queja">
-            <label for="{{ form.queja_category.id_for_label }}" class="form-label required-field">Tipo de queja</label>
-            {{ form.queja_category }}
-            {% if form.queja_category.errors %}<div class="validation-error">{% for err in form.queja_category.errors %}{{ err }}{% endfor %}</div>{% endif %}
-            <p class="help-text">Selecciona el motivo de tu queja.</p>
           </div>
           <div class="form-col is-hidden" id="col-category-inquietud">
             <label for="{{ form.inquietud_category.id_for_label }}" class="form-label required-field">Tipo de inquietud</label>
@@ -220,17 +224,18 @@
                 {{ form.knows_actor }}
                 {% if form.knows_actor.errors %}<div class="validation-error">{% for err in form.knows_actor.errors %}{{ err }}{% endfor %}</div>{% endif %}
                 <div class="is-hidden" id="actor-block" style="margin-top:.5rem;">
+                  <p class="help-text" style="margin:.25rem 0 .5rem;">Estos datos son opcionales: puedes completar solo el que conozcas.</p>
                   <div class="form-row">
                     <div class="form-col">
-                      <label for="{{ form.actor_name.id_for_label }}" class="form-label">Nombre del denunciado</label>
+                      <label for="{{ form.actor_name.id_for_label }}" class="form-label">Nombre del denunciado (opcional)</label>
                       {{ form.actor_name }}
                     </div>
                     <div class="form-col">
-                      <label for="{{ form.actor_matricula.id_for_label }}" class="form-label">Número de empleado del denunciado</label>
+                      <label for="{{ form.actor_matricula.id_for_label }}" class="form-label">Número de empleado del denunciado (opcional)</label>
                       {{ form.actor_matricula }}
                     </div>
                     <div class="form-col">
-                      <label for="{{ form.actor_area.id_for_label }}" class="form-label">Área del denunciado</label>
+                      <label for="{{ form.actor_area.id_for_label }}" class="form-label">Área del denunciado (opcional)</label>
                       {{ form.actor_area }}
                     </div>
                   </div>
@@ -303,9 +308,11 @@
       <div class="form-section is-hidden" id="section-extra-toggle">
         <h3>Preguntas adicionales</h3>
         <div class="form-group">
-          <label class="form-label">¿Deseas contestar preguntas adicionales?</label>
-          <label style="margin-right:.75rem;"><input type="radio" name="extra_choice" value="si"> Sí</label>
-          <label><input type="radio" name="extra_choice" value="no" checked> No</label>
+          <p class="form-label" id="extra-choice-question">¿Deseas contestar preguntas adicionales?</p>
+          <div class="extra-choice-options" role="radiogroup" aria-labelledby="extra-choice-question">
+            <label class="extra-choice-option"><input type="radio" name="extra_choice" value="si"> <span>Sí, responder</span></label>
+            <label class="extra-choice-option"><input type="radio" name="extra_choice" value="no" checked> <span>No por ahora</span></label>
+          </div>
         </div>
       </div>
       <section class="form-section is-hidden" id="section-extra">
@@ -372,7 +379,7 @@
     </div>
   </form>
 </div>
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   const overlay = document.getElementById('warnOverlay');
   const btnAccept = document.getElementById('btnAcceptWarn');
@@ -414,9 +421,7 @@
   const incidentSubDetails = document.getElementById('incident-sub-details');
   const categorySel = document.getElementById('id_category');
   const colCatDenuncia = document.getElementById('col-category-denuncia');
-  const colCatQueja = document.getElementById('col-category-queja');
   const colCatInquietud = document.getElementById('col-category-inquietud');
-  const quejaSel = document.getElementById('id_queja_category');
   const inquietudSel = document.getElementById('id_inquietud_category');
   const rowParticipationWitnesses = document.getElementById('row-participation-witnesses');
 
@@ -468,25 +473,9 @@
     if(denunciaDetailsSection) denunciaDetailsSection.classList.remove('is-hidden');
 
     if(colCatDenuncia) colCatDenuncia.classList.add('is-hidden');
-    if(colCatQueja) colCatQueja.classList.add('is-hidden');
     if(colCatInquietud) colCatInquietud.classList.add('is-hidden');
 
-    if(actionVal === 'queja'){
-        if(colCatQueja) colCatQueja.classList.remove('is-hidden');
-        const quejaVal = (quejaSel && quejaSel.value) || '';
-        
-        if(incidentSubDetails) incidentSubDetails.classList.remove('is-hidden');
-        
-        if(quejaVal){
-            description.classList.remove('is-hidden');
-            consent.classList.remove('is-hidden');
-            extraToggleWrap.classList.remove('is-hidden');
-        } else {
-            description.classList.add('is-hidden');
-            consent.classList.add('is-hidden');
-            extraToggleWrap.classList.add('is-hidden');
-        }
-    } else if (actionVal === 'inquietud'){
+    if (actionVal === 'inquietud'){
         if(colCatInquietud) colCatInquietud.classList.remove('is-hidden');
         const inquietudVal = (inquietudSel && inquietudSel.value) || '';
         
@@ -525,6 +514,7 @@
       updateVisibility();
   });
   if(categorySel) categorySel.addEventListener('change', updateVisibility);
+  if(inquietudSel) inquietudSel.addEventListener('change', updateVisibility);
 
   function debounce(func, delay){
     let timeoutId;
@@ -622,6 +612,20 @@
   onKnowsActorChange();
   onHasWitnessesChange();
   updateExtraChoice();
+
+  // Preselección por URL: ?tipo=inquietud | denuncia
+  try {
+    const tipoParam = (new URLSearchParams(window.location.search).get('tipo') || '').toLowerCase().trim();
+    if(tipoParam && actionTypeSel){
+      const target = Array.prototype.find.call(actionTypeSel.options, function(o){
+        return (o.value || '').toLowerCase() === tipoParam;
+      });
+      if(target){
+        actionTypeSel.value = target.value;
+      }
+    }
+  } catch(e) { /* noop */ }
+
   updateVisibility();
 
   const submitBtn = document.getElementById('submitComplaintBtn');
@@ -632,6 +636,7 @@
   const privacyPoliciesHeaderTitle = document.getElementById('privacyPoliciesHeaderTitle');
   const privacyPoliciesHeaderBackBtn = document.getElementById('privacyPoliciesHeaderBackBtn');
   const privacyPoliciesAcceptBtn = document.getElementById('privacyPoliciesAcceptBtn');
+  const privacyPoliciesRejectBtn = document.getElementById('privacyPoliciesRejectBtn');
   const privacyPolicyReadCheck = document.getElementById('privacyPolicyReadCheck');
   const privacyPolicyAcceptCheck = document.getElementById('privacyPolicyAcceptCheck');
   const privacyPolicyViewer = document.getElementById('privacyPolicyViewer');
@@ -778,8 +783,16 @@
     });
   }
 
+  if(privacyPoliciesRejectBtn){
+    privacyPoliciesRejectBtn.addEventListener('click', function(){
+      window.location.href = "{% url 'denuncias:home' %}";
+    });
+  }
+
   const formEl = document.querySelector("form[action='{% url 'denuncias:submit_complaint' %}']");
   if(formEl){
+    // Re-evalúa la visibilidad ante cualquier cambio del formulario (incluye "Tipo de inquietud").
+    formEl.addEventListener('change', updateVisibility);
     formEl.addEventListener('submit', function(e){
       if(!privacyAccept){
         return;

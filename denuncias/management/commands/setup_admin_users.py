@@ -1,12 +1,24 @@
-from django.core.management.base import BaseCommand
+from decouple import config
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
+        su_password = config('BOOTSTRAP_SUPERUSER_PASSWORD', default='')
+        target_password = config('BOOTSTRAP_DELEGADOR_PASSWORD', default='')
+        if not su_password or not target_password:
+            raise CommandError(
+                'Define BOOTSTRAP_SUPERUSER_PASSWORD y BOOTSTRAP_DELEGADOR_PASSWORD '
+                'antes de ejecutar este comando.'
+            )
+
         User = get_user_model()
         su_username = 'Superusuario'
-        su_password = 'Superusuario'
+        target_username = 'Delegador'
+        validate_password(su_password, user=User(username=su_username))
+        validate_password(target_password, user=User(username=target_username))
         su, su_created = User.objects.get_or_create(username=su_username, defaults={'email': 'super@example.local'})
         su.is_staff = True
         su.is_superuser = True
@@ -19,11 +31,9 @@ class Command(BaseCommand):
         su.set_password(su_password)
         su.save()
         if su_created:
-            self.stdout.write(self.style.SUCCESS("Creado superusuario 'Superusuario' con contraseña 'Superusuario'."))
+            self.stdout.write(self.style.SUCCESS("Creado el superusuario 'Superusuario'."))
         else:
             self.stdout.write(self.style.WARNING("Actualizado superusuario 'Superusuario' (flags y contraseña)."))
-        target_username = 'Delegador'
-        target_password = 'Delegador'
         existing_delegador = User.objects.filter(username=target_username).first()
         existing_prueba = User.objects.filter(username='Prueba').first()
         if existing_delegador:
@@ -52,5 +62,5 @@ class Command(BaseCommand):
         if hasattr(u, 'role'):
             u.role = 'Delegador'
             u.save(update_fields=['role'])
-        self.stdout.write(self.style.SUCCESS(f"{action_msg} Contraseña establecida como '{target_password}'."))
+        self.stdout.write(self.style.SUCCESS(action_msg))
         self.stdout.write(self.style.SUCCESS('Usuarios configurados: Superusuario (superuser) y Delegador (staff).'))

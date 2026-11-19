@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Primer plano del icono de la aplicación.
+    Usa el mismo logo de la app (@drawable/logo_gsi) centrado y al máximo tamaño
+    que permite la zona segura del icono adaptable, de modo que se vea nítido y
+    legible también en el lanzador.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="66dp"
+        android:height="25dp"
+        android:gravity="center">
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/logo_gsi" />
+    </item>
+</layer-list>

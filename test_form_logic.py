@@ -15,17 +15,10 @@ def test_consulta():
         'reporting_mode': 'anonimo',
         'password': 'pass',
         'password_confirm': 'pass',
-        # category is empty
-        # incident fields empty
         'description': 'Consulta test',
-        # other required bools
         'knows_actor': False,
         'has_witnesses': False,
-        # Terms
-        'terms_accept': 'on', # Not in form fields but checked in view? Form doesn't have terms_accept in fields list? 
-        # Form fields: 'name', 'email', 'phone', 'reporter_matricula', 'category', 'relationship', ...
-        # 'terms_accept' is likely handled in template/view or not in form class. 
-        # Looking at ComplaintForm, it doesn't have terms_accept.
+        'terms_accept': 'on',
     }
     form = ComplaintForm(data=data)
     if form.is_valid():
@@ -68,7 +61,7 @@ def test_denuncia_valid():
         'reporting_mode': 'anonimo',
         'password': 'pass',
         'password_confirm': 'pass',
-        'category': 'Extorsión', # Valid choice
+        'category': 'Extorsión',
         'incident_state': 'CDMX',
         'incident_branch': 'Matriz',
         'incident_date': '2023-01-01',

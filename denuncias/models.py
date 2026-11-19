@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 import string
-import random
+import secrets
 import os
 import uuid
 
@@ -44,7 +44,7 @@ class CustomUser(AbstractUser):
     require_data_update = models.BooleanField(default=False, verbose_name='Requiere actualización de datos')
 
     def generate_verification_code(self):
-        self.verification_code = ''.join(random.choices(string.digits, k=6))
+        self.verification_code = ''.join(secrets.choice(string.digits) for _ in range(6))
         self.verification_code_expires = timezone.now() + timezone.timedelta(minutes=10)
         self.save()
         return self.verification_code
@@ -146,7 +146,8 @@ class Complaint(models.Model):
 
     def generate_folio(self):
         while True:
-            folio = 'GSI-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            alphabet = string.ascii_uppercase + string.digits
+            folio = 'GSI-' + ''.join(secrets.choice(alphabet) for _ in range(6))
             if not Complaint.objects.filter(folio=folio).exists():
                 return folio
 
@@ -231,6 +232,57 @@ class CaseReport(models.Model):
         verbose_name = 'Informe del caso'
         verbose_name_plural = 'Informes del caso'
 
+class InvestigationProcedure(models.Model):
+    complaint = models.OneToOneField(Complaint, on_delete=models.CASCADE, related_name='investigation_procedure')
+    step_recepcion = models.BooleanField(default=False, verbose_name='Recepción y registro del reporte')
+    step_admisibilidad = models.BooleanField(default=False, verbose_name='Evaluación de admisibilidad y triaje')
+    step_designacion = models.BooleanField(default=False, verbose_name='Designación del responsable/equipo investigador')
+    step_independencia = models.BooleanField(default=False, verbose_name='Verificación de independencia y ausencia de conflicto de interés')
+    step_plan = models.BooleanField(default=False, verbose_name='Plan de investigación documentado (objetivo, alcance, metodología)')
+    step_evidencias = models.BooleanField(default=False, verbose_name='Recolección y preservación de evidencia')
+    step_analisis = models.BooleanField(default=False, verbose_name='Análisis de evidencia y determinación de hallazgos')
+    step_causa_raiz = models.BooleanField(default=False, verbose_name='Análisis de causa raíz')
+    step_conclusion = models.BooleanField(default=False, verbose_name='Determinación de la conclusión (fundada / no fundada)')
+    step_acciones = models.BooleanField(default=False, verbose_name='Acciones correctivas/disciplinarias y medidas de no represalia')
+    step_seguimiento = models.BooleanField(default=False, verbose_name='Seguimiento y verificación de eficacia')
+    step_cierre = models.BooleanField(default=False, verbose_name='Cierre y conservación de la información documentada')
+    compliance_owner = models.CharField(max_length=150, blank=True, null=True, verbose_name='Responsable de cumplimiento')
+    notes = models.TextField(blank=True, null=True, verbose_name='Observaciones del procedimiento')
+    protocol_family = models.CharField(max_length=40, blank=True, default='', verbose_name='Familia de incidente (protocolo aplicado)')
+    extra_steps = models.JSONField(default=list, blank=True, verbose_name='Pasos específicos por tipo de incidente')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Procedimiento de investigación (ISO 37301)'
+        verbose_name_plural = 'Procedimientos de investigación (ISO 37301)'
+
+    STEP_FIELDS = [
+        'step_recepcion', 'step_admisibilidad', 'step_designacion', 'step_independencia',
+        'step_plan', 'step_evidencias', 'step_analisis', 'step_causa_raiz',
+        'step_conclusion', 'step_acciones', 'step_seguimiento', 'step_cierre',
+    ]
+
+    @property
+    def extra_completed_count(self):
+        return sum(1 for step in (self.extra_steps or []) if step.get('done'))
+
+    @property
+    def completed_count(self):
+        base = sum(1 for f in self.STEP_FIELDS if getattr(self, f))
+        return base + self.extra_completed_count
+
+    @property
+    def total_steps(self):
+        return len(self.STEP_FIELDS) + len(self.extra_steps or [])
+
+    @property
+    def progress_percent(self):
+        total = self.total_steps
+        return int(round((self.completed_count / total) * 100)) if total else 0
+
+    def __str__(self):
+        return f'{self.complaint.folio} - ISO 37301 ({self.completed_count}/{self.total_steps})'
+
 class ComplaintLog(models.Model):
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE, related_name='logs')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -314,6 +366,33 @@ class PageViewLog(models.Model):
 
     def __str__(self):
         return f'{self.route_name} @ {self.viewed_at:%Y-%m-%d %H:%M}'
+
+class UserSessionAudit(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='session_audits')
+    login_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name='Inicio de sesión')
+    logout_at = models.DateTimeField(blank=True, null=True, db_index=True, verbose_name='Fin de sesión')
+    session_key = models.CharField(max_length=64, blank=True, null=True, db_index=True)
+    ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name='Dirección IP')
+    user_agent = models.CharField(max_length=255, blank=True, null=True, verbose_name='Navegador')
+
+    class Meta:
+        verbose_name = 'Registro de sesión'
+        verbose_name_plural = 'Registros de sesiones'
+        ordering = ['-login_at']
+
+    @property
+    def duration_seconds(self):
+        if self.logout_at and self.login_at:
+            delta = (self.logout_at - self.login_at).total_seconds()
+            return int(delta) if delta > 0 else 0
+        return 0
+
+    @property
+    def is_active(self):
+        return self.logout_at is None
+
+    def __str__(self):
+        return f'{self.user} · {self.login_at:%Y-%m-%d %H:%M}'
 
 class ResourceItem(models.Model):
     KIND_CHOICES = [

@@ -9,20 +9,20 @@
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32.png' %}">
   <link rel="icon" type="image/png" sizes="48x48" href="{% static 'images/favicon-48.png' %}">
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon-180.png' %}">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}?v={% now 'U' %}">
 </head>
 <body>
   <header class="site-header">
     <div class="container">
-      <a href="{% if request.user.is_authenticated and request.user.is_staff and request.user.role == 'Delegador' or request.user.is_authenticated and request.user.is_staff and request.user.username == 'Delegador' %}{% url 'denuncias:delegador_queue' %}{% else %}{% url 'denuncias:dashboard' %}{% endif %}" class="logo">
+      <a href="{% if request.user.is_authenticated and request.user.is_staff %}{% if request.user.role|default:''|lower == 'delegador' %}{% url 'denuncias:delegador_queue' %}{% elif request.user.role|default:''|lower == 'actualizador' %}{% url 'denuncias:actualizador_dashboard' %}{% else %}{% url 'denuncias:dashboard' %}{% endif %}{% else %}{% url 'denuncias:dashboard' %}{% endif %}" class="logo">
         <img src="{% static 'images/gsi-logo.png' %}" alt="Logo" class="logo-img" />
         <span class="logo-text">Panel de administración</span>
       </a>
       <nav class="site-nav">
         {% if request.user.is_authenticated %}
           {% if request.user.is_staff %}
-            
+            <a href="{% url 'denuncias:user_profile' %}">Mi perfil</a>
             {% if request.user.is_superuser %}
               <a href="{% url 'denuncias:admin_settings' %}">Configuración</a>
             {% endif %}
@@ -38,35 +38,38 @@
   </header>
 
   <main class="container {% block main_extra_classes %}{% endblock %}">
-    {% if request.user.is_authenticated and request.user.is_staff and request.user.role|default:''|lower == 'actualizador' %}
+    {% if request.user.is_authenticated and request.user.is_staff %}
     {% with u=request.resolver_match.url_name %}
-    {% if u == 'actualizador_dashboard' or u == 'actualizador_library' or u == 'actualizador_privacy' %}
+    {% if request.user.is_superuser %}
+      {# El superusuario navega a cada sección desde Configuración #}
+    {% elif request.user.role|default:''|lower == 'actualizador' %}
     <nav class="settings-subnav" aria-label="Secciones del actualizador">
-      <a class="subnav-link {% if request.resolver_match.url_name == 'actualizador_dashboard' %}active{% endif %}" href="{% url 'denuncias:actualizador_dashboard' %}">Panel</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'actualizador_library' %}active{% endif %}" href="{% url 'denuncias:actualizador_library' %}">Biblioteca</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'actualizador_privacy' %}active{% endif %}" href="{% url 'denuncias:actualizador_privacy' %}">Avisos</a>
+      <a class="subnav-link {% if u == 'actualizador_dashboard' %}active{% endif %}" href="{% url 'denuncias:actualizador_dashboard' %}">Panel</a>
+      <a class="subnav-link {% if u == 'actualizador_library' %}active{% endif %}" href="{% url 'denuncias:actualizador_library' %}">Biblioteca GSI</a>
+      <a class="subnav-link {% if u == 'actualizador_privacy' %}active{% endif %}" href="{% url 'denuncias:actualizador_privacy' %}">Avisos de privacidad</a>
+    </nav>
+    {% elif request.user.role|default:''|lower == 'delegador' or request.user.username == 'Delegador' %}
+    <nav class="settings-subnav" aria-label="Secciones del delegador">
+      <a class="subnav-link {% if u == 'delegador_queue' %}active{% endif %}" href="{% url 'denuncias:delegador_queue' %}">Cola de asignación</a>
+      <a class="subnav-link {% if u == 'admin_rejected' %}active{% endif %}" href="{% url 'denuncias:admin_rejected' %}">Rechazados</a>
+      <a class="subnav-link {% if u == 'admin_archive' %}active{% endif %}" href="{% url 'denuncias:admin_archive' %}">Archivo</a>
+    </nav>
+    {% else %}
+    <nav class="settings-subnav" aria-label="Secciones del analista">
+      <a class="subnav-link {% if u == 'dashboard' or u == 'admin_dashboard' %}active{% endif %}" href="{% url 'denuncias:dashboard' %}">Panel</a>
+      <a class="subnav-link {% if u == 'admin_cases' %}active{% endif %}" href="{% url 'denuncias:admin_cases' %}">Mis casos</a>
+      <a class="subnav-link {% if u == 'admin_rejected' %}active{% endif %}" href="{% url 'denuncias:admin_rejected' %}">Rechazados</a>
+      <a class="subnav-link {% if u == 'admin_archive' %}active{% endif %}" href="{% url 'denuncias:admin_archive' %}">Archivo</a>
     </nav>
     {% endif %}
     {% endwith %}
     {% endif %}
-
-    {% if request.user.is_authenticated and request.user.is_superuser %}
-    {% with u=request.resolver_match.url_name %}
-    {% if u == 'admin_settings' or u == 'admin_stats' or u == 'admin_export' or u == 'admin_archive' or u == 'admin_cases' or u == 'admin_rejected' or u == 'admin_roles' or u == 'admin_assignment' or u == 'admin_metrics_config' %}
-    <nav class="settings-subnav" aria-label="Secciones de configuración">
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_settings' and request.GET.tab|default:'general' == 'general' %}active{% endif %}" href="{% url 'denuncias:admin_settings' %}?tab=general">General</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_stats' %}active{% endif %}" href="{% url 'denuncias:admin_stats' %}">Estadísticas</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_export' %}active{% endif %}" href="{% url 'denuncias:admin_export' %}">Exportación</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_archive' %}active{% endif %}" href="{% url 'denuncias:admin_archive' %}">Archivo</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_settings' and request.GET.tab == 'investigacion' %}active{% endif %}" href="{% url 'denuncias:admin_settings' %}?tab=investigacion">Investigación</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_cases' %}active{% endif %}" href="{% url 'denuncias:admin_cases' %}">Casos</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_rejected' %}active{% endif %}" href="{% url 'denuncias:admin_rejected' %}">Rechazados</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_roles' %}active{% endif %}" href="{% url 'denuncias:admin_roles' %}">Roles</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_assignment' %}active{% endif %}" href="{% url 'denuncias:admin_assignment' %}">Orden</a>
-      <a class="subnav-link {% if request.resolver_match.url_name == 'admin_metrics_config' %}active{% endif %}" href="{% url 'denuncias:admin_metrics_config' %}">Config. métricas</a>
-    </nav>
-    {% endif %}
-    {% endwith %}
+    {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="message {{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
     {% endif %}
     {% block content %}{% endblock %}
   </main>
@@ -76,6 +79,7 @@
       <p>&copy; 2025 Administración del canal de denuncias</p>
     </div>
   </footer>
-  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/main.js' %}?v={% now 'U' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

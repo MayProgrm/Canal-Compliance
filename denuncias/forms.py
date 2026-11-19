@@ -5,7 +5,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.conf import settings
 import os
-from .models import CustomUser, Complaint, ChatMessage, ReporterNote, InvestigationPlan, EvidenceItem, Finding, CaseReport, ResourceItem, PrivacyNotice
+from .models import CustomUser, Complaint, ChatMessage, ReporterNote, InvestigationPlan, EvidenceItem, Finding, CaseReport, ResourceItem, PrivacyNotice, InvestigationProcedure
 from io import BytesIO
 
 class MultiFileInput(forms.ClearableFileInput):
@@ -57,7 +57,7 @@ class StyledPasswordChangeForm(PasswordChangeForm):
 class ComplaintForm(forms.ModelForm):
     attachments = MultipleFileField(required=False, widget=MultiFileInput(attrs={'class': 'form-control', 'accept': '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.txt,.rtf,.odt,.ods,.odp,.xls,.xlsx,.ppt,.pptx', 'multiple': True}), help_text='Puedes subir múltiples archivos. Formatos permitidos: PDF, DOC, DOCX, JPG, JPEG, PNG, GIF, TXT, RTF, ODT, ODS, ODP, XLS, XLSX, PPT, PPTX. Tamaño máximo por archivo: 10MB.')
     reporting_mode = forms.ChoiceField(required=False, choices=[('', 'Selecciona...'), ('anonimo', 'Anónimo'), ('con_datos', 'Con mis datos')], widget=forms.Select(attrs={'class': 'form-select'}))
-    action_type = forms.ChoiceField(required=False, label='¿Qué acción vas a realizar?', choices=[('', 'Selecciona...'), ('denuncia', 'Realizar una denuncia'), ('queja', 'Realizar una queja'), ('inquietud', 'Realizar una inquietud')], widget=forms.Select(attrs={'class': 'form-select'}))
+    action_type = forms.ChoiceField(required=False, label='¿Qué acción vas a realizar?', choices=[('', 'Selecciona...'), ('denuncia', 'Realizar una denuncia'), ('inquietud', 'Realizar una inquietud')], widget=forms.Select(attrs={'class': 'form-select'}))
     company_role = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Puesto en la empresa', 'pattern': '^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ\\s]+$', 'title': 'Solo letras y espacios (se permiten acentos)'}))
     category = forms.ChoiceField(required=False, choices=[
         ('', 'Selecciona...'),
@@ -90,13 +90,6 @@ class ComplaintForm(forms.ModelForm):
             ('Infracciones de derecho de la competencia', 'Infracciones de Derecho de la Competencia')
         ])
     ], widget=forms.Select(attrs={'class': 'form-select'}))
-    queja_category = forms.ChoiceField(required=False, label='Tipo de queja', choices=[
-        ('', 'Selecciona...'),
-        ('Deficiencias en servicios', 'Deficiencias en servicios'),
-        ('Procesos administrativos', 'Procesos administrativos'),
-        ('Condiciones laborales', 'Condiciones laborales'),
-        ('Ambiente de trabajo', 'Ambiente de trabajo')
-    ], widget=forms.Select(attrs={'class': 'form-select'}))
     inquietud_category = forms.ChoiceField(required=False, label='Tipo de inquietud', choices=[
         ('', 'Selecciona...'),
         ('Conflictos de interés', 'Conflictos de interés'),
@@ -122,6 +115,13 @@ class ComplaintForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['phone'].widget.attrs.update({
+            'type': 'tel',
+            'inputmode': 'numeric',
+            'maxlength': '10',
+            'placeholder': 'Ingresa 10 dígitos',
+        })
+        self.fields['description'].widget.attrs['placeholder'] = 'Describe los detalles del hecho con la mayor claridad posible.'
         state_choices = [
             ('', 'Selecciona...'),
             ('CDMX', 'Ciudad de México'), ('Edomex', 'Estado de México'), ('Jalisco', 'Jalisco'),
@@ -143,17 +143,16 @@ class ComplaintForm(forms.ModelForm):
         phone = (self.cleaned_data.get('phone') or '').strip()
         if not phone:
             return phone
-        digits = ''.join((ch for ch in phone if ch.isdigit()))
-        if len(digits) != 10:
-            raise ValidationError('El teléfono debe tener exactamente 10 dígitos.')
-        return digits
+        if not phone.isdigit() or len(phone) != 10:
+            raise ValidationError('Teléfono o Red debe contener exactamente 10 dígitos.')
+        return phone
 
     def clean_company_role(self):
         role = (self.cleaned_data.get('company_role') or '').strip()
         if not role:
             return role
         import re
-        if not re.match('^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ\s]+$', role):
+        if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÜüÑñ\s]+$', role):
             raise ValidationError('El puesto solo debe contener letras y espacios (se permiten acentos).')
         return role
 
@@ -246,19 +245,17 @@ class ComplaintForm(forms.ModelForm):
         matricula = (self.cleaned_data.get('reporter_matricula') or '').strip()
         if not matricula:
             return matricula
-        digits = ''.join((ch for ch in matricula if ch.isdigit()))
-        if len(digits) > 10:
-            raise ValidationError('El número de empleado no puede tener más de 10 dígitos.')
-        return digits
+        if not matricula.isdigit() or len(matricula) > 10:
+            raise ValidationError('El número de empleado debe contener solo números y hasta 10 dígitos.')
+        return matricula
 
     def clean_actor_matricula(self):
         matricula = (self.cleaned_data.get('actor_matricula') or '').strip()
         if not matricula:
             return matricula
-        digits = ''.join((ch for ch in matricula if ch.isdigit()))
-        if len(digits) > 10:
-            raise ValidationError('El número de empleado no puede tener más de 10 dígitos.')
-        return digits
+        if not matricula.isdigit() or len(matricula) > 10:
+            raise ValidationError('El número de empleado debe contener solo números y hasta 10 dígitos.')
+        return matricula
 
     def clean(self):
         cleaned = super().clean()
@@ -279,13 +276,7 @@ class ComplaintForm(forms.ModelForm):
         if not mode:
             self.add_error('reporting_mode', 'Este campo es obligatorio.')
 
-        if action_type == 'queja':
-            val = cleaned.get('queja_category')
-            if not val:
-                self.add_error('queja_category', 'Este campo es obligatorio.')
-            else:
-                cleaned['category'] = val
-        elif action_type == 'inquietud':
+        if action_type == 'inquietud':
             val = cleaned.get('inquietud_category')
             if not val:
                 self.add_error('inquietud_category', 'Este campo es obligatorio.')
@@ -295,7 +286,7 @@ class ComplaintForm(forms.ModelForm):
             if not category:
                 self.add_error('category', 'Este campo es obligatorio.')
 
-        if action_type in ['denuncia', 'queja']:
+        if action_type == 'denuncia':
             for field in ['incident_state', 'incident_branch', 'incident_date', 'incident_time']:
                 val = cleaned.get(field)
                 if isinstance(val, str):
@@ -329,14 +320,28 @@ class ComplaintForm(forms.ModelForm):
         return cleaned
 
 class ComplaintLookupForm(forms.Form):
-    folio = forms.CharField(max_length=20, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingresa tu folio (ej: GSI-ABC123)', 'required': True}), label='Folio de la denuncia')
+    folio = forms.CharField(max_length=20, initial='GSI-', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'GSI-ABC123', 'maxlength': '20', 'autocomplete': 'off', 'required': True}), label='Folio de la denuncia')
     password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña', 'required': True}), label='Contraseña')
 
+    def clean_folio(self):
+        folio = (self.cleaned_data.get('folio') or '').strip().upper()
+        if not folio.startswith('GSI-'):
+            folio = f'GSI-{folio}'
+        if folio == 'GSI-':
+            raise ValidationError('Ingresa los caracteres de tu folio después de GSI-.')
+        return folio
+
 class AdminRegistrationForm(UserCreationForm):
+    ROLE_CHOICES = [
+        ('', 'Analista'),
+        ('Delegador', 'Delegador'),
+        ('actualizador', 'Actualizador'),
+    ]
     email = forms.EmailField(required=True, label='Correo', widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico corporativo'}))
     first_name = forms.CharField(max_length=30, required=True, label='Nombre', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}))
     last_name = forms.CharField(max_length=30, required=True, label='Apellidos', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellidos'}))
     phone_number = forms.CharField(max_length=15, required=False, label='Teléfono (opcional)', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número de teléfono (opcional)'}))
+    role = forms.ChoiceField(required=False, label='Rol', choices=ROLE_CHOICES, widget=forms.Select(attrs={'class': 'form-select'}))
 
     class Meta:
         model = CustomUser
@@ -385,6 +390,9 @@ class PrivacyNoticeForm(forms.ModelForm):
         }
 
 class AdminLoginForm(forms.Form):
+    GENERIC_LOGIN_ERROR = (
+        'No fue posible iniciar sesión. Verifica tus credenciales o el acceso autorizado.'
+    )
     username = forms.CharField(strip=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}))
     password = forms.CharField(strip=False, widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña'}))
 
@@ -397,14 +405,43 @@ class AdminLoginForm(forms.Form):
         if password is not None and password != password.strip():
             space_issue = True
         if space_issue:
-            self.add_error('password', 'Credenciales inválidas')
+            self.add_error('password', self.GENERIC_LOGIN_ERROR)
             return self.cleaned_data
         if username and password:
             user = authenticate(username=username, password=password)
             if not user:
-                self.add_error('password', 'Credenciales inválidas')
-            elif not getattr(user, 'is_staff', False):
-                self.add_error('username', 'No tienes permisos de administrador')
+                username_matches = CustomUser.objects.filter(
+                    username__iexact=username,
+                    is_active=True,
+                )
+                email_matches = CustomUser.objects.filter(
+                    email__iexact=username,
+                    is_active=True,
+                )
+                if username_matches.count() == 1:
+                    candidate_username = username_matches.first().get_username()
+                    user = authenticate(
+                        username=candidate_username,
+                        password=password,
+                    )
+                elif email_matches.count() == 1:
+                    candidate_username = email_matches.first().get_username()
+                    user = authenticate(
+                        username=candidate_username,
+                        password=password,
+                    )
+            if not user:
+                self.add_error('password', self.GENERIC_LOGIN_ERROR)
+            elif not getattr(user, 'is_staff', False) or not (
+                getattr(user, 'is_verified', False)
+                or (
+                    getattr(settings, 'DEBUG', False)
+                    and getattr(settings, 'ADMIN_DEV_BYPASS', False)
+                )
+            ):
+                self.add_error('password', self.GENERIC_LOGIN_ERROR)
+            else:
+                self.cleaned_data['username'] = user.get_username()
         return self.cleaned_data
 
 class AdminSetUserPasswordForm(forms.Form):
@@ -517,3 +554,15 @@ class CaseReportForm(forms.ModelForm):
             'conclusion': forms.Select(attrs={'class': 'form-control', 'style': 'width:100%; padding:.55rem .75rem; border:1px solid #e6eef8; border-radius:10px; font-size:.95rem;'}),
             'recommendations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'style': 'width:100%; padding:.55rem .75rem; border:1px solid #e6eef8; border-radius:10px; font-size:.95rem;'}),
         }
+
+class InvestigationProcedureForm(forms.ModelForm):
+
+    class Meta:
+        model = InvestigationProcedure
+        fields = InvestigationProcedure.STEP_FIELDS + ['compliance_owner', 'notes']
+        widgets = {
+            'compliance_owner': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del responsable de cumplimiento', 'style': 'width:100%; padding:.55rem .75rem; border:1px solid #e6eef8; border-radius:10px; font-size:.95rem;'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observaciones sobre el procedimiento aplicado', 'style': 'width:100%; padding:.55rem .75rem; border:1px solid #e6eef8; border-radius:10px; font-size:.95rem;'}),
+        }
+        labels = {f: InvestigationProcedure._meta.get_field(f).verbose_name for f in InvestigationProcedure.STEP_FIELDS}
+

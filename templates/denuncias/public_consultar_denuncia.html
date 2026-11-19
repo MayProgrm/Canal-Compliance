@@ -2,62 +2,252 @@
 
 {% block title %}Consultar denuncia{% endblock %}
 
+{% block extra_head %}
+<style>
+  .lookup-page { --lookup-ink: #172b46; --lookup-muted: #6b7b91; --lookup-line: #e4ebf3; max-width: 1180px; margin: 0 auto 3rem; }
+  .lookup-intro {
+    position: relative; isolation: isolate; overflow: hidden; display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(230px, .65fr); align-items: center;
+    gap: 2rem; margin: 1.4rem auto 1.2rem; padding: clamp(1.5rem, 4vw, 3rem);
+    border-radius: 32px; color: #fff;
+    background: linear-gradient(125deg, #07284d 0%, #064b83 58%, #0b6cad 100%);
+    box-shadow: 0 20px 46px rgba(6, 45, 82, .2);
+  }
+  .lookup-intro::before, .lookup-intro::after { position: absolute; z-index: -1; content: ""; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; }
+  .lookup-intro::before { width: 330px; height: 330px; right: 11%; top: -210px; }
+  .lookup-intro::after { width: 430px; height: 430px; right: -11%; bottom: -330px; }
+  .lookup-intro-copy { max-width: 690px; }
+  .lookup-intro .page-hero-badge { display: inline-flex; margin-bottom: 1rem; background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.26); }
+  .lookup-intro h1 { margin: 0; color: #fff; font-size: clamp(2rem, 4vw, 3.1rem); line-height: 1.06; letter-spacing: -.04em; }
+  .lookup-intro p { max-width: 610px; margin: .9rem 0 0; color: rgba(255,255,255,.8); font-size: 1.02rem; line-height: 1.65; }
+  .lookup-intro-note { display: flex; align-items: flex-start; gap: .85rem; padding: 1.1rem; border: 1px solid rgba(255,255,255,.18); border-radius: 16px; background: rgba(255,255,255,.09); backdrop-filter: blur(8px); }
+  .lookup-intro-note svg { flex: 0 0 24px; margin-top: .15rem; color: #a9ddff; }
+  .lookup-intro-note strong { display: block; color: #fff; font-size: .94rem; }
+  .lookup-intro-note span { display: block; margin-top: .3rem; color: rgba(255,255,255,.72); font-size: .83rem; line-height: 1.5; }
+  .lookup-search {
+    max-width: none; margin: 0 auto 1.6rem; padding: clamp(1.15rem, 3vw, 1.8rem);
+    border: 1px solid #e3eaf2; border-radius: 20px; background: #fff;
+    box-shadow: 0 12px 34px rgba(20, 44, 72, .08);
+  }
+  .lookup-search-head { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.2rem; }
+  .lookup-search-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; color: #075a99; background: #eaf5ff; }
+  .lookup-search-head h2 { margin: 0; color: var(--lookup-ink); font-size: 1.18rem; }
+  .lookup-search-head p { margin: .18rem 0 0; color: var(--lookup-muted); font-size: .88rem; }
+  .lookup-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .lookup-field .form-label { display: block; margin-bottom: .42rem; color: #334155; font-weight: 700; }
+  .lookup-field input { min-height: 48px; border: 1px solid #d7e1ec; border-radius: 11px; background: #fbfdff; }
+  .lookup-field input:focus { border-color: #1680c4; box-shadow: 0 0 0 3px rgba(22,128,196,.13); outline: none; }
+  .lookup-field .help-text { margin-top: .35rem; color: #8290a2; font-size: .78rem; }
+  .lookup-field-error { margin: .35rem 0 0; color: #b42318; font-size: .82rem; }
+  .lookup-form-actions { display: flex; align-items: center; gap: .7rem; margin-top: 1.1rem; }
+  .lookup-form-actions .btn-primary { min-height: 46px; padding: .7rem 1.25rem; border-radius: 11px; background: linear-gradient(135deg,#075a99,#087fbd); box-shadow: 0 7px 16px rgba(7,90,153,.18); }
+  .lookup-form-caption { margin: 1rem 0 0; padding-top: .8rem; border-top: 1px solid #edf1f6; color: #8190a3; font-size: .78rem; }
+  .lookup-result { padding-top: .35rem; }
+  .lookup-case-banner {
+    position: relative; display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem; overflow: hidden; margin-bottom: 1rem; padding: 1.3rem 1.5rem;
+    border: 1px solid #dce8f3; border-radius: 20px; background: #fff;
+    box-shadow: 0 10px 26px rgba(20,44,72,.06);
+  }
+  .lookup-case-banner::before { position: absolute; inset: 0 auto 0 0; width: 5px; content: ""; background: linear-gradient(#1689cf,#07518a); }
+  .lookup-case-ident { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+  .lookup-case-symbol { display: grid; place-items: center; flex: 0 0 48px; height: 48px; border-radius: 15px; color: #075a99; background: #eaf5ff; }
+  .lookup-case-caption { color: #718198; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .lookup-case-banner h2 { margin: .12rem 0; color: #163858; font-size: clamp(1.3rem, 3vw, 1.8rem); letter-spacing: .015em; }
+  .lookup-case-meta { display: flex; flex-wrap: wrap; gap: .45rem 1rem; color: #63748a; font-size: .82rem; }
+  .lookup-case-state { flex: 0 0 auto; text-align: right; }
+  .lookup-case-state span { display: block; margin-bottom: .35rem; color: #8090a3; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .lookup-state-badge { display: inline-flex; align-items: center; gap: .48rem; padding: .58rem .85rem; border-radius: 999px; color: #064b83; background: #e9f4fc; font-size: .86rem; font-weight: 800; }
+  .lookup-state-badge::before { width: 8px; height: 8px; border-radius: 50%; content: ""; background: currentColor; box-shadow: 0 0 0 4px rgba(7,90,153,.1); }
+  .lookup-section-hint { margin: 0 0 .8rem; color: #8190a3; font-size: .82rem; }
+  .lookup-page .comm-feed { display: grid; gap: .8rem; }
+  .lookup-page .comm-item { border-radius: 13px; background: #fbfdff; }
+  .lookup-page .comm-item.from-team { border-left-color: #0877b4; }
+  .lookup-page .comm-content { min-width: 0; }
+  .lookup-page .comm-text { overflow-wrap: anywhere; line-height: 1.65; }
+  .lookup-empty { padding: 1.35rem; border: 1px dashed #d8e2ec; border-radius: 13px; color: #8290a2; text-align: center; font-size: .86rem; }
+  .lookup-chat-list { display: flex; flex-direction: column; gap: .8rem; max-height: 440px; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+  .lookup-chat-item { display: flex; flex-direction: column; }
+  .lookup-chat-item.reporter { align-items: flex-end; }
+  .lookup-chat-item.admin { align-items: flex-start; }
+  .lookup-chat-meta { margin-bottom: .25rem; color: #8390a1; font-size: .72rem; }
+  .lookup-chat-bubble { max-width: min(86%,620px); padding: .75rem .95rem; border-radius: 14px; background: #f0f4f8; color: #27384a; font-size: .9rem; line-height: 1.55; overflow-wrap: anywhere; }
+  .lookup-chat-bubble.reporter { border-bottom-right-radius: 4px; background: #075a99; color: #fff; }
+  .lookup-chat-form { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e8edf3; }
+  .lookup-chat-form textarea, .lookup-note-form textarea { width: 100%; min-height: 90px; padding: .8rem; border: 1px solid #d6e0ea; border-radius: 11px; resize: vertical; }
+  .lookup-chat-form textarea:focus, .lookup-note-form textarea:focus { border-color: #1680c4; outline: 3px solid rgba(22,128,196,.12); }
+  .lookup-chat-send { display: flex; justify-content: flex-end; margin-top: .65rem; }
+  .lookup-detail-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .7rem; }
+  .lookup-detail { min-width: 0; padding: .8rem; border-radius: 12px; background: #f6f9fc; }
+  .lookup-detail span { display: block; color: #8390a1; font-size: .72rem; font-weight: 700; }
+  .lookup-detail strong { display: block; margin-top: .25rem; color: #29435f; font-size: .86rem; overflow-wrap: anywhere; }
+  .lookup-attachment { display: flex; align-items: center; gap: .7rem; margin-bottom: .6rem; padding: .8rem; border: 1px solid #e4ebf2; border-radius: 12px; }
+  .lookup-attachment:last-child { margin-bottom: 0; }
+  .lookup-attachment-icon { display: grid; place-items: center; flex: 0 0 36px; height: 36px; border-radius: 10px; color: #126ca8; background: #edf7ff; font-size: .61rem; font-weight: 800; }
+  .lookup-attachment a { color: #126ca8; font-size: .85rem; font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+  .lookup-attachment a:hover { text-decoration: underline; }
+  .lookup-note-item { margin-bottom: .65rem; padding: .8rem; border-left: 3px solid #55a5d6; border-radius: 0 10px 10px 0; background: #f5f9fc; }
+  .lookup-note-date { color: #8290a2; font-size: .72rem; }
+  .lookup-note-text { margin-top: .25rem; color: #344b63; font-size: .86rem; line-height: 1.5; }
+  .lookup-actions { display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: .6rem; margin-top: 0; }
+  .lookup-actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 36px; padding: .45rem .95rem; border-radius: 10px; font-size: .85rem; font-weight: 700; line-height: 1; }
+  .lookup-actions .btn-primary { background: linear-gradient(135deg,#075a99,#087fbd); color: #fff; box-shadow: 0 5px 12px rgba(7,90,153,.16); }
+  .lookup-actions .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 16px rgba(7,90,153,.22); }
+  .lookup-page .btn-secondary { border: 1px solid #d7e1ec; background: #eef3f8; color: #29435f; }
+  .lookup-page .btn-secondary:hover { background: #e2e9f0; border-color: #b9c9d8; color: #163858; transform: none; box-shadow: none; }
+  .lookup-page .btn-outline { border: 1px solid #d7e1ec; background: #fff; color: #29435f; }
+  .lookup-page .btn-outline:hover { background: #f1f6fb; border-color: #b9c9d8; color: #163858; transform: none; box-shadow: none; }
+  .lookup-page .cards-grid { display: block; column-count: 2; column-gap: 1rem; max-width: none; margin: 0; }
+  .lookup-page .cards-grid--footer { display: grid; grid-template-columns: minmax(0,1fr); gap: 1rem; column-count: auto; margin-top: 1rem; }
+  .lookup-page .cards-grid .status-panel { display: flex; flex-direction: column; width: auto; max-width: none; min-height: 0; height: auto; margin: 0 0 1rem; break-inside: avoid; -webkit-column-break-inside: avoid; page-break-inside: avoid; padding: 0; overflow: hidden; border: 1px solid #e2e9f1; border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(20,44,72,.055); }
+  .lookup-page .cards-grid--footer .status-panel { margin: 0; break-inside: auto; }
+  .lookup-page .cards-grid .status-panel .panel-header { display: flex; align-items: center; min-height: 0; margin: 0; padding: .85rem 1.1rem; border-bottom: 1px solid #edf1f5; border-radius: 0; color: #193a5b; background: #fff; box-shadow: none; }
+  .lookup-page .cards-grid .status-panel .panel-title { margin: 0; color: #193a5b; font-size: 1rem; }
+  .lookup-page .cards-grid .status-panel .panel-title::after { display: none; }
+  .lookup-page .cards-grid .status-panel .panel-body { flex: 1 1 auto; margin: 0; padding: 1rem 1.1rem; }
+  .lookup-page .cards-grid .lookup-actions-panel .panel-body { padding: .85rem 1.1rem; }
+  .lookup-status-summary { margin-bottom: .85rem; padding: .8rem .9rem; border-radius: 13px; background: linear-gradient(135deg,#edf7ff,#f7fbff); }
+  .lookup-status-label { display: block; color: #718198; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .lookup-status-summary strong { display: block; margin-top: .2rem; color: #075a99; font-size: 1.15rem; }
+  .lookup-status-summary small { display: block; margin-top: .25rem; color: #8190a3; font-size: .74rem; }
+  .lookup-steps { margin: 0; padding: 0; list-style: none; }
+  .lookup-steps li { position: relative; display: flex; align-items: flex-start; gap: .6rem; min-height: 42px; color: #95a1b0; }
+  .lookup-steps li:not(:last-child)::after { position: absolute; top: 25px; bottom: -2px; left: 12px; width: 2px; content: ""; background: #e3e9ef; }
+  .lookup-step-marker { position: relative; z-index: 1; display: grid; place-items: center; flex: 0 0 25px; width: 25px; height: 25px; border: 1px solid #cfd9e3; border-radius: 50%; color: #8c9aab; background: #fff; font-size: .69rem; font-weight: 800; }
+  .lookup-steps li.is-done, .lookup-steps li.is-current { color: #38536e; }
+  .lookup-steps li.is-done .lookup-step-marker { border-color: #1682bd; color: #fff; background: #1682bd; }
+  .lookup-steps li.is-current .lookup-step-marker { border: 2px solid #0875b2; color: #075a99; box-shadow: 0 0 0 4px #e7f4fc; }
+  .lookup-steps li.is-done:not(:last-child)::after { background: #55a5d6; }
+  .lookup-steps li > div { padding: .12rem 0 .7rem; }
+  .lookup-steps strong { display: block; font-size: .8rem; }
+  .lookup-steps small { display: block; margin-top: .12rem; color: #8b98a8; font-size: .7rem; }
+  .lookup-next-step { padding: .9rem; border-radius: 13px; background: linear-gradient(135deg,#f2f8fd,#f9fbfe); }
+  .lookup-next-step .next-steps { color: #163a5b; font-size: .88rem; font-weight: 750; line-height: 1.5; }
+  .lookup-next-step .compact-list { margin: .6rem 0 0; padding-left: 1.05rem; color: #687b91; font-size: .78rem; line-height: 1.55; }
+  @media (max-width: 920px) {
+    .lookup-intro { grid-template-columns: minmax(0,1fr) 240px; gap: 1.2rem; }
+  }
+  @media (max-width: 760px) {
+    .lookup-intro { grid-template-columns: 1fr; }
+    .lookup-intro-note { max-width: 440px; }
+    .lookup-form-grid { grid-template-columns: 1fr; }
+    .lookup-page .cards-grid { column-count: 1; }
+  }
+  @media (max-width: 560px) {
+    .lookup-intro { padding: 1.4rem; border-radius: 24px; }
+    .lookup-search { padding: 1rem; border-radius: 16px; }
+    .lookup-form-grid, .lookup-detail-grid { grid-template-columns: 1fr; }
+    .lookup-form-actions, .lookup-actions { align-items: stretch; flex-direction: column; }
+    .lookup-form-actions .btn, .lookup-actions .btn { width: 100%; text-align: center; }
+    .lookup-case-banner { align-items: flex-start; flex-direction: column; padding: 1.1rem; }
+    .lookup-case-state { text-align: left; }
+    .lookup-case-ident { align-items: flex-start; }
+    .lookup-case-symbol { flex-basis: 40px; height: 40px; }
+    .lookup-case-meta { display: grid; gap: .25rem; }
+  }
+  @media print {
+    .lookup-intro, .lookup-search, .lookup-actions, .lookup-chat-form, .lookup-note-form, .chatbot-widget, .footer, .header { display: none !important; }
+    .lookup-page .cards-grid { column-count: 1; }
+    .lookup-page .cards-grid .status-panel, .lookup-case-banner { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="page-hero">
-  <h1 class="page-hero-title">Consultar denuncia</h1>
-  <p class="page-hero-subtitle" style="text-align:center;">Ingresa tu folio para ver el avance, adjuntos y mensajes de tu caso.</p>
-  </section>
-<section class="status-panel status-panel--lookup" role="region" aria-label="Buscar folio">
-  <div class="panel-body">
+<div class="lookup-page">
+<section class="lookup-intro">
+  <div class="lookup-intro-copy">
+    <span class="page-hero-badge">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Consulta de reporte
+    </span>
+    <h1>Consulta el estado<br>de tu reporte.</h1>
+    <p>Revisa el estado actual, las respuestas del equipo y los archivos relacionados con tu reporte.</p>
+  </div>
+  <div class="lookup-intro-note">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+    <div><strong>Ten a la mano tus datos de acceso</strong><span>Necesitas el folio GSI- y la contraseña que definiste al enviar el reporte.</span></div>
+  </div>
+</section>
+<section class="lookup-search" role="region" aria-label="Buscar tu denuncia">
+  <header class="lookup-search-head">
+    <span class="lookup-search-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <div><h2>Consulta tu expediente</h2><p>Escribe los datos de acceso para consultar el estado actual.</p></div>
+  </header>
+  {% if messages %}
+    {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+  {% endif %}
+  <div class="lookup-form-body">
     <form method="post">
       {% csrf_token %}
-      <div class="form-row">
-        <div class="form-col">
+      <div class="lookup-form-grid">
+        <div class="lookup-field">
           <label for="{{ form.folio.id_for_label }}" class="form-label">Número de folio</label>
           {{ form.folio }}
-          <div class="help-text">Ejemplo: GSI-XY4821</div>
+          {% if form.folio.errors %}<p class="lookup-field-error">{{ form.folio.errors|join:", " }}</p>{% endif %}
+          <div class="help-text">El prefijo GSI- aparece automáticamente.</div>
         </div>
-        <div class="form-col">
+        <div class="lookup-field">
           <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
           {{ form.password }}
-          <div class="help-text">La que generaste al crear tu reporte</div>
+          {% if form.password.errors %}<p class="lookup-field-error">{{ form.password.errors|join:", " }}</p>{% endif %}
+          <div class="help-text">Usa la contraseña que definiste al crear el reporte.</div>
         </div>
       </div>
-      <div class="form-actions action-group">
-        <button type="submit" class="btn btn-primary">Consultar denuncia</button>
-        <a href="{% url 'denuncias:home' %}" class="btn btn-secondary">Volver al inicio</a>
+      <div class="lookup-form-actions">
+        <button type="submit" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-3px;margin-right:.35rem;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar reporte
+        </button>
+        <a href="{% url 'denuncias:home' %}" class="btn btn-outline">Volver al inicio</a>
       </div>
+      <p class="lookup-form-caption">Tu folio inicia con <strong>GSI-</strong>. No compartas tu contraseña con otras personas.</p>
     </form>
   </div>
 </section>
 
 {% if complaint %}
 
-<div class="cards-grid">
-  {% if complaint.action_type != 'consulta' %}
-  <section class="status-panel status-panel--status">
-    <div class="panel-header"><h2 class="panel-title">Estado del reporte</h2></div>
-    <div class="panel-body" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-      <div style="margin-bottom: 1.5rem;">
-        <div class="chip" style="font-size: 1.25rem; padding: 0.6rem 1.2rem; display: inline-block; margin-bottom: 0.75rem;">{{ complaint.get_status_display }}</div>
-        <div class="ticket-meta" style="color: #64748b; font-size: 0.9rem;">Última actualización:<br>{{ complaint.updated_at|date:'d/m/Y H:i' }}</div>
+<div class="lookup-result">
+  <header class="lookup-case-banner">
+    <div class="lookup-case-ident">
+      <span class="lookup-case-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16M8 7h8M8 11h7"/></svg></span>
+      <div>
+        <span class="lookup-case-caption">Expediente</span>
+        <h2>{{ complaint.folio }}</h2>
+        <div class="lookup-case-meta"><span>{{ complaint.get_action_type_display|default:"Reporte" }}</span><span>{{ complaint.category|default:"Categoría no especificada" }}</span><span>Recibido {{ complaint.created_at|date:'d/m/Y' }}</span></div>
       </div>
-      <div class="progress-bar {% if complaint.status == 'enviado' %}stage-1{% elif complaint.status == 'admitido' %}stage-2{% elif complaint.status == 'investigacion' %}stage-3{% elif complaint.status == 'resolucion' %}stage-4{% elif complaint.status == 'resuelto' %}stage-5{% elif complaint.status == 'rechazado' %}stage-5{% endif %}" style="margin: 0 auto; width: 100%;"></div>
+    </div>
+    <div class="lookup-case-state"><span>Estado actual</span><strong class="lookup-state-badge">{{ complaint.get_status_display }}</strong></div>
+  </header>
+
+  <div class="cards-grid">
+  <section class="status-panel status-panel--status">
+    <div class="panel-header"><h2 class="panel-title">Progreso de atención</h2></div>
+    <div class="panel-body">
+      <div class="lookup-status-summary"><span class="lookup-status-label">Situación actual</span><strong>{{ complaint.get_status_display }}</strong><small>Actualizado {{ complaint.updated_at|date:'d/m/Y H:i' }}</small></div>
+      <ol class="lookup-steps">
+        <li class="{% if complaint.status == 'enviado' %}is-current{% else %}is-done{% endif %}"><span class="lookup-step-marker">1</span><div><strong>Recibido</strong><small>Reporte registrado</small></div></li>
+        <li class="{% if complaint.status == 'admitido' or complaint.status == 'transferido' %}is-current{% elif complaint.status == 'investigacion' or complaint.status == 'info_adicional' or complaint.status == 'resolucion' or complaint.status == 'resuelto' or complaint.status == 'rechazado' or complaint.status == 'archivado' %}is-done{% endif %}"><span class="lookup-step-marker">2</span><div><strong>Revisión</strong><small>Validación inicial</small></div></li>
+        <li class="{% if complaint.status == 'investigacion' or complaint.status == 'info_adicional' %}is-current{% elif complaint.status == 'resolucion' or complaint.status == 'resuelto' or complaint.status == 'rechazado' or complaint.status == 'archivado' %}is-done{% endif %}"><span class="lookup-step-marker">3</span><div><strong>Análisis</strong><small>Seguimiento del caso</small></div></li>
+        <li class="{% if complaint.status == 'resolucion' %}is-current{% elif complaint.status == 'resuelto' or complaint.status == 'rechazado' or complaint.status == 'archivado' %}is-done{% endif %}"><span class="lookup-step-marker">4</span><div><strong>Respuesta</strong><small>Conclusión del equipo</small></div></li>
+        <li class="{% if complaint.status == 'resuelto' or complaint.status == 'rechazado' or complaint.status == 'archivado' %}is-current{% endif %}"><span class="lookup-step-marker">5</span><div><strong>Cierre</strong><small>Expediente finalizado</small></div></li>
+      </ol>
     </div>
   </section>
-  {% endif %}
 
   <section class="status-panel status-panel--summary">
     <div class="panel-header"><h2 class="panel-title">Qué sigue</h2></div>
-    <div class="panel-body" style="display: flex; flex-direction: column; justify-content: center; padding: 2rem;">
+    <div class="panel-body">
+      <div class="lookup-next-step">
       {% if complaint.action_type == 'consulta' %}
         {% if complaint.status == 'enviado' %}
           <div class="next-steps">Tu consulta fue recibida y será atendida en breve.</div>
           <ul class="compact-list"><li>Espera nuestra respuesta por este mismo canal.</li><li>Si requerimos más detalles, te escribiremos por el chat.</li></ul>
-        {% elif complaint.status == 'admitido' %}
+        {% elif complaint.status == 'admitido' or complaint.status == 'transferido' %}
           <div class="next-steps">Tu consulta está siendo revisada por el equipo encargado.</div>
           <ul class="compact-list"><li>Estamos analizando tu inquietud.</li><li>Pronto recibirás una actualización.</li></ul>
-        {% elif complaint.status == 'investigacion' %}
+        {% elif complaint.status == 'investigacion' or complaint.status == 'info_adicional' %}
           <div class="next-steps">Estamos analizando los detalles de tu consulta.</div>
           <ul class="compact-list"><li>El equipo está trabajando en tu respuesta.</li></ul>
         {% elif complaint.status == 'resolucion' %}
@@ -76,10 +266,10 @@
         {% if complaint.status == 'enviado' %}
           <div class="next-steps">Tu denuncia fue recibida y pasará a revisión inicial en un plazo de 3 a 5 días hábiles.</div>
           <ul class="compact-list"><li>Espera confirmación por este mismo canal.</li><li>Si se requiere información adicional, verás aquí un chat habilitado.</li></ul>
-        {% elif complaint.status == 'admitido' %}
+        {% elif complaint.status == 'admitido' or complaint.status == 'transferido' %}
           <div class="next-steps">Estamos revisando tu reporte para confirmar elementos y alcance.</div>
           <ul class="compact-list"><li>Podríamos contactarte por este canal.</li><li>Tu caso avanzará a investigación si procede.</li></ul>
-        {% elif complaint.status == 'investigacion' %}
+        {% elif complaint.status == 'investigacion' or complaint.status == 'info_adicional' %}
           <div class="next-steps">Se están recopilando evidencias y realizando entrevistas.</div>
           <ul class="compact-list"><li>Tiempo estimado: 2–8 semanas según complejidad.</li><li>Comparte información extra si se solicita.</li></ul>
         {% elif complaint.status == 'resolucion' %}
@@ -95,155 +285,213 @@
           <div class="next-steps">Tu caso está en proceso.</div>
         {% endif %}
       {% endif %}
+      </div>
     </div>
   </section>
 
   {% if complaint.action_type == 'consulta' %}
-  <section class="status-panel span-2">
-    <div class="panel-header"><h2 class="panel-title">Chat con el administrador</h2></div>
-    <div class="panel-body" style="padding: 1.2rem;">
-      <ul class="chat-messages" style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding: 0; list-style: none;">
+  <section class="status-panel lookup-chat-panel">
+    <div class="panel-header"><h2 class="panel-title">Conversación del expediente</h2></div>
+    <div class="panel-body">
+      <p class="lookup-section-hint">Mensajes entre tú y el equipo que atiende tu consulta.</p>
+      <ul class="lookup-chat-list">
         {% for m in chat_messages %}
-          <li class="chat-msg-item {% if m.sender == 'reporter' %}reporter{% else %}admin{% endif %}">
-            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">
-               {% if m.sender == 'reporter' %}Tú{% else %}Administrador{% endif %} · {{ m.created_at|date:"d/m/Y H:i" }}
-            </div>
-            <div class="chat-bubble {% if m.sender == 'reporter' %}reporter{% else %}admin{% endif %}">
-              {{ m.message }}
-            </div>
+          <li class="lookup-chat-item {% if m.sender == 'reporter' %}reporter{% else %}admin{% endif %}">
+            <span class="lookup-chat-meta">{% if m.sender == 'reporter' %}Tú{% else %}Equipo investigador{% endif %} · {{ m.created_at|date:"d/m/Y H:i" }}</span>
+            <div class="lookup-chat-bubble {% if m.sender == 'reporter' %}reporter{% endif %}">{{ m.message|linebreaksbr }}</div>
           </li>
         {% empty %}
-          <li class="text-muted" style="text-align: center; padding: 1rem;">Aún no hay mensajes. Escribe tu consulta o duda aquí.</li>
+          <li class="lookup-empty">Aún no hay mensajes. Puedes escribir al equipo desde aquí.</li>
         {% endfor %}
       </ul>
-      
       {% if chat_enabled %}
-      <form method="post" action="{% url 'denuncias:submit_chat_message' complaint.folio %}" class="chat-form" style="margin-top: 1rem; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+      <form method="post" action="{% url 'denuncias:submit_chat_message' complaint.folio %}" class="lookup-chat-form">
         {% csrf_token %}
-        <div style="display: flex; gap: 0.5rem; flex-direction: column;">
-          {{ chat_form.message }}
-          <div style="display: flex; justify-content: flex-end;">
-            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1.5rem;">Enviar mensaje</button>
-          </div>
-        </div>
+        {{ chat_form.message }}
+        <div class="lookup-chat-send"><button type="submit" class="btn btn-primary">Enviar mensaje</button></div>
       </form>
-      <style>
-        .chat-form textarea {
-          width: 100%;
-          min-height: 80px;
-          padding: 0.75rem;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          font-family: inherit;
-          resize: vertical;
-        }
-        .chat-form textarea:focus {
-          outline: none;
-          border-color: #0b3b7e;
-          box-shadow: 0 0 0 2px rgba(11, 59, 126, 0.1);
-        }
-        .chat-msg-item { display: flex; flex-direction: column; }
-        .chat-msg-item.reporter { align-items: flex-end; }
-        .chat-msg-item.admin { align-items: flex-start; }
-        .chat-bubble { max-width: 80%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; }
-        .chat-bubble.reporter { background: #0b3b7e; color: white; border-bottom-right-radius: 2px; }
-        .chat-bubble.admin { background: #f3f4f6; color: #1f2937; border-bottom-left-radius: 2px; }
-      </style>
       {% endif %}
     </div>
   </section>
   {% else %}
-  <section class="status-panel status-panel--updates span-2">
-    <div class="panel-header"><h2 class="panel-title">Actualizaciones</h2></div>
+  <section class="status-panel status-panel--updates">
+    <div class="panel-header"><h2 class="panel-title">Actualizaciones y respuestas del equipo</h2></div>
     <div class="panel-body">
-      {% if chat_enabled and chat_messages %}
-        {% for msg in chat_messages|slice:":3" %}
-          <div class="update-entry"><div class="update-meta">{{ msg.created_at|date:'d/m/Y H:i' }}</div><div class="update-text">{{ msg.message }}</div></div>
-        {% endfor %}
-      {% elif complaint.response %}
-        <div class="update-entry"><div class="update-meta">Respuesta</div><div class="update-text">{{ complaint.response|linebreaksbr }}</div></div>
+      {% if chat_messages or complaint.response %}
+        <ul class="comm-feed">
+          {% if complaint.response %}
+            <li class="comm-item from-team">
+              <span class="comm-avatar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><polyline points="9 12 11 14 15 10"/></svg>
+              </span>
+              <div class="comm-content">
+                <div class="comm-meta"><span class="comm-sender">Equipo investigador</span><span class="comm-date">Respuesta</span></div>
+                <div class="comm-text">{{ complaint.response|linebreaksbr }}</div>
+              </div>
+            </li>
+          {% endif %}
+          {% for msg in chat_messages %}
+            <li class="comm-item {% if msg.sender == 'reporter' %}from-me{% else %}from-team{% endif %}">
+              <span class="comm-avatar" aria-hidden="true">
+                {% if msg.sender == 'reporter' %}
+                  Tú
+                {% else %}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><polyline points="9 12 11 14 15 10"/></svg>
+                {% endif %}
+              </span>
+              <div class="comm-content">
+                <div class="comm-meta">
+                  <span class="comm-sender">{% if msg.sender == 'reporter' %}Tú (denunciante){% else %}Equipo investigador{% endif %}</span>
+                  <span class="comm-date">{{ msg.created_at|date:'d/m/Y H:i' }}</span>
+                </div>
+                <div class="comm-text">{{ msg.message|linebreaksbr }}</div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
       {% else %}
-        <div class="update-empty" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">No hay actualizaciones recientes.</div>
+        <div class="update-empty" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">Aún no hay actualizaciones ni mensajes del equipo. Aquí verás las respuestas y comentarios sobre tu caso.</div>
       {% endif %}
     </div>
   </section>
   {% endif %}
 
   {% if complaint.action_type != 'consulta' %}
-  <section class="status-panel status-panel--attachments span-2">
-    <div class="panel-header"><h2 class="panel-title">Adjuntos</h2></div>
+  <section class="status-panel status-panel--attachments">
+    <div class="panel-header"><h2 class="panel-title">Archivos del reporte</h2></div>
     <div class="panel-body">
       {% with attachments=complaint.attachments.all %}
         {% if attachments %}
           {% for att in attachments|slice:":3" %}
-            <div class="attachment-entry"><a href="{% url 'denuncias:public_download_attachment' complaint.folio att.id %}" target="_blank" class="attachment-link">{{ att.file.name|default:'Archivo adjunto' }}</a></div>
+            <div class="lookup-attachment"><span class="lookup-attachment-icon" aria-hidden="true">PDF</span><a href="{% url 'denuncias:public_download_attachment' complaint.folio att.id %}" target="_blank" rel="noopener">{{ att.file.name|default:'Archivo adjunto' }}</a></div>
           {% endfor %}
         {% else %}
-          <div class="attachments-empty" style="text-align: center; padding: 2rem; color: #94a3b8; font-style: italic;">No hay archivos adjuntos.</div>
+          <div class="lookup-empty">Este expediente no tiene archivos adjuntos.</div>
         {% endif %}
       {% endwith %}
     </div>
   </section>
 
-  {% if complaint.action_type != 'consulta' %}
-  <section class="status-panel">
-    <div class="panel-header"><h2 class="panel-title">Privacidad y contacto</h2></div>
+  <section class="status-panel lookup-panel--privacy">
+    <div class="panel-header"><h2 class="panel-title">Datos de contacto</h2></div>
     <div class="panel-body">
-      <div class="detail-grid">
-        <div class="detail-item"><div class="f-label">Nombre</div><div class="f-value">{% if show_reporter_name %}{{ complaint.name }}{% else %}Anónimo{% endif %}</div></div>
-        <div class="detail-item"><div class="f-label">Correo</div><div class="f-value">{{ masked_email|default:'-' }}</div></div>
-        <div class="detail-item"><div class="f-label">Teléfono</div><div class="f-value">{{ masked_phone|default:'-' }}</div></div>
+      <div class="lookup-detail-grid">
+        <div class="lookup-detail"><span>Nombre</span><strong>{% if show_reporter_name %}{{ complaint.name }}{% else %}Anónimo{% endif %}</strong></div>
+        <div class="lookup-detail"><span>Correo</span><strong>{{ masked_email|default:'-' }}</strong></div>
+        <div class="lookup-detail"><span>Teléfono o Red</span><strong>{{ masked_phone|default:'-' }}</strong></div>
       </div>
     </div>
   </section>
   {% endif %}
-  {% endif %}
+  </div>
 
+  <div class="cards-grid cards-grid--footer">
   {% if optional_items and complaint.action_type != 'consulta' %}
-  <section class="status-panel">
+  <section class="status-panel lookup-panel--notes">
     <div class="panel-header"><h2 class="panel-title">Notas del usuario</h2></div>
     <div class="panel-body">
       {% if reporter_notes %}
-        <div class="updates-container">
-          {% for n in reporter_notes %}
-            <div class="update-entry">
-              <div class="update-meta">{{ n.created_at|date:'d/m/Y H:i' }}</div>
-              <div class="update-text">{{ n.content }}</div>
-            </div>
-          {% endfor %}
-        </div>
+        {% for n in reporter_notes %}
+          <div class="lookup-note-item"><div class="lookup-note-date">{{ n.created_at|date:'d/m/Y H:i' }}</div><div class="lookup-note-text">{{ n.content }}</div></div>
+        {% endfor %}
       {% else %}
-        <div class="no-updates">{% if complaint.action_type == 'consulta' %}Aún no hay notas.{% else %}Aún no hay notas del usuario.{% endif %}</div>
+        <div class="lookup-empty">Aún no has agregado notas al expediente.</div>
       {% endif %}
-      <form method="post" action="{% url 'denuncias:add_reporter_note' complaint.folio %}" class="mt-2">
+      <form method="post" action="{% url 'denuncias:add_reporter_note' complaint.folio %}" class="lookup-note-form">
         {% csrf_token %}
         <div class="form-group">
           {{ note_form.content }}
         </div>
-        <div class="action-group">
-          <button type="submit" class="btn btn-primary">Agregar nota</button>
-        </div>
+        <div class="lookup-chat-send"><button type="submit" class="btn btn-primary">Agregar nota</button></div>
       </form>
     </div>
   </section>
   {% endif %}
 
-  <section class="status-panel span-2">
-    <div class="panel-body action-group">
+  <section class="status-panel lookup-actions-panel">
+    <div class="panel-body lookup-actions">
+      <button type="button" id="btnRefreshLookup" class="btn btn-primary">Actualizar estado</button>
       <button type="button" id="btnPrintLookup" class="btn btn-secondary">Imprimir estado</button>
       <a href="{% url 'denuncias:home' %}" class="btn btn-outline">Volver al inicio</a>
     </div>
   </section>
+  </div>
 </div>
 {% endif %}
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   const btnPrint = document.getElementById('btnPrintLookup');
   if(btnPrint){
     btnPrint.addEventListener('click', ()=>{ window.print(); });
+  }
+  const btnRefresh = document.getElementById('btnRefreshLookup');
+  if(btnRefresh){
+    btnRefresh.addEventListener('click', ()=> window.location.reload());
+  }
+
+  // Actualización "hacia arriba" (pull-to-refresh): al arrastrar el dedo hacia
+  // abajo desde el inicio de la página se recarga el expediente sin volver a
+  // escribir el folio ni la contraseña (la sesión del folio se conserva).
+  (function(){
+    const threshold = 72;
+    let startY = null;
+    let delta = 0;
+    const hint = document.createElement('div');
+    hint.id = 'pullRefreshHint';
+    hint.textContent = 'Suelta para actualizar';
+    hint.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%) translateY(-70px);' +
+      'background:#075a99;color:#fff;padding:.45rem .95rem;border-radius:999px;font-size:.82rem;' +
+      'font-weight:600;box-shadow:0 10px 24px rgba(5,24,56,.28);transition:transform .18s ease;' +
+      'z-index:60;pointer-events:none;';
+    document.body.appendChild(hint);
+    const resetHint = () => { hint.style.transform = 'translateX(-50%) translateY(-70px)'; };
+    window.addEventListener('touchstart', (e) => {
+      if (window.scrollY <= 0 && e.touches.length === 1) {
+        startY = e.touches[0].clientY;
+        delta = 0;
+      } else {
+        startY = null;
+      }
+    }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (startY === null) return;
+      delta = Math.max(0, e.touches[0].clientY - startY);
+      if (delta > 0) {
+        const offset = Math.min(delta, threshold + 40) - 70;
+        hint.style.transform = `translateX(-50%) translateY(${Math.min(offset, 6)}px)`;
+      }
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+      const shouldReload = startY !== null && delta >= threshold;
+      startY = null;
+      delta = 0;
+      resetHint();
+      if (shouldReload) window.location.reload();
+    });
+    window.addEventListener('touchcancel', () => { startY = null; delta = 0; resetHint(); });
+  })();
+
+  const folioInput = document.getElementById('id_folio');
+  if(folioInput){
+    const normalizeFolio = function(value){
+      let suffix = (value || '').trim().toUpperCase();
+      if(suffix.startsWith('GSI')) suffix = suffix.slice(3).replace(/^-/, '');
+      suffix = suffix.replace(/[^A-Z0-9]/g, '').slice(0, 16);
+      return 'GSI-' + suffix;
+    };
+    folioInput.value = normalizeFolio(folioInput.value);
+    folioInput.addEventListener('input', function(){
+      const normalized = normalizeFolio(this.value);
+      if(this.value !== normalized){
+        const cursorAtEnd = this.selectionStart === this.value.length;
+        this.value = normalized;
+        if(cursorAtEnd) this.setSelectionRange(normalized.length, normalized.length);
+      }
+    });
   }
 })();
 </script>

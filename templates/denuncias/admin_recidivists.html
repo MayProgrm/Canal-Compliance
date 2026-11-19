@@ -136,7 +136,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
   document.addEventListener('click', function(ev){
     const btn = ev.target.closest('[data-toggle]');
     if(!btn) return;

@@ -1,4 +1,5 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 class Command(BaseCommand):
@@ -13,6 +14,8 @@ class Command(BaseCommand):
         parser.add_argument('--superuser', action='store_true', default=False, help='Marcar como superusuario (por defecto: False)')
 
     def handle(self, *args, **options):
+        if not settings.DEBUG:
+            raise CommandError('Este comando solo se permite cuando DEBUG=True.')
         User = get_user_model()
         prefix = options['prefix']
         start = options['start']

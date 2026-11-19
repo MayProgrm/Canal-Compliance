@@ -43,7 +43,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   const btnCopy = document.getElementById('btnCopyFolio');
   const codeEl = document.getElementById('folioCode');

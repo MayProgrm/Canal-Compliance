@@ -1,30 +1,58 @@
 {% extends 'denuncias/base_public.html' %}
 {% load static %}
 
-{% block title %}Guía de uso - Biblioteca GSI{% endblock %}
+{% block title %}Guía de uso - Canal GSI{% endblock %}
 
 {% block extra_head %}
 <style>
 :root { --sticky-header-offset: 120px; }
 
 .guide-hero {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  background: var(--brand-gradient);
   color: white;
-  padding: 2.5rem 0;
+  padding: 3rem 0 3.25rem;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
+.guide-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 15% 20%, rgba(255,255,255,.16), transparent 45%),
+              radial-gradient(circle at 85% 90%, rgba(255,255,255,.10), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.guide-hero-content { position: relative; z-index: 1; }
+
+.guide-hero-badge {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.32);
+  color: #fff;
+  font-size: .74rem; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  padding: .34rem .9rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: 1rem;
+}
+.guide-hero-badge svg { width: 14px; height: 14px; }
+
 .guide-hero-content h1 {
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 700;
   margin-bottom: 0.8rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 8px rgba(0,0,0,.12);
 }
 
 .guide-hero-subtitle {
-  font-size: 1rem;
-  opacity: 0.9;
+  font-size: 1.05rem;
+  color: rgba(255,255,255,.9);
   max-width: 700px;
   margin: 0 auto;
 }
@@ -97,8 +125,9 @@
 }
 
 .nav-link.active {
-  background: var(--primary-color);
+  background: var(--brand-gradient);
   color: white;
+  box-shadow: 0 6px 16px rgba(5,24,56,.18);
 }
 
 .guide-content {
@@ -113,11 +142,13 @@ html { scroll-padding-top: var(--sticky-header-offset); }
 .section-header {
   text-align: center;
   margin-bottom: 2rem;
-  background: var(--primary-color);
+  background: var(--brand-gradient);
   color: #ffffff;
   border-radius: 16px;
-  box-shadow: 0 8px 22px rgba(5,24,56,.12);
-  padding: 1.2rem 1.5rem;
+  box-shadow: 0 10px 26px rgba(5,24,56,.14);
+  padding: 1.4rem 1.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .section-header h2 {
@@ -125,13 +156,17 @@ html { scroll-padding-top: var(--sticky-header-offset); }
   color: #ffffff;
   margin-bottom: 0.4rem;
   font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
 .section-header p {
   color: rgba(255,255,255,0.9);
   font-size: 0.95rem;
-  max-width: 600px;
+  max-width: 640px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .guide-cards {
@@ -149,11 +184,22 @@ html { scroll-padding-top: var(--sticky-header-offset); }
   border: 1px solid var(--border-light);
   transition: all 0.3s ease;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.guide-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--brand-gradient);
 }
 
 .guide-card:hover {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  transform: translateY(-4px);
+  box-shadow: 0 14px 34px rgba(5,24,56,0.14);
+  transform: translateY(-6px);
+  border-color: #cfe0f7;
 }
 
 .card-icon {
@@ -1016,6 +1062,100 @@ html { scroll-padding-top: var(--sticky-header-offset); }
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
 }
+
+.guide-hero {
+  margin: 1.2rem auto 2rem;
+  padding: clamp(2.2rem, 5vw, 4rem) 1.5rem;
+  border-radius: 32px;
+  background: linear-gradient(125deg, #08294c 0%, #07558d 58%, #0a7db4 100%);
+  box-shadow: 0 20px 46px rgba(6, 45, 82, .2);
+  text-align: center;
+}
+
+.guide-hero .container { max-width: 1080px; padding: 0; }
+.guide-hero-content { max-width: 730px; margin: 0 auto; }
+.guide-hero-content h1 { font-size: clamp(2.1rem, 5vw, 3.35rem); letter-spacing: -.04em; }
+.main-content .guide-hero-content,
+.main-content .guide-hero-content h1,
+.main-content .guide-hero-subtitle { text-align: center; }
+.guide-hero-subtitle { margin: 0 auto; line-height: 1.7; }
+
+.guide-container {
+  max-width: 1160px;
+  padding: 0;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.guide-nav-menu {
+  padding: 1rem;
+  border: 1px solid #e1e9f1;
+  border-radius: 20px;
+  box-shadow: 0 12px 34px rgba(20, 44, 72, .08);
+}
+
+.nav-section-title { padding: .25rem .55rem; color: #8190a3; letter-spacing: .09em; }
+.nav-link { padding: .62rem .7rem; border-radius: 10px; line-height: 1.35; }
+.guide-content { gap: 2rem; }
+.guide-section { scroll-margin-top: 2rem; }
+
+.guide-content .section-header {
+  margin-bottom: 1.1rem;
+  padding: 1.35rem 1.5rem;
+  border-radius: 22px;
+  text-align: center;
+}
+
+.guide-content .section-header h2 { font-size: clamp(1.25rem, 2.5vw, 1.7rem); }
+.guide-content .section-header p { margin: 0; max-width: 100%; }
+.main-content .guide-content .section-header h2,
+.main-content .guide-content .section-header p { text-align: center; }
+
+.info-card, .guide-card, .right-item, .commitment, .process-step, .timeline-item,
+.tracking-method, .glossary-term, .cta-section, .faq-cta {
+  border: 1px solid #e1e9f1;
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(20, 44, 72, .065);
+}
+
+.info-grid, .guide-cards { gap: 1rem; }
+.info-card { padding: 1.45rem; text-align: left; }
+.info-card h4 { align-items: flex-start; }
+.info-icon { border-radius: 15px; }
+.process-step { align-items: center; gap: 1.2rem; padding: 1.4rem; }
+.step-number { border-radius: 15px; background: linear-gradient(135deg, #075a99, #1689c8); }
+.timeline { gap: .9rem; }
+.timeline-item { margin: 0; padding: 1.35rem; }
+.timeline-content h4 { margin-top: 0; }
+.glossary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.glossary-term { padding: 1.3rem; background: #fff; }
+.glossary-term h3 { margin-top: 0; }
+.cta-section { padding: clamp(1.5rem, 4vw, 2.6rem); }
+
+/* Lectura profesional: títulos centrados y párrafos alineados a la izquierda */
+.main-content .guide-content p,
+.main-content .guide-content li,
+.main-content .guide-content .info-card p,
+.main-content .guide-content .process-step p,
+.main-content .guide-content .timeline-content p,
+.main-content .guide-content .glossary-term p { text-align: left; }
+
+@media (max-width: 900px) {
+  .guide-container { grid-template-columns: 1fr; }
+  .guide-nav { position: static; }
+  .guide-nav-menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+  .nav-section { margin: 0; }
+}
+
+@media (max-width: 640px) {
+  .guide-hero { padding: 2rem 1.2rem; border-radius: 24px; }
+  .guide-container { padding: 0; }
+  .guide-nav-menu { grid-template-columns: 1fr; }
+  .guide-content .section-header { padding: 1.1rem; border-radius: 17px; }
+  .info-grid, .guide-cards, .glossary { grid-template-columns: 1fr; }
+  .info-card, .process-step, .timeline-item { padding: 1.1rem; }
+  .process-step { align-items: flex-start; }
+}
 </style>
 {% endblock %}
 
@@ -1023,6 +1163,10 @@ html { scroll-padding-top: var(--sticky-header-offset); }
 <div class="guide-hero">
   <div class="container">
     <div class="guide-hero-content">
+      <span class="guide-hero-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Biblioteca GSI
+      </span>
       <h1>Guía de uso</h1>
       <p class="guide-hero-subtitle">Manual para entender el proceso, derechos, obligaciones y recursos disponibles.</p>
     </div>
@@ -1053,7 +1197,7 @@ html { scroll-padding-top: var(--sticky-header-offset); }
         <ul class="nav-links">
           <li><a href="#antes-de-reportar" class="nav-link">Antes de reportar</a></li>
           <li><a href="#como-reportar" class="nav-link">Cómo reportar</a></li>
-          <li><a href="#después-de-reportar" class="nav-link">Después de reportar</a></li>
+          <li><a href="#después-de-denunciar" class="nav-link">Después de reportar</a></li>
           <li><a href="#seguimiento" class="nav-link">Seguimiento de casos</a></li>
         </ul>
       </div>
@@ -1089,7 +1233,7 @@ html { scroll-padding-top: var(--sticky-header-offset); }
         
         <div class="info-card">
           <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v3M7 7l-4 4h8l-4-4zm10 0l-4 4h8l-4-4zM5 11v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span>Principios</h4>
-          <p>Confidencialidad, imparcialidad, protección al denunciante y debido proceso.</p>
+          <p>Imparcialidad, uso responsable de la información y respeto al debido proceso.</p>
         </div>
       </div>
     </section>
@@ -1104,17 +1248,17 @@ html { scroll-padding-top: var(--sticky-header-offset); }
       <div class="info-grid">
         <div class="info-card">
           <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a5 5 0 015 5v3H7V7a5 5 0 015-5z"/><rect x="5" y="10" width="14" height="10" rx="2"/></svg></span>Confidencialidad</h4>
-          <p>Tu identidad estará protegida. Solo compartimos información cuando sea estrictamente necesario.</p>
+          <p>Consulta el aviso de privacidad correspondiente para conocer el tratamiento de los datos. También puedes elegir la modalidad anónima al enviar tu reporte.</p>
         </div>
         
         <div class="info-card">
           <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg></span>Protección</h4>
-          <p>Estás protegido contra represalias. Investigamos y sancionamos cualquier represalia por reportes de buena fe.</p>
+          <p>Los reportes de buena fe deben atenderse conforme a las políticas aplicables. Si consideras que hubo represalias, puedes comunicarlo para que se revise.</p>
         </div>
         
         <div class="info-card">
           <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10v4a1 1 0 001 1h3l7 3V6l-7 3H4a1 1 0 00-1 1z"/><path d="M14 6v12"/></svg></span>Ser escuchado</h4>
-          <p>Tu reporte será atendido con seriedad y profesionalismo. Recibirás confirmación y actualizaciones.</p>
+          <p>Describe los hechos con claridad y guarda los datos de acceso para consultar el estado y las respuestas de tu reporte.</p>
         </div>
         
         <div class="info-card">
@@ -1164,7 +1308,7 @@ html { scroll-padding-top: var(--sticky-header-offset); }
       <div class="info-grid">
         <div class="info-card">
           <h4><span class="info-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg></span>Sí reportar</h4>
-          <p>Situaciones clasificadas como <strong>Queja</strong> (insatisfacción de procesos), <strong>Inquietud</strong> (dudas normativas) o <strong>Denuncia</strong> (actos graves).</p>
+          <p>Situaciones clasificadas como <strong>Inquietud</strong> (dudas normativas) o <strong>Denuncia</strong> (actos graves).</p>
         </div>
         
         <div class="info-card">
@@ -1311,11 +1455,6 @@ html { scroll-padding-top: var(--sticky-header-offset); }
       
       <div class="glossary">
         <div class="glossary-term">
-          <h3>Queja</h3>
-          <p>Manifestación de insatisfacción respecto a procesos internos, servicios administrativos o condiciones laborales (p. ej., deficiencias en servicios, errores administrativos).</p>
-        </div>
-
-        <div class="glossary-term">
           <h3>Inquietud</h3>
           <p>Consulta o duda sobre la interpretación de normativas o situaciones ambiguas (p. ej., conflictos de interés, dudas éticas).</p>
         </div>
@@ -1346,8 +1485,8 @@ html { scroll-padding-top: var(--sticky-header-offset); }
         </div>
         
         <div class="glossary-term">
-          <h3>Confidencialidad</h3>
-          <p>Obligación de mantener la información de la denuncia y las identidades protegidas, compartiéndola solo cuando sea necesario para la investigación.</p>
+          <h3>Datos personales</h3>
+          <p>Información que puede identificar a una persona y cuyo tratamiento se describe en el aviso de privacidad correspondiente.</p>
         </div>
         
         <div class="glossary-term">
@@ -1372,7 +1511,7 @@ html { scroll-padding-top: var(--sticky-header-offset); }
         <div class="faq-cta-content">
           <h3>Explora nuestras preguntas frecuentes</h3>
           <p>Hemos recopilado las preguntas más comunes sobre el proceso de denuncia, privacidad, seguimiento y más.</p>
-          <a href="#preguntas-frecuentes" class="faq-cta-button">
+          <a href="{% url 'denuncias:faq' %}" class="faq-cta-button">
             <span>Ver preguntas frecuentes</span>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 18l6-6-6-6"/>
@@ -1384,7 +1523,7 @@ html { scroll-padding-top: var(--sticky-header-offset); }
   </div>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
   (function(){
     const OFFSET = 120;
     document.querySelectorAll('.nav-link[href^="#"]').forEach(a => {

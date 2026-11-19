@@ -5,6 +5,10 @@ __pycache__/
 
 # Virtual environments
 .venv/
+.venv*/
+.venv-mac/
+.venv312/
+.py312/
 .env/
 
 # Django
@@ -15,8 +19,13 @@ media/
 # Environment variables
 .env
 
+# Deploy / carpetas anidadas accidentales
+.vercel/
+/CanalG/
+
 # VSCode / Trae
 .vscode/
+.idea/
 
 # Windows
 Thumbs.db
@@ -24,3 +33,9 @@ desktop.ini
 
 # Mac
 .DS_Store
+
+# Backups y artefactos obsoletos (evitar versionar código antiguo)
+*.bak
+*.orig
+*_backup_*
+*.removed.html

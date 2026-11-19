@@ -150,7 +150,7 @@
 </div>
 {% endblock %}
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   var c = document.getElementById('btn-clear');
   if(c){ c.addEventListener('click', function(){ var f = c.closest('form'); if(f){ f.reset(); } window.location.href = window.location.pathname; }); }

@@ -11,6 +11,126 @@
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/favicon-180.png' %}">
   {% block extra_head %}{% endblock %}
   <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
+  <style>
+    .footer-credits-trigger {
+      padding: 0;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      font: inherit;
+      cursor: inherit;
+    }
+    .footer-credits-trigger:hover { color: inherit; text-decoration: none; }
+    /* El PNG del logo es cuadrado y trae mucho margen transparente: con esta
+       caja de proporción ~3.4:1 el gráfico visible llena casi todo el alto. */
+    .header:not(.admin-header) .logo-img {
+      width: 172px;
+      height: 50px !important;
+      object-fit: cover;
+      object-position: center;
+    }
+    .header:not(.admin-header) .logo-text { font-size: 1.7rem; }
+    @media (max-width: 1200px) {
+      .header:not(.admin-header) .container { flex-wrap: wrap; row-gap: .25rem; }
+      .header:not(.admin-header) nav { flex-basis: 100%; width: 100%; margin: 0; }
+      .header:not(.admin-header) .nav-links { justify-content: center; }
+    }
+    .credits-dialog {
+      box-sizing: border-box;
+      position: fixed;
+      inset: 0;
+      margin: auto;
+      width: min(92vw, 440px);
+      max-height: calc(100dvh - 2rem);
+      padding: 2rem;
+      border: 1px solid #dce6f1;
+      border-radius: 24px;
+      color: #19324d;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(4, 23, 45, .28);
+      overflow-y: auto;
+    }
+    @media (max-width: 640px) {
+      .header:not(.admin-header) .logo-img {
+        width: 138px;
+        height: 40px !important;
+      }
+      .header:not(.admin-header) .logo { gap: .5rem; }
+      .header:not(.admin-header) .logo-text { font-size: 1.2rem; }
+      .credits-dialog { padding: 1.35rem; }
+    }
+    .credits-dialog::backdrop { background: rgba(5, 21, 39, .62); backdrop-filter: blur(5px); }
+    .credits-dialog-head { display: flex; justify-content: flex-end; }
+    .credits-dialog-close {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      color: #52677d;
+      background: #f0f4f8;
+      font-size: 1.35rem;
+      cursor: pointer;
+    }
+    .credits-dialog-content { padding: .35rem .35rem .65rem; text-align: center; }
+    .credits-dialog-mark {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 1rem;
+      border-radius: 18px;
+      color: #fff;
+      background: linear-gradient(135deg, #07335e, #087db7);
+      font-size: 1.35rem;
+      font-weight: 800;
+    }
+    .credits-dialog h2 { margin: 0; color: #123456; font-size: 1.45rem; }
+    .credits-dialog p { margin: .7rem 0 1.3rem; color: #65768a; line-height: 1.6; }
+    .credits-studio {
+      display: block;
+      padding-top: 1rem;
+      border-top: 1px solid #e8edf3;
+      color: #075a99;
+      font-size: .92rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .cookie-notice {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9500;
+      padding: 1rem 1.25rem;
+      color: #e6eefb;
+      background: #0b2545;
+      box-shadow: 0 -8px 24px rgba(4, 23, 45, .3);
+    }
+    .cookie-notice__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem 1.25rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .cookie-notice__text {
+      flex: 1 1 320px;
+      margin: 0;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+    .cookie-notice__actions { display: flex; gap: .5rem; }
+    @media (max-width: 640px) {
+      .cookie-notice__inner { flex-direction: column; align-items: stretch; }
+      .cookie-notice__actions { justify-content: flex-end; }
+    }
+  </style>
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <header class="header {% block header_class %}{% endblock %}">
@@ -19,7 +139,7 @@
         <img src="{% static 'images/gsi-logo.png' %}" alt="Logo" class="logo-img">
         <span class="logo-text">{% block brand_text %}Canal de denuncias{% endblock %}</span>
       </a>
-      <nav>
+      <nav aria-label="Navegación principal">
         <ul class="nav-links">
           <li><a href="{% url 'denuncias:submit_complaint' %}">¡Quiero denunciar!</a></li>
           <li><a href="{% url 'denuncias:lookup_complaint' %}">Consultar denuncia</a></li>
@@ -39,11 +159,70 @@
 
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2025 Canal de denuncias. Sistema seguro y confidencial para reportar irregularidades.</p>
+      <p><button class="footer-credits-trigger" type="button" aria-haspopup="dialog">&copy; 2025 Canal de denuncias</button>. Sistema seguro y confidencial para reportar irregularidades.</p>
     </div>
   </footer>
+  <dialog class="credits-dialog" id="site-credits" aria-labelledby="site-credits-title">
+    <div class="credits-dialog-head">
+      <form method="dialog"><button class="credits-dialog-close" aria-label="Cerrar créditos">&times;</button></form>
+    </div>
+    <div class="credits-dialog-content">
+      <span class="credits-dialog-mark" aria-hidden="true">GSI</span>
+      <h2 id="site-credits-title">Créditos</h2>
+      <p>Sitio web creado, diseñado y desarrollado integralmente por el Ing. Martínez León.</p>
+      <span class="credits-studio">Mayro Studios</span>
+    </div>
+  </dialog>
+  <div class="cookie-notice" id="cookieNotice" role="region" aria-label="Aviso de uso de cookies" hidden>
+    <div class="cookie-notice__inner">
+      <p class="cookie-notice__text">
+        Este sitio utiliza cookies propias necesarias para su correcto funcionamiento y para recordar tus preferencias.
+        Al usar el canal aceptas su uso. Consulta el <a href="{% url 'denuncias:submit_complaint' %}" style="color:#9ec5ff;">Aviso de Privacidad</a> para más información.
+      </p>
+      <div class="cookie-notice__actions">
+        <button type="button" class="btn btn-primary" id="cookieNoticeAccept">Aceptar</button>
+      </div>
+    </div>
+  </div>
   {% include 'denuncias/chatbot_widget.html' %}
-  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/main.js' %}?v={% now 'U' %}"></script>
+  <script nonce="{{ csp_nonce }}">
+    (() => {
+      const trigger = document.querySelector('.footer-credits-trigger');
+      const dialog = document.getElementById('site-credits');
+      if (!trigger || !dialog) return;
+
+      let clicks = 0;
+      trigger.addEventListener('click', () => {
+        clicks += 1;
+        if (clicks === 8) {
+          clicks = 0;
+          dialog.showModal();
+        }
+      });
+      dialog.addEventListener('click', event => {
+        if (event.target === dialog) dialog.close();
+      });
+    })();
+  </script>
+  <script nonce="{{ csp_nonce }}">
+    (() => {
+      const notice = document.getElementById('cookieNotice');
+      const accept = document.getElementById('cookieNoticeAccept');
+      if (!notice || !accept) return;
+
+      const storageKey = 'cookieNoticeAccepted';
+      let accepted = false;
+      try { accepted = window.localStorage.getItem(storageKey) === '1'; } catch (e) { accepted = false; }
+      if (accepted) return;
+
+      notice.hidden = false;
+      accept.addEventListener('click', () => {
+        try { window.localStorage.setItem(storageKey, '1'); } catch (e) { /* almacenamiento no disponible */ }
+        notice.hidden = true;
+      });
+    })();
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

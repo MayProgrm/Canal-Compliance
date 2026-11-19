@@ -27,23 +27,23 @@ Un sistema web para la gestión de denuncias con proceso para la autenticación 
 ## Requisitos del Sistema
 
 ### Requisitos Mínimos
-- Python 3.8 o superior
-- Django 5.1+
+- Python 3.12
+- Django 5.2 LTS
 - 512 MB RAM
 - 1 GB espacio en disco
 - Navegador web moderno
 
 ### Dependencias
 ```
-Django==5.1.4
-Pillow==10.4.0
-python-decouple==3.8
-django-crispy-forms==2.3
-crispy-bootstrap5==2024.2
-django-ratelimit==4.1.0
-gunicorn==21.2.0
-whitenoise==6.6.0
-psycopg2-binary==2.9.9
+Django>=5.2,<6
+Pillow>=9.0
+python-decouple>=3.8
+django-crispy-forms>=2.0
+crispy-bootstrap5>=0.7
+django-ratelimit>=4.0
+gunicorn>=20.0
+whitenoise>=6.0
+psycopg2-binary>=2.9
 ```
 
 ## Instalación y Configuración

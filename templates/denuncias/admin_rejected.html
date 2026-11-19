@@ -136,7 +136,7 @@
 </div>
 {% endblock %}
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function(){
   var input = document.getElementById('rejected-search');
   var body = document.getElementById('rejected-body');

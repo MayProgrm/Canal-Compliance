@@ -1,0 +1,458 @@
+<resources>
+    <string name="app_name">Canal GSI</string>
+
+    <!-- Menú lateral -->
+    <string name="drawer_subtitle">Gestión segura e íntegra</string>
+    <string name="menu_open">Abrir menú</string>
+    <string name="nav_home">Página principal</string>
+    <string name="nav_report">¡Quiero denunciar!</string>
+    <string name="nav_track">Consultar denuncia</string>
+    <string name="nav_guide">Guía de uso</string>
+    <string name="nav_faq">Preguntas frecuentes</string>
+    <string name="nav_library">Biblioteca GSI</string>
+    <string name="drawer_footer">Versión 1.0 · Canal GSI</string>
+    <string name="easter_egg_title">Créditos</string>
+    <string name="easter_egg_credits">Creado y desarrollado por Ing. Martinez Leon</string>
+    <string name="easter_egg_studio">Mayro Studios</string>
+    <string name="easter_egg_close">Cerrar</string>
+
+    <!-- Página principal -->
+    <string name="home_eyebrow">CANAL OFICIAL DE DENUNCIAS</string>
+    <string name="home_title">Canal GSI: Gestión segura e íntegra.</string>
+    <string name="home_subtitle">Espacio confidencial para informar conductas que atenten contra la ética, la transparencia y la integridad de nuestra organización.</string>
+    <string name="home_cta_report">¡Quiero denunciar!</string>
+    <string name="home_cta_track">Consultar denuncia</string>
+
+    <string name="home_confidentiality_title">Confidencialidad garantizada</string>
+    <string name="home_confidentiality_body">Puede reportar de forma anónima. Su identidad y la información compartida se tratan con total reserva.</string>
+
+    <string name="home_how_title">¿Cómo funciona?</string>
+    <string name="home_how_1_title">¿Qué es?</string>
+    <string name="home_how_1_body">El Canal GSI es el medio oficial y confidencial para reportar hechos que puedan constituir una falta a la ética o a las normas de la organización.</string>
+    <string name="home_how_2_title">Procedimiento para informar</string>
+    <string name="home_how_2_body">Complete el formulario describiendo los hechos de forma clara y precisa, con la mayor cantidad de detalles posible.</string>
+    <string name="home_how_3_title">Generar reporte y consulta</string>
+    <string name="home_how_3_body">Al enviar su reporte recibirá un número de folio y usted define una contraseña. Consérvelos, ya que le permitirán dar seguimiento a su caso.</string>
+    <string name="home_how_4_title">Da seguimiento</string>
+    <string name="home_how_4_body">Ingrese su folio y su contraseña en “Consultar denuncia” para conocer el estado y las acciones realizadas sobre su reporte.</string>
+
+    <string name="home_types_title">Tipos de reporte</string>
+    <string name="home_type_inquietud_title">Inquietud</string>
+    <string name="home_type_inquietud_body">Situación que genera duda o desconfianza y que requiere una aclaración oportuna.</string>
+    <string name="home_type_denuncia_title">Denuncia</string>
+    <string name="home_type_denuncia_body">Reporte de una conducta que podría constituir una falta grave, un acto de corrupción o un delito.</string>
+
+    <!-- Guía de uso -->
+    <string name="guide_intro_title">Introducción del canal</string>
+    <string name="guide_intro_body">El Canal GSI es el medio oficial de la organización para informar conductas contrarias a la ética, a las normas internas y a la ley. Es un espacio seguro, confidencial y disponible para todas las personas que forman parte de la institución.</string>
+    <string name="guide_intro_purpose_title">Propósito</string>
+    <string name="guide_intro_purpose_body">Recibir, atender y dar seguimiento a los reportes sobre posibles faltas a la integridad, mediante un proceso claro, imparcial y documentado.</string>
+    <string name="guide_intro_scope_title">Alcance</string>
+    <string name="guide_intro_scope_body">Aplica a todo el personal, proveedores, contratistas y terceros que interactúen con la organización, sin importar su puesto, antigüedad o ubicación.</string>
+    <string name="guide_intro_principles_title">Principios</string>
+    <string name="guide_intro_principles_body">Confidencialidad, imparcialidad, buena fe, cero represalias y respeto a la dignidad de todas las personas involucradas.</string>
+
+    <string name="guide_rights_title">Tus derechos</string>
+    <string name="guide_rights_confidentiality_title">Confidencialidad</string>
+    <string name="guide_rights_confidentiality_body">Tu identidad y la información que compartas se resguardan con estrictas medidas de seguridad. Puedes reportar de forma anónima si así lo prefieres.</string>
+    <string name="guide_rights_protection_title">Protección</string>
+    <string name="guide_rights_protection_body">No se permiten represalias de ningún tipo contra quien reporta de buena fe. Cualquier acto de retaliación será sancionado.</string>
+    <string name="guide_rights_heard_title">Ser escuchado</string>
+    <string name="guide_rights_heard_body">Tienes derecho a que tu reporte sea recibido, analizado y atendido, y a conocer el estado de tu caso mediante tu folio y tu contraseña.</string>
+
+    <string name="guide_commitments_title">Nuestros compromisos</string>
+    <string name="guide_commitments_impartiality_title">Imparcialidad</string>
+    <string name="guide_commitments_impartiality_body">Cada reporte se analiza con objetividad, sin favoritismos ni conflictos de interés. Se evalúan los hechos, no las personas.</string>
+    <string name="guide_commitments_process_title">Debido proceso</string>
+    <string name="guide_commitments_process_body">Toda persona señalada se presume inocente y tiene derecho a ser escuchada y a aportar pruebas antes de cualquier determinación.</string>
+    <string name="guide_commitments_transparency_title">Transparencia</string>
+    <string name="guide_commitments_transparency_body">Informamos el avance del caso a través del seguimiento en línea y documentamos cada etapa del procedimiento.</string>
+
+    <string name="guide_what_title">Qué puedes reportar</string>
+    <string name="guide_what_yes_title">Sí puedes reportar</string>
+    <string-array name="guide_what_yes_items">
+        <item>Acoso y discriminación: acoso laboral o sexual, hostigamiento y discriminación.</item>
+        <item>Conflictos y ética: conflictos de interés e incumplimiento del código de ética.</item>
+        <item>Datos y seguridad: protección de datos, seguridad de la información y seguridad laboral.</item>
+        <item>Fraude y cumplimiento: soborno, extorsión, malversación, blanqueo de capitales y uso indebido de recursos.</item>
+        <item>Competencia: infracciones del derecho de la competencia.</item>
+        <item>Situaciones que pongan en riesgo la seguridad o la reputación de la organización.</item>
+    </string-array>
+    <string name="guide_what_no_title">No es el canal para</string>
+    <string-array name="guide_what_no_items">
+        <item>Solicitudes de empleo, vacantes o temas de reclutamiento.</item>
+        <item>Dudas sobre nómina, prestaciones o trámites administrativos.</item>
+        <item>Solicitudes de soporte técnico o incidencias de sistemas.</item>
+        <item>Inconformidades comerciales o de atención al cliente.</item>
+    </string-array>
+
+    <string name="guide_how_title">Cómo reportar</string>
+    <string name="guide_how_body">El proceso es sencillo y puedes realizarlo en cualquier momento desde la aplicación.</string>
+    <string name="guide_how_step1_title">Paso 1. Ingresa los hechos</string>
+    <string name="guide_how_step1_body">Selecciona el tipo de reporte y describe lo ocurrido de forma clara: qué pasó, cuándo, dónde y quién participó.</string>
+    <string name="guide_how_step2_title">Paso 2. Aporta la información</string>
+    <string name="guide_how_step2_body">Incluye fechas, lugares, áreas involucradas y, si cuentas con ellos, evidencias o documentos de apoyo.</string>
+    <string name="guide_how_step3_title">Paso 3. Envía tu reporte</string>
+    <string name="guide_how_step3_body">Al enviarlo, el sistema generará un folio y tú defines una contraseña. Guárdalos: son tu llave para dar seguimiento.</string>
+    <string name="guide_how_step4_title">Paso 4. Confirmación</string>
+    <string name="guide_how_step4_body">Recibirás la confirmación de que tu reporte fue recibido y turnado al área responsable de su análisis.</string>
+
+    <string name="guide_after_title">Después de reportar</string>
+    <string name="guide_after_body">Una vez recibido el reporte, el equipo responsable realiza una revisión preliminar para determinar su procedencia y el curso de acción.</string>
+    <string name="guide_after_stages_title">Etapas del proceso</string>
+    <string-array name="guide_after_stages_items">
+        <item>Revisión preliminar del reporte y clasificación del caso.</item>
+        <item>Asignación a un analista independiente y libre de conflictos de interés.</item>
+        <item>Investigación, recolección de evidencia y entrevistas si son necesarias.</item>
+        <item>Determinación, medidas correctivas y cierre documentado del caso.</item>
+    </string-array>
+
+    <string name="guide_tracking_title">Seguimiento</string>
+    <string name="guide_tracking_online_title">Consulta en línea</string>
+    <string name="guide_tracking_online_body">Ingresa a “Consultar denuncia” con tu folio y tu contraseña para revisar el estado de tu reporte en cualquier momento.</string>
+    <string name="guide_tracking_updates_title">Actualizaciones</string>
+    <string name="guide_tracking_updates_body">El estado se actualiza conforme avanza el caso y podrás consultarlo en la línea de tiempo de tu reporte.</string>
+    <string name="guide_tracking_status_title">Estados</string>
+    <string name="guide_tracking_status_body">Los estados posibles son: Recibido, En revisión, En investigación, Resolución y Cerrado.</string>
+
+    <string name="guide_glossary_title">Glosario de términos</string>
+    <string name="guide_glossary_report_title">Reporte</string>
+    <string name="guide_glossary_report_body">Comunicación de un hecho que podría constituir una falta a la ética o a las normas; puede ser inquietud o denuncia.</string>
+    <string name="guide_glossary_reporter_title">Denunciante</string>
+    <string name="guide_glossary_reporter_body">Persona que presenta un reporte a través del canal, con o sin identificación.</string>
+    <string name="guide_glossary_confidentiality_title">Confidencialidad</string>
+    <string name="guide_glossary_confidentiality_body">Deber de resguardar la identidad del denunciante y la información del caso.</string>
+    <string name="guide_glossary_retaliation_title">Represalia</string>
+    <string name="guide_glossary_retaliation_body">Cualquier acto de perjuicio derivado de haber presentado un reporte de buena fe.</string>
+    <string name="guide_glossary_due_process_title">Debido proceso</string>
+    <string name="guide_glossary_due_process_body">Conjunto de garantías que aseguran un trato justo a todas las partes involucradas.</string>
+    <string name="guide_glossary_good_faith_title">Buena fe</string>
+    <string name="guide_glossary_good_faith_body">Actuación honesta de quien reporta, aun cuando los hechos no puedan comprobarse.</string>
+    <string name="guide_glossary_code_title">Folio de consulta</string>
+    <string name="guide_glossary_code_body">Número único, formado por letras y números, que se entrega al enviar un reporte y que, junto con la contraseña, permite darle seguimiento.</string>
+    <string name="guide_lead_title">Guía de uso</string>
+    <string name="guide_lead_body">Todo lo que necesitas saber sobre el canal: cómo funciona, qué puedes reportar y cómo damos seguimiento a tu caso. Toca cada apartado para ver su contenido.</string>
+
+    <!-- Preguntas frecuentes -->
+    <string name="faq_intro_title">Preguntas frecuentes</string>
+    <string name="faq_intro_body">Resolvemos las dudas más comunes sobre el canal y el proceso de reporte. Toca cada pregunta para ver la respuesta.</string>
+    <string name="faq_q1">¿Quién puede utilizar el canal?</string>
+    <string name="faq_a1">Cualquier persona que forme parte de la organización o que se relacione con ella: colaboradores, proveedores, contratistas y terceros.</string>
+    <string name="faq_q2">¿Puedo presentar un reporte de forma anónima?</string>
+    <string name="faq_a2">Sí. No es obligatorio identificarte. Si decides hacerlo, tus datos se mantienen bajo estrictas medidas de confidencialidad.</string>
+    <string name="faq_q3">¿Qué información debo incluir en mi reporte?</string>
+    <string name="faq_a3">Describe qué ocurrió, cuándo, dónde y quiénes participaron. Cuanto más clara y detallada sea la información, más fácil será atender el caso.</string>
+    <string name="faq_q4">¿Cómo se protege mi identidad?</string>
+    <string name="faq_a4">El acceso a la información está restringido a las personas responsables del análisis y se rige por el deber de confidencialidad.</string>
+    <string name="faq_q5">¿Puedo adjuntar documentos o evidencias?</string>
+    <string name="faq_a5">Sí. Puedes acompañar tu reporte con archivos, imágenes o cualquier elemento que ayude a comprender mejor lo ocurrido.</string>
+    <string name="faq_q6">¿Qué sucede después de enviar mi reporte?</string>
+    <string name="faq_a6">Se realiza una revisión preliminar para determinar su procedencia. Si corresponde, se asigna a un analista y se inicia la investigación.</string>
+    <string name="faq_q7">¿Cómo puedo saber en qué va mi reporte?</string>
+    <string name="faq_a7">Al enviarlo recibirás un folio. Con él y tu contraseña podrás revisar el estado y los avances desde la sección “Consultar denuncia”.</string>
+    <string name="faq_q8">¿Qué debo hacer si sufro represalias?</string>
+    <string name="faq_a8">Reporta de inmediato cualquier acto de represalia. Está prohibido y es sancionado; nadie puede perjudicarte por haber informado de buena fe.</string>
+    <string name="faq_q9">¿Puedo reportar hechos que le ocurrieron a otra persona?</string>
+    <string name="faq_a9">Sí. Puedes informar sobre situaciones que afecten a terceros; solo procura describir los hechos con la mayor precisión posible.</string>
+    <string name="faq_q10">¿Qué ocurre si mi reporte resulta ser un malentendido?</string>
+    <string name="faq_a10">Informar de buena fe no genera consecuencias negativas. Si los hechos no se confirman, el caso se cierra con la debida documentación.</string>
+    <string name="faq_q11">¿Cuánto tiempo toma obtener una respuesta?</string>
+    <string name="faq_a11">La revisión preliminar suele ser rápida; el tiempo total depende de la complejidad del caso. Recibirás avisos en tu seguimiento.</string>
+    <string name="faq_q12">¿El canal sustituye a otras instancias?</string>
+    <string name="faq_a12">No. Es una vía complementaria para informar conductas contrarias a la ética y a las normas; no reemplaza los procedimientos internos aplicables.</string>
+
+    <!-- Biblioteca GSI -->
+    <string name="library_lead_title">Biblioteca GSI</string>
+    <string name="library_lead_body">Espacio de consulta con los documentos que rigen nuestra actuación, material visual de integridad y las novedades de la aplicación.</string>
+    <string name="library_docs_title">Documentos principales</string>
+    <string name="library_docs_subtitle">Consulta los documentos que rigen nuestra actuación.</string>
+    <string name="library_doc_classification_title">Guía de clasificación</string>
+    <string name="library_doc_classification_body">Criterios para identificar y clasificar los reportes según su naturaleza y gravedad.</string>
+    <string name="library_doc_ethics_title">Código de ética</string>
+    <string name="library_doc_ethics_body">Principios y valores que orientan la conducta de todas las personas de la organización.</string>
+    <string name="library_doc_policies_title">Políticas complementarias</string>
+    <string name="library_doc_policies_body">Normas de apoyo sobre conflictos de interés, regalos, uso de recursos y otras materias.</string>
+    <string name="library_doc_privacy_title">Aviso de privacidad</string>
+    <string name="library_doc_privacy_body">Tratamiento y protección de los datos personales que se comparten a través del canal.</string>
+
+    <string name="library_infographics_title">Infografías y anuncios</string>
+    <string name="library_infographics_subtitle">Material visual para reforzar la cultura de integridad.</string>
+    <string name="library_info_report_title">¿Cómo reportar en 4 pasos?</string>
+    <string name="library_info_report_body">Resumen visual del proceso para presentar un reporte.</string>
+    <string name="library_info_retaliation_title">Cero represalias</string>
+    <string name="library_info_retaliation_body">Recordatorio de que informar de buena fe está protegido.</string>
+    <string name="library_info_confidentiality_title">Confidencialidad, siempre</string>
+    <string name="library_info_confidentiality_body">Cómo resguardamos tu identidad y la información del caso.</string>
+    <string name="library_info_campaign_title">Campaña de integridad</string>
+    <string name="library_info_campaign_body">Anuncio de las acciones de difusión vigentes.</string>
+
+    <string name="library_updates_title">Actualizaciones recientes</string>
+    <string name="library_updates_subtitle">Novedades y mejoras que recibe la aplicación.</string>
+    <string name="library_update_1_title">Versión 1.0 · Lanzamiento inicial</string>
+    <string name="library_update_1_body">Se habilita el canal con el registro de reportes, el seguimiento por folio y contraseña, y la guía de uso.</string>
+    <string name="library_update_2_title">Guía de uso ampliada</string>
+    <string name="library_update_2_body">Se incorporan los derechos, los compromisos y el glosario de términos.</string>
+    <string name="library_update_3_title">Nueva Biblioteca GSI</string>
+    <string name="library_update_3_body">Espacio con documentos principales, infografías, anuncios y novedades de la app.</string>
+    <string name="library_update_4_title">Mejoras de accesibilidad</string>
+    <string name="library_update_4_body">Ajustes de tipografía, espaciado y contraste para una lectura más cómoda.</string>
+
+    <!-- ¡Quiero denunciar! -->
+    <string name="report_veracity_title">Declaración de veracidad</string>
+    <string name="report_veracity_body">Declaro que la información que proporcionaré es verdadera y que la presento de buena fe, con el fin de contribuir a aclarar los hechos. Entiendo que aportar información falsa o actuar de mala fe puede tener consecuencias.</string>
+    <string name="report_cancel">Cancelar</string>
+    <string name="report_accept_continue">Aceptar y continuar</string>
+    <string name="report_accept">Aceptar</string>
+    <string name="report_close">Cerrar</string>
+
+    <string name="report_privacy_title">Aviso de privacidad</string>
+    <string name="report_privacy_intro">Selecciona el aviso de tu empresa para abrirlo. Basta con consultar y aceptar uno de los avisos para continuar.</string>
+    <string name="report_privacy_check">Acepto el aviso de privacidad</string>
+    <string name="report_privacy_hint">Abre al menos un aviso para poder aceptarlo.</string>
+    <string name="report_privacy_viewer_missing">No hay una aplicación disponible para abrir el PDF del aviso.</string>
+
+    <string name="report_notice_integral_title">Aviso de privacidad integral</string>
+    <string name="report_notice_integral_body">Los datos personales que compartas a través del canal se utilizan únicamente para recibir, analizar y dar seguimiento a tu reporte. No se emplean con fines distintos ni se comparten con terceros ajenos al procedimiento.</string>
+    <string name="report_notice_sensitive_title">Tratamiento de datos sensibles</string>
+    <string name="report_notice_sensitive_body">La descripción de los hechos puede contener datos sensibles. Su tratamiento se realiza con medidas de seguridad administrativas y técnicas, y solo tiene acceso el personal responsable del análisis.</string>
+    <string name="report_notice_anonymous_title">Reporte anónimo</string>
+    <string name="report_notice_anonymous_body">Si presentas tu reporte de forma anónima no se solicitan datos que te identifiquen; la información se utiliza exclusivamente para atender el caso.</string>
+    <string name="report_notice_rights_title">Derechos sobre tus datos</string>
+    <string name="report_notice_rights_body">Puedes solicitar el acceso, la rectificación, la cancelación o la oposición al tratamiento de tus datos, así como revocar tu consentimiento, a través de los medios de contacto indicados en el aviso.</string>
+
+    <string name="report_form_lead_title">Cuestionario de reporte</string>
+    <string name="report_form_lead_body">Responde las siguientes preguntas para iniciar tu reporte. La información que proporciones se trata con confidencialidad.</string>
+
+    <string name="report_step_action_title">¿Qué acción vas a realizar?</string>
+    <string name="report_action_denuncia_title">Denuncia</string>
+    <string name="report_action_denuncia_body">Conducta que podría constituir una falta grave, un acto de corrupción o un delito.</string>
+    <string name="report_action_inquietud_title">Inquietud</string>
+    <string name="report_action_inquietud_body">Situación que genera duda o desconfianza y que requiere una aclaración.</string>
+
+    <string name="report_step_relation_title">¿Qué relación tienes con la empresa?</string>
+    <string name="report_relation_colaborador">Colaborador</string>
+    <string name="report_relation_cliente">Cliente</string>
+    <string name="report_relation_proveedor">Proveedor</string>
+
+    <string name="report_step_mode_title">¿Cómo deseas enviar tu reporte?</string>
+    <string name="report_mode_anonymous_title">De forma anónima</string>
+    <string name="report_mode_anonymous_body">No se solicitan datos que te identifiquen.</string>
+    <string name="report_mode_identified_title">Con mis datos</string>
+    <string name="report_mode_identified_body">Compartes tu identidad; se resguarda bajo confidencialidad.</string>
+
+    <string name="report_step_password_title">Contraseña de consulta</string>
+    <string name="report_password_helper">La usarás para consultar tu reporte. Guárdala, ya que no se puede recuperar.</string>
+    <string name="report_password_label">Contraseña de consulta</string>
+    <string name="report_password_confirm_label">Confirmar contraseña</string>
+    <string name="report_password_mismatch">Las contraseñas no coinciden.</string>
+    <string name="report_password_show">Mostrar contraseña</string>
+    <string name="report_password_hide">Ocultar contraseña</string>
+
+    <string name="report_pending_ok">Entendido</string>
+
+    <!-- ¡Quiero denunciar! · Datos de contacto -->
+    <string name="report_personal_title">Datos de contacto</string>
+    <string name="report_personal_intro">Todos los campos de esta sección son obligatorios.</string>
+    <string name="report_personal_name">Nombre y apellidos</string>
+    <string name="report_personal_email">Correo electrónico</string>
+    <string name="report_personal_phone">Teléfono o Red</string>
+    <string name="report_personal_employee">Número de empleado</string>
+    <string name="report_personal_position">Puesto en la empresa</string>
+
+    <!-- ¡Quiero denunciar! · Datos de la denuncia -->
+    <string name="report_section_report_title">Datos de la denuncia</string>
+    <string name="report_step_category_title">¿Qué tipo de denuncia deseas realizar?</string>
+    <string name="report_step_reason_title">¿Cuál es el motivo de tu denuncia?</string>
+
+    <string name="report_category_harassment_title">Acoso y discriminación</string>
+    <string name="report_reason_labor_harassment">Acoso laboral</string>
+    <string name="report_reason_sexual_harassment">Acoso sexual</string>
+    <string name="report_reason_discrimination">Discriminación</string>
+    <string name="report_reason_labor_hostility">Hostigamiento laboral</string>
+    <string name="report_reason_sexual_hostility">Hostigamiento sexual</string>
+    <string name="report_reason_illegal_practices">Prácticas laborales ilegales</string>
+
+    <string name="report_category_conflicts_title">Conflictos y ética</string>
+    <string name="report_reason_conflict_of_interest">Conflictos de interés</string>
+    <string name="report_reason_internal_policy">Violación de la política interna (código de ética)</string>
+
+    <string name="report_category_data_title">Datos y seguridad</string>
+    <string name="report_reason_data_protection">Incumplimiento de la normativa de protección de datos</string>
+    <string name="report_reason_health_safety">Incumplimientos graves de seguridad y salud laboral</string>
+    <string name="report_reason_information_security">Violación de la seguridad de la información</string>
+
+    <string name="report_category_fraud_title">Fraude y cumplimiento</string>
+    <string name="report_reason_money_laundering">Blanqueo de capitales</string>
+    <string name="report_reason_extortion">Extorsión</string>
+    <string name="report_reason_embezzlement">Malversación o robo</string>
+    <string name="report_reason_bribery">Soborno</string>
+    <string name="report_reason_asset_misuse">Uso indebido de activos o recursos de la empresa</string>
+    <string name="report_reason_fraud_corruption">Fraude y corrupción</string>
+
+    <string name="report_category_competition_title">Competencia</string>
+    <string name="report_reason_competition_law">Infracciones de derecho de la competencia</string>
+
+    <!-- ¡Quiero denunciar! · Datos del hecho -->
+    <string name="report_section_event_title">Datos del hecho</string>
+    <string name="report_fact_state">Estado</string>
+    <string name="report_fact_branch">Sucursal</string>
+    <string name="report_select_state">Selecciona un estado</string>
+    <string name="report_select_branch">Selecciona una sucursal</string>
+    <string name="report_select_state_first">Primero selecciona un estado</string>
+    <string name="report_fact_date">Fecha del hecho</string>
+    <string name="report_fact_time">Hora del hecho</string>
+    <string name="report_fact_date_pick">Seleccionar fecha</string>
+    <string name="report_fact_time_pick">Seleccionar hora</string>
+    <string name="report_step_actor_title">¿Sabes quién realizó esta acción?</string>
+    <string name="report_actor_name">Nombre del denunciado (opcional)</string>
+    <string name="report_actor_employee">Número de empleado del denunciado (opcional)</string>
+    <string name="report_actor_area">Área o puesto del denunciado (opcional)</string>
+    <string name="report_step_participation_title">¿Qué participación tuviste?</string>
+    <string name="report_participation_knowledge">Conocimiento</string>
+    <string name="report_participation_witness">Testigo</string>
+    <string name="report_participation_victim">Víctima</string>
+    <string name="report_step_witnesses_title">¿Hay testigos?</string>
+    <string name="report_witnesses_count">Número de testigos</string>
+    <string name="report_yes">Sí</string>
+    <string name="report_no">No</string>
+
+    <!-- ¡Quiero denunciar! · Descripción y evidencia -->
+    <string name="report_step_description_title">Descripción de los hechos</string>
+    <string name="report_description_body">Redacta lo sucedido con la mayor claridad y detalle posible.</string>
+    <string name="report_description_label">Describe lo sucedido</string>
+    <string name="report_step_evidence_title">Evidencia</string>
+    <string name="report_evidence_body">Adjunta documentos, archivos, imágenes, videos o audios que apoyen tu reporte.</string>
+    <string name="report_evidence_add">Adjuntar archivo</string>
+    <string name="report_evidence_remove">Quitar archivo</string>
+
+    <!-- ¡Quiero denunciar! · Preguntas adicionales -->
+    <string name="report_section_extra_title">Preguntas adicionales</string>
+    <string name="report_extra_intro">Estas preguntas son opcionales y ayudan a comprender mejor el caso.</string>
+    <string name="report_extra_opt_in_title">¿Deseas responder las preguntas adicionales?</string>
+    <string name="report_extra_recurrence_title">¿El hecho fue único o se repite?</string>
+    <string name="report_extra_recurrence_once">Hecho único</string>
+    <string name="report_extra_recurrence_repeated">Se repite</string>
+    <string name="report_extra_frequency_title">¿Cada cuánto ocurre?</string>
+    <string name="report_extra_frequency_label">Frecuencia con la que ocurre</string>
+    <string name="report_extra_risk_title">¿Existe algún riesgo inmediato?</string>
+    <string name="report_extra_reported_title">¿Lo has reportado antes?</string>
+    <string name="report_extra_medium_title">¿Por qué medio lo reportaste?</string>
+    <string name="report_extra_medium_label">Medio por el que lo reportaste</string>
+    <string name="report_extra_contact_title">¿Cómo prefieres que te contactemos?</string>
+    <string name="report_extra_contact_email">Correo electrónico</string>
+    <string name="report_extra_contact_phone">Teléfono</string>
+    <string name="report_extra_contact_any">Cualquiera de los dos</string>
+    <string name="report_extra_impact_title">Notas sobre el impacto</string>
+    <string name="report_extra_impact_label">¿Cómo te ha afectado esta situación?</string>
+
+    <!-- ¡Quiero denunciar! · Validación y envío -->
+    <string name="report_field_action">Acción a realizar</string>
+    <string name="report_field_relation">Relación con la empresa</string>
+    <string name="report_field_mode">Forma de envío del reporte</string>
+    <string name="report_field_password">Contraseña de consulta</string>
+    <string name="report_field_password_confirm">Confirmación de la contraseña</string>
+    <string name="report_field_category">Tipo de denuncia</string>
+    <string name="report_field_reason">Motivo de la denuncia</string>
+    <string name="report_field_state">Estado</string>
+    <string name="report_field_branch">Sucursal</string>
+    <string name="report_field_date">Fecha del hecho</string>
+    <string name="report_field_time">Hora del hecho</string>
+    <string name="report_field_actor">¿Sabes quién realizó esta acción?</string>
+    <string name="report_field_participation">Participación en el hecho</string>
+    <string name="report_field_witnesses">¿Hay testigos?</string>
+    <string name="report_field_description">Descripción de los hechos</string>
+    <string name="report_validation_title">Faltan datos por completar</string>
+    <string name="report_validation_body">Para enviar tu reporte completa los siguientes campos:</string>
+    <string name="report_submit">Enviar reporte</string>
+    <string name="report_submitting">Enviando…</string>
+    <string name="report_back_home">Volver al inicio</string>
+    <string name="report_submit_error_title">No se pudo enviar tu reporte</string>
+    <string name="report_submit_error_network">No pudimos conectar con el canal. Revisa tu conexión a internet e inténtalo de nuevo.</string>
+    <string name="report_submit_error_server">El canal no está disponible en este momento. Inténtalo de nuevo más tarde.</string>
+    <string name="report_submit_error_body">Ocurrió un problema al enviar tu reporte. Verifica tus datos e inténtalo de nuevo.</string>
+
+    <!-- ¡Quiero denunciar! · Comprobante de envío -->
+    <string name="report_success_bar_title">Comprobante</string>
+    <string name="report_success_title">Tu denuncia fue enviada exitosamente</string>
+    <string name="report_success_body">Gracias por tu confianza. En %1$s recibimos tu reporte y quedó registrado en el canal.</string>
+    <string name="report_success_receipt_title">Comprobante de denuncia</string>
+    <string name="report_success_copy_folio">Copiar folio</string>
+    <string name="report_success_folio_copied">Folio copiado al portapapeles</string>
+    <string name="report_success_folio_hint">Toca el folio para copiarlo</string>
+    <string name="report_success_qr_caption">Presenta este código como sustento de que tu reporte fue enviado.</string>
+    <string name="report_success_save_note">Guardar como nota</string>
+    <string name="report_success_note_subject">Comprobante de denuncia %1$s</string>
+    <string name="report_success_print">Imprimir comprobante</string>
+    <string name="report_success_track">Ir a consultar mi denuncia</string>
+    <string name="report_success_reminder_title">Recordatorio importante</string>
+    <string name="report_success_reminder_body">Si no guardas tu folio ahora, podrías perder el acceso al seguimiento y a la respuesta de tu caso. Es responsabilidad del denunciante guardar el folio correctamente.</string>
+    <string name="report_success_next_title">¿Qué sigue con tu folio?</string>
+    <string name="report_success_next_1">Guarda tu folio y tu contraseña en un lugar seguro.</string>
+    <string name="report_success_next_2">Tu reporte pasará a una revisión preliminar.</string>
+    <string name="report_success_next_3">Se investigarán los hechos y se recabará la información necesaria.</string>
+    <string name="report_success_next_4">Recibirás una resolución y una respuesta a tu caso.</string>
+
+    <!-- Consultar denuncia -->
+    <string name="track_intro_title">Consulta el estado de tu denuncia</string>
+    <string name="track_intro_body">Ingresa el número de folio y la contraseña que definiste al enviar tu reporte para conocer su estado y sus datos generales.</string>
+    <string name="track_folio_label">Número de folio</string>
+    <string name="track_folio_hint">A1B2C3</string>
+    <string name="track_password_label">Contraseña</string>
+    <string name="track_button">Consultar denuncia</string>
+    <string name="track_searching">Consultando…</string>
+    <string name="track_helper">La consulta se realiza con la información registrada en el panel del canal.</string>
+    <string name="track_error_title">Datos incompletos</string>
+    <string name="track_error_body">Ingresa el número de folio y la contraseña para consultar tu denuncia.</string>
+    <string name="track_not_found_title">No encontramos tu denuncia</string>
+    <string name="track_not_found_body">Verifica que el folio y la contraseña sean correctos e inténtalo de nuevo.</string>
+    <string name="track_invalid_password_title">Contraseña incorrecta</string>
+    <string name="track_invalid_password_body">La contraseña no coincide con el folio indicado. Verifícala e inténtalo de nuevo.</string>
+    <string name="track_network_title">Sin conexión</string>
+    <string name="track_network_body">No pudimos conectar con el canal. Revisa tu conexión a internet e inténtalo de nuevo.</string>
+    <string name="track_server_title">Servicio no disponible</string>
+    <string name="track_server_body">El canal no está disponible en este momento. Inténtalo de nuevo más tarde.</string>
+    <string name="track_result_title">Datos generales</string>
+    <string name="track_folio">Folio</string>
+    <string name="track_status">Estado</string>
+    <string name="track_sent_date">Fecha de envío</string>
+    <string name="track_action">Acción</string>
+    <string name="track_category">Tipo de denuncia</string>
+    <string name="track_reason">Motivo</string>
+    <string name="track_status_title">Estado del reporte</string>
+    <string name="track_next_title">¿Qué sigue?</string>
+    <string name="track_response_title">Respuesta del canal</string>
+    <string name="track_response_empty">Aún no hay una respuesta registrada para tu reporte. Te avisaremos por este medio cuando haya novedades.</string>
+    <string name="track_updates_title">Actualizaciones del caso</string>
+    <string name="track_files_title">Archivos adjuntos</string>
+    <string name="track_files_empty">No se adjuntaron archivos en este reporte.</string>
+    <string name="track_files_download">Descargar archivo</string>
+    <string name="track_chat_title">Conversación con el canal</string>
+    <string name="track_chat_placeholder">Escribe un mensaje…</string>
+    <string name="track_chat_send">Enviar mensaje</string>
+    <string name="track_chat_empty">Aún no hay mensajes en esta conversación.</string>
+    <string name="track_chat_error">No se pudo cargar la conversación. Reintentaremos automáticamente.</string>
+    <string name="track_privacy_title">Privacidad</string>
+    <string name="track_privacy_mode">Tipo de reporte</string>
+    <string name="track_privacy_anonymous">Anónimo</string>
+    <string name="track_privacy_identified">Con datos de contacto</string>
+    <string name="track_contact_title">Contacto</string>
+    <string name="track_contact_none">No se proporcionaron datos de contacto porque el reporte es anónimo.</string>
+    <string name="track_contact_name">Nombre</string>
+    <string name="track_contact_email">Correo</string>
+    <string name="track_contact_phone">Teléfono</string>
+    <string name="track_new_query">Consultar otro folio</string>
+    <string name="track_refresh">Actualizar</string>
+
+    <!-- Estados del reporte -->
+    <string name="track_status_received">Recibido</string>
+    <string name="track_status_review">En revisión</string>
+    <string name="track_status_investigation">En investigación</string>
+    <string name="track_status_resolution">Resolución</string>
+    <string name="track_status_closed">Cerrado</string>
+    <string name="track_next_received">Tu reporte pasará a una revisión preliminar para determinar su procedencia.</string>
+    <string name="track_next_review">El caso será asignado a un analista independiente y se iniciará la investigación.</string>
+    <string name="track_next_investigation">Se recaba la evidencia y se entrevista a las personas involucradas.</string>
+    <string name="track_next_resolution">Se determina el resultado del caso y se definen las medidas correspondientes.</string>
+    <string name="track_next_closed">El caso está cerrado y la resolución fue comunicada al denunciante.</string>
+    <string name="track_update_received">Recibimos tu reporte y quedó registrado en el canal.</string>
+</resources>

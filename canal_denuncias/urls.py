@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
 from denuncias import views as denuncias_views
-urlpatterns = [path('', RedirectView.as_view(pattern_name='denuncias:home'), name='root_redirect'), path('consultar-denuncia/', RedirectView.as_view(pattern_name='denuncias:lookup_complaint'), name='lookup_redirect'), path('denuncias/', include(('denuncias.urls', 'denuncias'), namespace='denuncias')), path('django-admin/', admin.site.urls)]
+urlpatterns = [path('', RedirectView.as_view(pattern_name='denuncias:home'), name='root_redirect'), path('consultar-denuncia/', RedirectView.as_view(pattern_name='denuncias:lookup_complaint'), name='lookup_redirect'), path('api/', include('denuncias.api.urls')), path('denuncias/', include(('denuncias.urls', 'denuncias'), namespace='denuncias')), path('django-admin/', admin.site.urls)]
 urlpatterns += [
     path('denuncias/consultar-denuncia/', denuncias_views.public_lookup_complaint, name='lookup_complaint'),
     path('denuncias/enviar-denuncia/', denuncias_views.public_submit_complaint, name='submit_complaint'),

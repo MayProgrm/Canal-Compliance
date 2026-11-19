@@ -1,29 +1,75 @@
 {% extends 'denuncias/admin_base.html' %}
 
-{% block title %}Perfil de usuario{% endblock %}
+{% block title %}{% if is_own_profile %}Mi perfil{% else %}Perfil de usuario{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="card-pro">
-    <div class="card-header">
-      <span class="card-title">Perfil del usuario</span>
+<div class="admin-dashboard-bg">
+  <div class="container">
+    <div class="admin-dashboard-card" style="margin-top:.75rem;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <h2>{% if is_own_profile %}Mi perfil{% else %}Perfil de {{ target_user.get_full_name|default:target_user.username }}{% endif %}</h2>
+        <p class="help-text">
+          {% if is_own_profile %}Revisa y actualiza tus datos de contacto y de la organización.{% else %}Revisa y actualiza los datos del usuario.{% endif %}
+        </p>
+      </div>
+      <div class="admin-dashboard-body">
+        <div class="profile-grid">
+          <div class="profile-item"><label>Usuario</label><span>{{ target_user.username }}</span></div>
+          <div class="profile-item"><label>Nombre</label><span>{{ target_user.get_full_name|default:"—" }}</span></div>
+          <div class="profile-item"><label>Correo</label><span>{{ target_user.email|default:"—" }}</span></div>
+          <div class="profile-item">
+            <label>Rol</label>
+            <span>
+              {% if target_user.is_superuser %}Superusuario
+              {% elif target_user.role == 'Delegador' or target_user.username == 'Delegador' %}Delegador
+              {% elif target_user.role|lower == 'actualizador' %}Actualizador
+              {% elif target_user.is_staff %}Analista
+              {% else %}{{ target_user.role|default:"—" }}{% endif %}
+            </span>
+          </div>
+          <div class="profile-item"><label>Empresa</label><span>{{ target_user.company|default:"—" }}</span></div>
+          <div class="profile-item"><label>Área</label><span>{{ target_user.area|default:"—" }}</span></div>
+          <div class="profile-item"><label>Sucursal</label><span>{{ target_user.branch|default:"—" }}</span></div>
+          <div class="profile-item"><label>Matrícula</label><span>{{ target_user.matricula|default:"—" }}</span></div>
+          <div class="profile-item"><label>Teléfono</label><span>{{ target_user.phone_number|default:"—" }}</span></div>
+          <div class="profile-item"><label>Orden de asignación</label><span>{{ target_user.assignment_position|default:"—" }}</span></div>
+          <div class="profile-item"><label>Estado</label><span>{% if target_user.is_active %}Activo{% else %}Inactivo{% endif %}</span></div>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="profile-grid">
-        <div class="profile-item"><label>Nombre</label><span>{{ target_user.get_full_name|default:target_user.username }}</span></div>
-        <div class="profile-item"><label>Correo</label><span>{{ target_user.email|default:"—" }}</span></div>
-        <div class="profile-item"><label>Empresa</label><span>{{ target_user.company|default:"—" }}</span></div>
-        <div class="profile-item"><label>Rol</label><span>{{ target_user.role|default:"—" }}</span></div>
-        <div class="profile-item"><label>Área</label><span>{{ target_user.area|default:"—" }}</span></div>
-        <div class="profile-item"><label>Sucursal</label><span>{{ target_user.branch|default:"—" }}</span></div>
-        <div class="profile-item"><label>Matrícula</label><span>{{ target_user.matricula|default:"—" }}</span></div>
-        <div class="profile-item"><label>Teléfono</label><span>{{ target_user.phone_number|default:"—" }}</span></div>
-        <div class="profile-item"><label>Orden de asignación</label><span>{{ target_user.assignment_position|default:"—" }}</span></div>
-        <div class="profile-item"><label>Estado</label><span>{% if target_user.is_active %}Activo{% else %}Inactivo{% endif %}</span></div>
+
+    <div class="admin-dashboard-card" style="margin-top:12px;">
+      <div class="admin-dashboard-header admin-dashboard-header--light">
+        <span class="card-title">Editar datos</span>
       </div>
-      <div class="actions" style="margin-top:12px;">
-        <a class="btn" href="{% url 'denuncias:dashboard' %}">Volver al dashboard</a>
+      <div class="admin-dashboard-body">
+        <form method="post" novalidate class="form-shell">
+          {% csrf_token %}
+          {% if profile_form.non_field_errors %}
+            <div class="form-errors">{% for err in profile_form.non_field_errors %}{{ err }}{% endfor %}</div>
+          {% endif %}
+          <div class="form-grid">
+            {% for field in profile_form %}
+              <div class="{% if field.name == 'email' or field.name == 'company' %}span-2{% endif %}">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% for err in field.errors %}<div class="validation-error">{{ err }}</div>{% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="form-footer">
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
       </div>
+    </div>
+
+    <div class="actions" style="margin-top:12px;">
+      {% if is_own_profile %}
+        <a class="btn btn-outline" href="{% if request.user.is_superuser %}{% url 'denuncias:dashboard' %}{% elif request.user.role|lower == 'actualizador' %}{% url 'denuncias:actualizador_dashboard' %}{% else %}{% url 'denuncias:dashboard' %}{% endif %}">Volver al panel</a>
+      {% else %}
+        <a class="btn btn-outline" href="{% url 'denuncias:admin_roles' %}">Volver a usuarios y roles</a>
+      {% endif %}
     </div>
   </div>
 </div>

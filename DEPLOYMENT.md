@@ -237,7 +237,7 @@ sudo crontab -e
 ### Dockerfile
 
 ```dockerfile
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -347,7 +347,7 @@ docker-compose logs -f web
 echo "web: gunicorn canal_denuncias.wsgi:application" > Procfile
 
 # Crear runtime.txt
-echo "python-3.11.0" > runtime.txt
+echo "python-3.12.0" > runtime.txt
 
 # Actualizar requirements.txt
 echo "dj-database-url==2.1.0" >> requirements.txt

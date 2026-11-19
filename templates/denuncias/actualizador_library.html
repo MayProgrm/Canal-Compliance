@@ -13,14 +13,6 @@
         <p class="help-text">Administra recursos visibles en la sección de Biblioteca (documentos, infografías y actualizaciones).</p>
       </div>
       <div class="admin-dashboard-body">
-        {% if messages %}
-          <ul class="messages">
-            {% for message in messages %}
-              <li class="message {{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-
         {% for kind, label, items in groups %}
           <div class="card-pro" style="margin-bottom:16px;">
             <div class="card-header">
@@ -60,7 +52,7 @@
                               {% csrf_token %}
                               <input type="hidden" name="action" value="delete">
                               <input type="hidden" name="item_id" value="{{ it.id }}">
-                              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este recurso?');">Eliminar</button>
+                              <button type="submit" class="btn btn-danger btn-sm" data-confirm="¿Eliminar este recurso?">Eliminar</button>
                             </form>
                           </div>
                         </td>

@@ -13,14 +13,6 @@
         <p class="help-text">Administra los PDFs por empresa.</p>
       </div>
       <div class="admin-dashboard-body">
-        {% if messages %}
-          <ul class="messages">
-            {% for message in messages %}
-              <li class="message {{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-
         <div class="card-pro" style="margin-bottom:16px;">
           <div class="card-header">
             <span class="card-title">Listado</span>
@@ -55,7 +47,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="notice_id" value="{{ n.id }}">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este aviso?');">Eliminar</button>
+                            <button type="submit" class="btn btn-danger btn-sm" data-confirm="¿Eliminar este aviso?">Eliminar</button>
                           </form>
                         </div>
                       </td>

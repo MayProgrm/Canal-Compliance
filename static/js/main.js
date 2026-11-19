@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initForms();
   initWarnOverlay();
   initPasswordToggle();
+  initConfirmActions();
 });
 
 function initAnimations() {
@@ -69,17 +70,19 @@ function initForms() {
   });
 
   document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', () => {
-      const submitButton = form.querySelector('button[type="submit"]');
-      if (submitButton) {
-        submitButton.setAttribute('data-original-text', submitButton.innerHTML);
-        submitButton.disabled = true;
-        submitButton.innerHTML = '⏳ Procesando...';
-        setTimeout(() => {
-          submitButton.disabled = false;
-          submitButton.innerHTML = submitButton.getAttribute('data-original-text') || 'Enviar';
-        }, 5000);
+    let submitting = false;
+    form.addEventListener('submit', (event) => {
+      // IMPORTANTE: no deshabilitar aquí el botón pulsado. Un control
+      // deshabilitado dentro del evento 'submit' se excluye del POST, por lo
+      // que las acciones que se distinguen por el nombre del botón
+      // (update_status, submit_plan, add_evidence, add_finding, submit_report,
+      // accept, reject, delegador_update_severity, assign_user) no se
+      // guardaban. Solo evitamos envíos duplicados con una bandera.
+      if (submitting) {
+        event.preventDefault();
+        return;
       }
+      submitting = true;
     });
   });
 
@@ -188,4 +191,21 @@ function initPasswordToggle(){
       input.setAttribute('type', isPwd ? 'text' : 'password');
     });
   } catch (e) {}
+}
+
+// Reemplaza los atributos inline onclick="return confirm(...)" / "return false"
+// por listeners, para no depender de 'unsafe-inline' en la CSP.
+function initConfirmActions(){
+  document.querySelectorAll('[data-confirm]').forEach(el => {
+    el.addEventListener('click', (event) => {
+      const message = el.getAttribute('data-confirm') || '¿Confirmas esta acción?';
+      if (!window.confirm(message)) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    });
+  });
+  document.querySelectorAll('[data-noop]').forEach(el => {
+    el.addEventListener('click', (event) => event.preventDefault());
+  });
 }
