@@ -21,8 +21,6 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -30,14 +28,28 @@ services:
       DEBUG: "False"
       SECRET_KEY: ${SECRET_KEY:-cambia-esta-clave-por-una-de-50-caracteres-minimo-0123456789}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:8000}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost}
       DATABASE_URL: postgresql://canal_user:${POSTGRES_PASSWORD:-password_seguro}@db:5432/canal_denuncias
       EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
-      # En producción detrás de un proxy con HTTPS deja estas opciones por defecto.
-      # Para probar por HTTP sin proxy, descomenta:
-      # SECURE_SSL_REDIRECT: "False"
-      # SESSION_COOKIE_SECURE: "False"
-      # CSRF_COOKIE_SECURE: "False"
+      # El trafico entra por Nginx (HTTP en esta configuracion de ejemplo).
+      # Al activar HTTPS en nginx.docker.conf, elimina estas 3 lineas.
+      SECURE_SSL_REDIRECT: "False"
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+    # Para depurar sin pasar por Nginx, descomenta:
+    # ports:
+    #   - "8000:8000"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.docker.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      - web
 
 volumes:
   postgres_data:
