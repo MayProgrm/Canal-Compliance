@@ -20,7 +20,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
         else:
             csp = f"default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-{nonce}'; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
         response.headers.setdefault('Content-Security-Policy', csp)
-        response.headers.setdefault('Referrer-Policy', 'no-referrer')
+        response.headers.setdefault('Referrer-Policy', 'same-origin')
         response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
         response.headers.setdefault('Cross-Origin-Opener-Policy', 'same-origin')
         response.headers.setdefault('Cross-Origin-Resource-Policy', 'same-origin')

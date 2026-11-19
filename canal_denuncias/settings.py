@@ -95,7 +95,7 @@ AUTH_USER_MODEL = 'denuncias.CustomUser'
 ADMIN_INVITE_CODE = config('ADMIN_INVITE_CODE', default='')
 ADMIN_INVITE_SECRET = config('ADMIN_INVITE_SECRET', default='')
 ADMIN_DEV_BYPASS = config('ADMIN_DEV_BYPASS', default=False, cast=bool)
-SECURE_REFERRER_POLICY = 'no-referrer'
+SECURE_REFERRER_POLICY = 'same-origin'
 
 REST_FRAMEWORK = {
     'DEFAULT_PARSER_CLASSES': [
