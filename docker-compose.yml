@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: canal_denuncias
+      POSTGRES_USER: canal_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password_seguro}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U canal_user -d canal_denuncias"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn canal_denuncias.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY:-cambia-esta-clave-por-una-de-50-caracteres-minimo-0123456789}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:8000}
+      DATABASE_URL: postgresql://canal_user:${POSTGRES_PASSWORD:-password_seguro}@db:5432/canal_denuncias
+      EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+      # En producción detrás de un proxy con HTTPS deja estas opciones por defecto.
+      # Para probar por HTTP sin proxy, descomenta:
+      # SECURE_SSL_REDIRECT: "False"
+      # SESSION_COOKIE_SECURE: "False"
+      # CSRF_COOKIE_SECURE: "False"
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

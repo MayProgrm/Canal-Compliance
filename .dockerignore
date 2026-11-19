@@ -1,0 +1,16 @@
+.git
+.gitignore
+.gitattributes
+.venv/
+.venv*/
+.py312/
+.vercel/
+android/
+.env
+db.sqlite3
+*.log
+media/
+staticfiles/
+__pycache__/
+*.pyc
+*.pyo

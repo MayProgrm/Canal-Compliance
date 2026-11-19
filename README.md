@@ -136,7 +136,7 @@ EMAIL_HOST_PASSWORD = 'tu-app-password'
 ```nginx
 server {
     listen 80;
-    server_name tu-dominio.com;
+    server_name el-dominio.com;
     
     location /static/ {
         alias /path/to/canal_denuncias/staticfiles/;
@@ -255,9 +255,7 @@ chmod 644 media/complaints/*
 
 ### Contacto de Soporte
 Para problemas técnicos o consultas:
-- Email: soporte@tu-empresa.com
-- Teléfono: +34 XXX XXX XXX
-- Documentación: [URL de documentación]
+- Email: mariano.mtz.leon@gsi.com.mx
 
 ## Licencia
 
